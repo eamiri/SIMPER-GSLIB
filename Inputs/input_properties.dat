@@ -1,0 +1,32 @@
+Solid Grains Material Properties
+Csol	Ksol	Dsol	npor		Sres    Rsat (1.0: Exponential, 0.0: Linear) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)
+900		2.92	2650	0.35 		0.0     2									 	0.2		2.0		1
+Fluid Material Properties								
+Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat			
+2108			2.14			920		    4182			0.6				1000			334000	  		
+(Non)isothermal condition
+Rmus		Cmush			Ttra		Kmush			Tsol		Tliq		
+0			2618150			0.0			2.823	  		-0.25		0.0
+Boundary Conditions
+Dirichlet BC
+Nodes
+1	-6
+3	-6
+6	-6						
+nGAUSS								
+2							
+Solution variables 
+MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH
+43800			3600				1E-10			100						0.6						40		0
+GSLIB Data File
+GSLIB_DATA.out
+Temperature Plot Nodes
+3526 
+3565 
+3600 
+3631 
+3656 
+3677 
+3694 
+3707 
+3716
