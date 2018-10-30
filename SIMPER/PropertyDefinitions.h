@@ -10,7 +10,7 @@ struct SoilProperties
 	double Wpar;
 	double Mpar;
 	int rSFC;
-	bool isGSLIB;
+	bool IsGSLIB;
 };
 
 struct FluidProperties
@@ -36,6 +36,7 @@ struct NonisothermalProperties
 
 struct BoundaryConditions
 {
+	string InputFile;
 	vector<int> Node;
 	vector<double> Value;
 };
@@ -54,4 +55,5 @@ struct SolutionVariables
 	double NewmarkGamma;
 	int PlotInterval;
 	bool IsGMSH;
+	bool IsInputBC;
 };

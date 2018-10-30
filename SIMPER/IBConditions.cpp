@@ -1,10 +1,12 @@
 #include "IBConditions.h"
 
-IBConditions::IBConditions (Mesh *m)
+IBConditions::IBConditions (Mesh *m, Properties *p)
 {
 	MESH = &(*m);
+	PROPS = &(*p);
 	SetInitialCondition();
 	SetBoundaryConditions();
+	InputBC("../Inputs/" + PROPS->BCs.InputFile);
 }
 
 void IBConditions::SetBoundaryNodes()
@@ -107,9 +109,55 @@ void IBConditions::DirichletBC(vector<int> boundaryNodes, double value)
 	}
 }
 
+void IBConditions::InputBC(string filePath)
+{
+	if (PROPS->Solution.IsInputBC)
+	{
+		ifstream bcInputFile;
+		bcInputFile.open(filePath.c_str());
+		if (bcInputFile.fail())
+		{
+			cout << "Cannot find file " << filePath << endl;
+		}
+		else
+		{
+			cout << "BC input file: " << filePath << endl;
+			string line;
+			int bcTimstep;
+			double bcTemperature;
+			getline(bcInputFile, line);
+			getline(bcInputFile, line);
+			istringstream isDataLine(line);
+			isDataLine 
+				>> DeltaTimeBC 
+				>> EndTimestepBC;
+			getline(bcInputFile, line);
+			BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
+			BCInputData.setZero();
+			for (int ibc = 0; ibc < PROPS->Solution.MaxTimestep; ibc++)
+			{
+				getline(bcInputFile, line);
+				isDataLine.clear();
+				isDataLine.str(line);
+				isDataLine >> bcTimstep >> bcTemperature;
+				if (!(ibc < EndTimestepBC))
+				{
+					BCInputData(ibc, 0) = bcTimstep;
+					BCInputData(ibc, 1) = bcTemperature;
+				}
+				else
+				{
+					BCInputData(ibc, 0) = bcTimstep;
+					BCInputData(ibc, 1) = bcTemperature;
+				}
+			}
+		}
+	}
+}
+
 void IBConditions::SetInitialCondition()
 {
-	Temp_0 = -3.0 * Temp_0.Ones(MESH->NumberOfNodes);
+	Temp_0 = -2.0 * Temp_0.Ones(MESH->NumberOfNodes);
 	TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
 	Residual = Residual.Zero(MESH->NumberOfNodes);
 	Temp = Temp_0;
@@ -120,6 +168,6 @@ void IBConditions::SetBoundaryConditions()
 {
 	DirichletDof = oneDimensionalBC();
 	SetBoundaryNodes();
-	DirichletBC(DirichletDof, 5.0);
+	//DirichletBC(DirichletDof, 1);
 	SetPlotNodes();
 }

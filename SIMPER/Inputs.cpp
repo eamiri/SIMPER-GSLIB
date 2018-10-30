@@ -49,7 +49,7 @@ Properties InputProperties(string filePath)
 			>> props.Soil.rSFC
 			>> props.Soil.Wpar
 			>> props.Soil.Mpar
-			>> props.Soil.isGSLIB;
+			>> props.Soil.IsGSLIB;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -77,6 +77,10 @@ Properties InputProperties(string filePath)
 			>> props.Nonisothermal.TempLiquid;
 		getline(propsFile, line);
 		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
+		isDataLine >> props.BCs.InputFile;
 		getline(propsFile, line);
 		while (getline(propsFile, line))
 		{
@@ -111,7 +115,8 @@ Properties InputProperties(string filePath)
 			>> props.Solution.MaxIterations
 			>> props.Solution.NewmarkGamma
 			>> props.Solution.PlotInterval
-			>> props.Solution.IsGMSH;
+			>> props.Solution.IsGMSH
+			>> props.Solution.IsInputBC;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		isDataLine.clear();
@@ -138,7 +143,7 @@ Properties InputProperties(string filePath)
 
 void GSLIBInput(string filePath)
 {
-	if (PROPS.Soil.isGSLIB)
+	if (PROPS.Soil.IsGSLIB)
 	{
 		GSLIBCoeffs.resize(MESH.NumberOfNodes);
 		GSLIBCoeffs.setZero();

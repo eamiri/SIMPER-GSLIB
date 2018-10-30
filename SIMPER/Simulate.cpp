@@ -15,6 +15,7 @@ double *TolResidual = &PROPS.Solution.TolPsi;
 void InitializeSolution();
 void ComputePotentialStar();
 void POSTPROCESS(VectorXd temp, double solutionTime);
+void UpdateTempBC(int iTimestep);
 void Simulate();
 double SATUR(double Tgau);
 double dSATUR(double Tgau);
@@ -151,8 +152,8 @@ void ComputePotentialStar()
 				//
 				Hfun = ICpar;
 				Gfun = ICparxT;
-				PI1 += 1.0 / (*deltaTime * *gamma)*Wi*Wj*(Gfun)*detJacob;
-				PI2 += TempGHat / (*deltaTime * *gamma)*Wi*Wj*Hfun*detJacob;
+				PI1 += 1.0 / (*deltaTime * *gamma) * Wi * Wj * (Gfun) * detJacob;
+				PI2 += TempGHat / (*deltaTime * *gamma) * Wi * Wj * Hfun * detJacob;
 				GradTempGradTemp = (GradTemp.transpose()) * GradTemp;
 				PI3 += 0.5 * Wi * Wj * Kpar * GradTempGradTemp * detJacob;
 			}
@@ -162,16 +163,28 @@ void ComputePotentialStar()
 	}
 }
 
+void UpdateTempBC(int iTimestep)
+{
+	for (int i = 0; i < DirichletDof.size(); i++)
+	{
+		Temp(DirichletDof[i]) = BCInputData(iTimestep, 1);
+	}
+}
+
 void Simulate()
 {
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
 	maxTrustRegionRadius = 5.0E+3 * trRatioParameter;
-	trustRegionRadius = 100 * trRatioParameter;
+	trustRegionRadius = 1000 * trRatioParameter;
 	iPlot = 0;
+
+
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
 	{
 		printf("======================================================================================================================================================================");
+		// update boundary conditions
+		UpdateTempBC(iTimestep);
 
 		// initialize solution vectors and variables
 		InitializeSolution();
@@ -359,6 +372,11 @@ void Simulate()
 			modelReduce = m_TempStar - m_Temp;
 			TR_Ratio = actualReduce / modelReduce;
 
+			if (abs(actualReduce) / abs(Potential) < 1E-8 || modelReduce == 0)
+			{
+				TR_Ratio = 1.0;
+			}
+
 			printf("\tIS_FNR= %s", TR.IsFullNewtonRaphson ? "TRUE" : "FALSE");
 			if (TR_Ratio > 0)
 			{
@@ -367,11 +385,6 @@ void Simulate()
 			else
 			{
 				printf("\tTR_RATIO= %.3e", TR_Ratio);
-			}
-
-			if (abs(actualReduce) / abs(Potential) < 1E-10 || modelReduce == 0)
-			{
-				TR_Ratio = 1.0;
 			}
 
 			//update solution estimate

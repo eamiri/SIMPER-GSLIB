@@ -6,9 +6,10 @@ Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat
 2108			2.14			920		    4182			0.6				1000			334000	  		
 (Non)isothermal condition
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq		
-0			2618150			0.0			2.823	  		-0.25		0.0
+0			2618150			0.0			2.823	  		-1.0		0.0
 Boundary Conditions
-Dirichlet BC
+Dirichlet BC Input File
+PlateauBC_Corrected.dat
 Nodes
 1	-6
 3	-6
@@ -16,8 +17,8 @@ Nodes
 nGAUSS								
 2							
 Solution variables 
-MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH
-43800			3600				1E-10			100						0.6						40		0
+MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH	InputBC
+43800			3600			1E-3			30						0.6							10		0		1
 GSLIB Data File
 GSLIB_DATA.out
 Temperature Plot Nodes

@@ -18,6 +18,8 @@ VectorXd Temp;
 VectorXd TempDot;
 vector<int> DirichletDof;
 
+MatrixXd BCInputData;
+
 int main(int argc, char* argv[])
 {
 	//double      t;
@@ -51,7 +53,7 @@ int main(int argc, char* argv[])
 	}
 
 	//INITIAL AND BOUNDARY CONDITIONS
-	IBConditions Conditions(&MESH);
+	IBConditions Conditions(&MESH, &PROPS);
 	Temp = Conditions.Temp;
 	TempDot = Conditions.TempDot;
 	Temp_0 = Conditions.Temp_0;
@@ -59,6 +61,8 @@ int main(int argc, char* argv[])
 	Residual = Conditions.Residual;
 	DirichletDof = Conditions.DirichletDof;
 	PROPS.PlotNodes = Conditions.PlotNodes;
+	BCInputData.resize(PROPS.Solution.MaxTimestep, 2);
+	BCInputData = Conditions.BCInputData;
 
 	//PLOT FILES
 	NodePlotFile = fopen("../Results/NodePlot.plt", "w");

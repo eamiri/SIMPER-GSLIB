@@ -5,18 +5,16 @@
 #include <Eigen/SparseCholesky>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <strstream>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
 #include <algorithm>
 #include <math.h>
 #include <limits>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <strstream>
-#include <sstream>
 #include <vector>
 #include "Mesh.h"
 #include "IBConditions.h"
@@ -43,6 +41,7 @@ extern VectorXd Temp_0;
 extern VectorXd TempDot_0;
 extern VectorXd Residual;
 extern vector<int> DirichletDof;
+extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 
 extern FILE *OutputFile, *NodePlotFile;

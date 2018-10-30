@@ -69,22 +69,40 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		}
 	}
 
-	fprintf(NodePlotFile, "\n%e\t", solutionTime);
-	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
+	if (PROPS.PlotNodes.size())
 	{
-		fprintf(NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n]-1));
-	}
+		fprintf(NodePlotFile, "\n%e\t", solutionTime);
+		for (int n = 0; n < PROPS.PlotNodes.size(); n++)
+		{
+			fprintf(NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));
+		}
 
-	fflush(NodePlotFile);
+		fflush(NodePlotFile);
+	}	
 
-	fprintf(OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \"GSLIB Coeff\"\n");
-	fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
-	for (int n = 0; n < nond; n++)
+	if (PROPS.Soil.IsGSLIB)
 	{
-		waterSat = SATUR(Temp(n));
-		iceSat = 1 - waterSat;
-		fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, GSLIBCoeffs(n));
+		fprintf(OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \"GSLIB Coeff\"\n");
+		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
+		for (int n = 0; n < nond; n++)
+		{
+			waterSat = SATUR(Temp(n));
+			iceSat = 1 - waterSat;
+			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, GSLIBCoeffs(n));
+		}
 	}
+	else
+	{
+		fprintf(OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \n");
+		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
+		for (int n = 0; n < nond; n++)
+		{
+			waterSat = SATUR(Temp(n));
+			iceSat = 1 - waterSat;
+			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat);
+		}
+	}
+	
 
 	for (int e = 0; e < noel; e++)
 	{
