@@ -47,7 +47,7 @@ MatrixXd Bmat;
 
 TrustRegion TR;
 
-double *gamma = &PROPS.Solution.NewmarkGamma;
+double *gammaNewmark = &PROPS.Solution.NewmarkGamma;
 double *deltaTime = &PROPS.Solution.DeltaTime;
 double solutionTime;
 double trustRegionRadius, maxTrustRegionRadius;
@@ -81,14 +81,14 @@ void InitializeSolution()
 	bcResidual.resize(DirichletDof.size());
 	//delTempStar = delTempStar.Zero(nond);
 	TempStar = Temp;
-	TempHat = Temp_0 + (1.0 - *gamma) * (*deltaTime) * TempDot_0;
+	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
 }
 
 void ComputePotentialStar()
 {
 	PotentialStar = 0.0;
-	TempDotStar = (TempStar - TempHat) / (*gamma * *deltaTime);
+	TempDotStar = (TempStar - TempHat) / (*gammaNewmark * *deltaTime);
 	for (int e = 0; e < noel; e++)
 	{
 		dMmat = dMmat.Zero(ndoe, ndoe);
@@ -152,8 +152,8 @@ void ComputePotentialStar()
 				//
 				Hfun = ICpar;
 				Gfun = ICparxT;
-				PI1 += 1.0 / (*deltaTime * *gamma) * Wi * Wj * (Gfun) * detJacob;
-				PI2 += TempGHat / (*deltaTime * *gamma) * Wi * Wj * Hfun * detJacob;
+				PI1 += 1.0 / (*deltaTime * *gammaNewmark) * Wi * Wj * (Gfun) * detJacob;
+				PI2 += TempGHat / (*deltaTime * *gammaNewmark) * Wi * Wj * Hfun * detJacob;
 				GradTempGradTemp = (GradTemp.transpose()) * GradTemp;
 				PI3 += 0.5 * Wi * Wj * Kpar * GradTempGradTemp * detJacob;
 			}
@@ -197,7 +197,7 @@ void Simulate()
 			if (isDelTempStarApproved)
 			{
 				Residual = Residual.Zero(MESH.NumberOfNodes);
-				TempDot = (Temp - TempHat) / ((*gamma) * (*deltaTime));
+				TempDot = (Temp - TempHat) / ((*gammaNewmark) * (*deltaTime));
 				Potential = 0.0;
 				StiffSparse.setZero();
 
@@ -268,15 +268,15 @@ void Simulate()
 							//
 							Hfun = ICpar;
 							Gfun = ICparxT;
-							PI1 += 1.0 / (*deltaTime * *gamma)*Wi*Wj*(Gfun)*detJacob;
-							PI2 += TempGHat / (*deltaTime * *gamma)*Wi*Wj*Hfun*detJacob;
+							PI1 += 1.0 / (*deltaTime * *gammaNewmark)*Wi*Wj*(Gfun)*detJacob;
+							PI2 += TempGHat / (*deltaTime * *gammaNewmark)*Wi*Wj*Hfun*detJacob;
 							GradTempGradTemp = (GradTemp.transpose()) * GradTemp;
 							PI3 += 0.5 * Wi * Wj * Kpar * GradTempGradTemp * detJacob;
 						}
 					}
 
 					Potential += PI1 - PI2 + PI3;
-					dSTIFF = Jmat + dMmat / (*gamma * *deltaTime);
+					dSTIFF = Jmat + dMmat / (*gammaNewmark * *deltaTime);
 					dResidual = Jmat * TempNode + Mmat;
 
 					for (int m = 0; m < ndoe; m++)
