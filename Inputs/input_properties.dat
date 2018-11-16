@@ -20,8 +20,8 @@ Solution variables
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH	InputBC
 87600			3600			1E-3			30						0.6							30		0		1
 GSLIB input data
-Correlation Length		numberi of cells		Grid Size			
-12.8					200						0.05	
+Correlation Length		Number of Cells		Grid Size		Number of Realizations		
+12.8					200						0.05		5
 Temperature Plot Nodes
 3526 
 3565 

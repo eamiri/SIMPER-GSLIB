@@ -3,9 +3,10 @@
 bool Inputs(string propsInputFile, string meshInputFile);
 Properties InputProperties(string filePath);
 Mesh InputMesh(string filePath);
-void GSLIBGenerateInputFile();
+void SgsimParameterFile();
 void GSLIBRunSGSIM();
-void GSLIBReadData(string filePath);
+void UpscaleGSLIBtoSIMPER(string filePath);
+void AddcoorParameterFile(int realizationNumber);
 
 int noel;
 int nond;
@@ -13,6 +14,7 @@ int ndoe;
 int nGP;
 Mesh MESH;
 VectorXd GSLIBCoeffs;
+MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
 
@@ -22,11 +24,11 @@ bool Inputs(string propsInputFile, string meshInputFile)
 	MESH = InputMesh(meshInputFile);
 	if (PROPS.Soil.IsGSLIB)
 	{
-		GSLIBGenerateInputFile();
+		SgsimParameterFile();
 		GSLIBRunSGSIM();
 	}
 	
-	GSLIBReadData("GSLIB/GSLIB_DATA.out");
+	UpscaleGSLIBtoSIMPER("GSLIB/GSLIB_DATA.out");
 
 	return true;
 }
@@ -133,7 +135,8 @@ Properties InputProperties(string filePath)
 		isDataLine
 			>> props.GSLIB.CorrelationLength
 			>> props.GSLIB.NumberOfCells
-			>> props.GSLIB.GridSize;
+			>> props.GSLIB.GridSize
+			>> props.GSLIB.NumberOfRealizations;
 		/*getline(propsFile, line);
 		while (getline(propsFile, line))
 		{
@@ -152,15 +155,16 @@ Properties InputProperties(string filePath)
 	return props;
 }
 
-void GSLIBGenerateInputFile()
+void SgsimParameterFile()
 {
 	srand(time(0));
-	long seedGSLIB = 0;
-	for (int i = 0; i < 5; ++i) {
-		seedGSLIB = abs(seedGSLIB << 15) | (rand() & 0x7FFF);
-	}
+	long seedGSLIB = 305 * abs(rand());
 
-	FILE *inputFileGSLIB = fopen("GSLIB/GSLIBinput.par", "w");
+	/*for (int i = 0; i < 5; ++i) {
+		seedGSLIB = abs(seedGSLIB << 15) | (rand() & 0x7FFF);
+	}*/
+
+	FILE *inputFileGSLIB = fopen("GSLIB/SgsimInput.par", "w");
 
 	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
 	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
@@ -176,9 +180,9 @@ void GSLIBGenerateInputFile()
 	fprintf(inputFileGSLIB, "1 0                                     -lower tail option\n");
 	fprintf(inputFileGSLIB, "1 15                                    -upper tail option\n");
 	fprintf(inputFileGSLIB, "0                                       -debug level (0-3)\n");
-	fprintf(inputFileGSLIB, "GSLIB/SGS_nodata.dbg\n");
-	fprintf(inputFileGSLIB, "GSLIB/GSLIB_DATA.out\n");
-	fprintf(inputFileGSLIB, "1                                       -number of realizations to generate\n");
+	fprintf(inputFileGSLIB, "GSLIB/SGSIM_nodata.dbg\n");
+	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
+	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", PROPS.GSLIB.NumberOfRealizations);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
 	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
@@ -200,58 +204,94 @@ void GSLIBGenerateInputFile()
 	fflush(inputFileGSLIB);
 }
 
+void AddcoorParameterFile(int realizationNumber)
+{
+	FILE *inputFileGSLIB = fopen("GSLIB/AddcoorInput.par", "w");
+
+	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
+	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
+	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
+	fprintf(inputFileGSLIB, "GSLIB/ADDCOOR_output.out\n");
+	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", realizationNumber);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "1 0 1                               -nz, zmin, zsize\n");
+	fflush(inputFileGSLIB);
+}
+
 void GSLIBRunSGSIM()
 {
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-	int ExecuteGSLIB = system("GSLIB\\sgsim.exe \"GSLIB/GSLIBInput.par\"");
+	int ExecuteGSLIB = system("GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\""); // simulation
+	AddcoorParameterFile(1);
+	ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+
+	FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
+	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1));
+	GSLIBCoeffs.setZero();
+	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1), 2);
+	GSLIBGrid.setZero();
+	string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
+	ifstream gslibFile;
+	gslibFile.open(AddcoorOutputFilePath.c_str());
+	string line;
+	getline(gslibFile, line);
+	getline(gslibFile, line);
+	getline(gslibFile, line);
+	getline(gslibFile, line);
+	getline(gslibFile, line);
+	int index = 0;
+	double gslibCoeff;
+	double xCoord;
+	double yCoord;
+	double zCoord;
+	while (getline(gslibFile, line))
+	{
+		if (!(gslibFile >> xCoord >> yCoord >> zCoord >> gslibCoeff))
+		{
+			break;
+		}
+
+		GSLIBGrid(0, index) = xCoord;
+		GSLIBGrid(1, index) = yCoord;
+		GSLIBCoeffs(index) = gslibCoeff;
+	}
+
 }
 
-void GSLIBReadData(string filePath)
+void UpscaleGSLIBtoSIMPER(string filePath)
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
-		GSLIBCoeffs.resize(MESH.NumberOfNodes);
-		GSLIBCoeffs.setZero();
-		ifstream gslibFile;
-		gslibFile.open(filePath.c_str());
-		if (gslibFile.fail())
-		{
-			cout << "Cannot find file " << filePath << endl;
-		}
-		else
-		{
-			cout << "Heterogeneous Media" << endl;
-			cout << "GSLIB input file: " << filePath << endl;
-			string line;
-			getline(gslibFile, line);
-			getline(gslibFile, line);
-			getline(gslibFile, line);
-			for (int i = 0; i < MESH.NumberOfNodes; i++)
-			{
-				istringstream isGSLIBData(line);
-				double gslibCoeff;
-				if (!(gslibFile >> gslibCoeff))
-				{
-					break;
-				}
-
-				GSLIBCoeffs(i) = gslibCoeff;
-			}
-		}
-
 		double maxGslibCoeff = GSLIBCoeffs.maxCoeff();
 		double minGslibCoeff = GSLIBCoeffs.minCoeff();
 		for (int n = 0; n < MESH.NumberOfNodes; n++)
 		{
-			if (GSLIBCoeffs[n] > 0)
+			double xNode = MESH.Nodes[n].Coordinates.x;
+			double yNode = MESH.Nodes[n].Coordinates.y;
+			double gslibCoeff;
+			double distanceP = INFINITY;
+			for (int i = 0; i < (PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1); i++)
 			{
-				MESH.Nodes[n].GSLIBCoeff = GSLIBCoeffs[n] / maxGslibCoeff;
+				double distance = sqrt((xNode - GSLIBGrid(i, 0)) * (xNode - GSLIBGrid(i, 0)) + (yNode - GSLIBGrid(i, 1)) * (yNode - GSLIBGrid(i, 1)));
+				if (distance < distanceP)
+				{
+					distanceP = distance;
+					gslibCoeff = GSLIBCoeffs(i);
+				}
+			}
+
+			if (gslibCoeff > 0)
+			{
+				MESH.Nodes[n].GSLIBCoeff = gslibCoeff / maxGslibCoeff;
 			}
 			else
 			{
-				MESH.Nodes[n].GSLIBCoeff = GSLIBCoeffs[n] / abs(minGslibCoeff);
+				MESH.Nodes[n].GSLIBCoeff = gslibCoeff / abs(minGslibCoeff);
 			}
+
+			break;
 		}
 
 		double GSLIBCoeffE;

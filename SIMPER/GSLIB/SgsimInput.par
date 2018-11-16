@@ -13,13 +13,13 @@ vmodel.var
 1 0                                     -lower tail option
 1 15                                    -upper tail option
 0                                       -debug level (0-3)
-GSLIB/SGS_nodata.dbg
-GSLIB/GSLIB_DATA.out
-1                                       -number of realizations to generate
+GSLIB/SGSIM_nodata.dbg
+GSLIB/SGSIM_output.out
+5                                       -number of realizations to generate
 201 0 5.000000e-02                              -nx, xmin, xsize
 201 0 5.000000e-02                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize
-706985936                               -random number seed
+4157760                               -random number seed
 0 8                                     -Min and max original data for sim
 12                                      -number of simulated nodes to use
 1                                       -assign data to nodes (0=no, 1=yes)

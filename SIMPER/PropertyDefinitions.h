@@ -51,6 +51,7 @@ struct GSLIB
 	double CorrelationLength;
 	int NumberOfCells;
 	double GridSize;
+	int NumberOfRealizations;
 };
 
 struct SolutionVariables
