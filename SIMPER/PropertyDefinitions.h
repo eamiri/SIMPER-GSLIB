@@ -46,6 +46,13 @@ struct GaussQuadrature
 	int NumberOfPoints;
 };
 
+struct GSLIB
+{
+	double CorrelationLength;
+	int NumberOfCells;
+	double GridSize;
+};
+
 struct SolutionVariables
 {
 	int MaxTimestep;

@@ -2,8 +2,10 @@
 
 bool Inputs(string propsInputFile, string meshInputFile);
 Properties InputProperties(string filePath);
-void GSLIBInput(string filePath);
 Mesh InputMesh(string filePath);
+void GSLIBGenerateInputFile();
+void GSLIBRunSGSIM();
+void GSLIBReadData(string filePath);
 
 int noel;
 int nond;
@@ -18,7 +20,13 @@ bool Inputs(string propsInputFile, string meshInputFile)
 {
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
-	GSLIBInput("../Inputs/" + PROPS.GSLIBInputFile);
+	if (PROPS.Soil.IsGSLIB)
+	{
+		GSLIBGenerateInputFile();
+		GSLIBRunSGSIM();
+	}
+	
+	GSLIBReadData("GSLIB/GSLIB_DATA.out");
 
 	return true;
 }
@@ -119,10 +127,13 @@ Properties InputProperties(string filePath)
 			>> props.Solution.IsInputBC;
 		getline(propsFile, line);
 		getline(propsFile, line);
+		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
 		isDataLine
-			>> props.GSLIBInputFile;
+			>> props.GSLIB.CorrelationLength
+			>> props.GSLIB.NumberOfCells
+			>> props.GSLIB.GridSize;
 		/*getline(propsFile, line);
 		while (getline(propsFile, line))
 		{
@@ -141,7 +152,62 @@ Properties InputProperties(string filePath)
 	return props;
 }
 
-void GSLIBInput(string filePath)
+void GSLIBGenerateInputFile()
+{
+	srand(time(0));
+	long seedGSLIB = 0;
+	for (int i = 0; i < 5; ++i) {
+		seedGSLIB = abs(seedGSLIB << 15) | (rand() & 0x7FFF);
+	}
+
+	FILE *inputFileGSLIB = fopen("GSLIB/GSLIBinput.par", "w");
+
+	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
+	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
+	fprintf(inputFileGSLIB, "nodata\n");
+	fprintf(inputFileGSLIB, "1 2 0 3 5 0                             -columns for X,Y,Z,vr,wt,sec.var.\n");
+	fprintf(inputFileGSLIB, "-1E+21 1E+21\n");
+	fprintf(inputFileGSLIB, "0                                       -transform the data (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "sgsim.trn\n");
+	fprintf(inputFileGSLIB, "0                                       -consider ref. dist (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "vmodel.var\n");
+	fprintf(inputFileGSLIB, "1 2                                     -columns for vr and wt\n");
+	fprintf(inputFileGSLIB, "0 15                                    -zmin,zmax (tail extrapolation)\n");
+	fprintf(inputFileGSLIB, "1 0                                     -lower tail option\n");
+	fprintf(inputFileGSLIB, "1 15                                    -upper tail option\n");
+	fprintf(inputFileGSLIB, "0                                       -debug level (0-3)\n");
+	fprintf(inputFileGSLIB, "GSLIB/SGS_nodata.dbg\n");
+	fprintf(inputFileGSLIB, "GSLIB/GSLIB_DATA.out\n");
+	fprintf(inputFileGSLIB, "1                                       -number of realizations to generate\n");
+	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
+	fprintf(inputFileGSLIB, "%ld                               -random number seed\n", seedGSLIB);
+	fprintf(inputFileGSLIB, "0 8                                     -Min and max original data for sim\n");
+	fprintf(inputFileGSLIB, "12                                      -number of simulated nodes to use\n");
+	fprintf(inputFileGSLIB, "1                                       -assign data to nodes (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "1 3                                     -multiple grid search (0=no, 1=yes), num\n");
+	fprintf(inputFileGSLIB, "0                                       -maximum data per octant (0=not used)\n");
+	fprintf(inputFileGSLIB, "10 10 10                                -maximum search radii (hmax, hmin, vert)\n");
+	fprintf(inputFileGSLIB, "0 0 0                                   -angles for search ellipsoid\n");
+	fprintf(inputFileGSLIB, "51 51 11                                -size of covariance lookup table\n");
+	fprintf(inputFileGSLIB, "0 0 1                                   -kType: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC\n");
+	fprintf(inputFileGSLIB, "nodata\n");
+	fprintf(inputFileGSLIB, "4                                       -column\n");
+	fprintf(inputFileGSLIB, "1 0                                     -nst, nugget NOFILE\n");
+	fprintf(inputFileGSLIB, "2 1 0 0 0                               -it, cc, ang1, ang2, ang3\n");
+	fprintf(inputFileGSLIB, "%e %e 1.6                           -a_hmax, a_hmin, a_vert\n", PROPS.GSLIB.CorrelationLength, PROPS.GSLIB.CorrelationLength);
+	fflush(inputFileGSLIB);
+}
+
+void GSLIBRunSGSIM()
+{
+	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+	int ExecuteGSLIB = system("GSLIB\\sgsim.exe \"GSLIB/GSLIBInput.par\"");
+	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+}
+
+void GSLIBReadData(string filePath)
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
@@ -175,8 +241,7 @@ void GSLIBInput(string filePath)
 		}
 
 		double maxGslibCoeff = GSLIBCoeffs.maxCoeff();
-		double minGslibCoeff = GSLIBCoeffs.maxCoeff();
-
+		double minGslibCoeff = GSLIBCoeffs.minCoeff();
 		for (int n = 0; n < MESH.NumberOfNodes; n++)
 		{
 			if (GSLIBCoeffs[n] > 0)
@@ -192,6 +257,7 @@ void GSLIBInput(string filePath)
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
+		FILE *plotHeatCapacity = fopen("../Results/HeatCapacity.plt", "w");
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			elementDofs = MESH.GetElementDofs(e, ndoe);
@@ -203,6 +269,16 @@ void GSLIBInput(string filePath)
 			}
 
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE / 4;
+
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\"\n");
+			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
+			for (int inod = 0; inod < ndoe; inod++)
+			{
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity);
+			}
+
+			fprintf(plotHeatCapacity, "1 2 3 4");
+			fflush(plotHeatCapacity);
 		}
 	}
 	else

@@ -18,9 +18,10 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH	InputBC
-43800			3600			1E-3			30						0.6							10		0		1
-GSLIB Data File
-GSLIB_DATA.out
+87600			3600			1E-3			30						0.6							30		0		1
+GSLIB input data
+Correlation Length		numberi of cells		Grid Size			
+12.8					200						0.05	
 Temperature Plot Nodes
 3526 
 3565 

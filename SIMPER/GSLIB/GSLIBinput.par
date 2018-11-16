@@ -1,26 +1,25 @@
-                  Parameters for SGSIM
-                  **************************
+Parameters for SGSIM
 
-START OF PARAMETERS:
+START OF PARAMETERS
 nodata
-1 2 0 3 5 0                             -  columns for X,Y,Z,vr,wt,sec.var.
--1E+21 1E+21                            -trimming limits
+1 2 0 3 5 0                             -columns for X,Y,Z,vr,wt,sec.var.
+-1E+21 1E+21
 0                                       -transform the data (0=no, 1=yes)
 sgsim.trn
-0                                       -  consider ref. dist (0=no, 1=yes)
+0                                       -consider ref. dist (0=no, 1=yes)
 vmodel.var
-1 2                                     -  columns for vr and wt
-0 15                                    -  zmin,zmax (tail extrapolation)
+1 2                                     -columns for vr and wt
+0 15                                    -zmin,zmax (tail extrapolation)
 1 0                                     -lower tail option
 1 15                                    -upper tail option
 0                                       -debug level (0-3)
-SGS_nodata.dbg
-SGS_KVariance.plt
+GSLIB/SGS_nodata.dbg
+GSLIB/GSLIB_DATA.out
 1                                       -number of realizations to generate
-201 0 0.05                              -nx, xmin, xsize
-201 0 0.05                              -ny, ymin, ysize
+201 0 5.000000e-02                              -nx, xmin, xsize
+201 0 5.000000e-02                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize
-4128794                                 -random number seed
+706985936                               -random number seed
 0 8                                     -Min and max original data for sim
 12                                      -number of simulated nodes to use
 1                                       -assign data to nodes (0=no, 1=yes)
@@ -31,7 +30,7 @@ SGS_KVariance.plt
 51 51 11                                -size of covariance lookup table
 0 0 1                                   -kType: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC
 nodata
-4                                       -  column
+4                                       -column
 1 0                                     -nst, nugget NOFILE
 2 1 0 0 0                               -it, cc, ang1, ang2, ang3
-12.8 12.8 1.6                           -a_hmax, a_hmin, a_vert
+1.280000e+01 1.280000e+01 1.6                           -a_hmax, a_hmin, a_vert

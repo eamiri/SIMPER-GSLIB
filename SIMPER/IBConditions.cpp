@@ -134,6 +134,7 @@ void IBConditions::InputBC(string filePath)
 			getline(bcInputFile, line);
 			BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
 			BCInputData.setZero();
+			int lastIBC = 0;
 			for (int ibc = 0; ibc < PROPS->Solution.MaxTimestep; ibc++)
 			{
 				getline(bcInputFile, line);
@@ -142,13 +143,14 @@ void IBConditions::InputBC(string filePath)
 				isDataLine >> bcTimstep >> bcTemperature;
 				if (!(ibc < EndTimestepBC))
 				{
-					BCInputData(ibc, 0) = bcTimstep;
-					BCInputData(ibc, 1) = bcTemperature;
+					BCInputData(ibc, 0) = BCInputData(ibc - lastIBC, 0);
+					BCInputData(ibc, 1) = BCInputData(ibc - lastIBC, 1);
 				}
 				else
 				{
 					BCInputData(ibc, 0) = bcTimstep;
 					BCInputData(ibc, 1) = bcTemperature;
+					lastIBC++;
 				}
 			}
 		}
