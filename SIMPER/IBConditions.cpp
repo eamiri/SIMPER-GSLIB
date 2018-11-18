@@ -9,15 +9,31 @@ IBConditions::IBConditions (Mesh *m, Properties *p)
 	InputBC("../Inputs/" + PROPS->BCs.InputFile);
 }
 
-void IBConditions::SetBoundaryNodes()
+void IBConditions::SetBoundaryNodes(vector<int> boundaryNodes)
 {
-	for (int iBC = 0; iBC < DirichletDof.size(); iBC++)
+	for (int iBC = 0; iBC < boundaryNodes.size(); iBC++)
 	{
-		MESH->Nodes[DirichletDof[iBC]].IsBoundary = true;
+		MESH->Nodes[boundaryNodes[iBC]].IsBoundary = true;
 	}
 }
 
-vector<int> IBConditions::oneDimensionalBC()
+vector<int> IBConditions::FindDirichletBoundaryNodes()
+{
+	vector<int> dirDOF;
+	for (int n = 0; n < MESH->NumberOfNodes; n++)
+	{
+		double yNode = MESH->Nodes[n].Coordinates.y;
+		double xNode = MESH->Nodes[n].Coordinates.x;
+		if ((yNode == MESH->MinY) || (yNode == MESH->MaxY))
+		{
+			dirDOF.push_back(n);
+		}
+	}
+
+	return dirDOF;
+}
+
+vector<int> IBConditions::FindTopBoundaryNodes()
 {
 	vector<int> dirDOF;
 	for (int n = 0; n < MESH->NumberOfNodes; n++)
@@ -25,6 +41,22 @@ vector<int> IBConditions::oneDimensionalBC()
 		double yNode = MESH->Nodes[n].Coordinates.y;
 		double xNode = MESH->Nodes[n].Coordinates.x;
 		if (yNode == MESH->MaxY)
+		{
+			dirDOF.push_back(n);
+		}
+	}
+
+	return dirDOF;
+}
+
+vector<int> IBConditions::FindBottomBoundaryNodes()
+{
+	vector<int> dirDOF;
+	for (int n = 0; n < MESH->NumberOfNodes; n++)
+	{
+		double yNode = MESH->Nodes[n].Coordinates.y;
+		double xNode = MESH->Nodes[n].Coordinates.x;
+		if (yNode == MESH->MinY)
 		{
 			dirDOF.push_back(n);
 		}
@@ -101,7 +133,7 @@ void IBConditions::SetPlotNodes()
 	}
 }
 
-void IBConditions::DirichletBC(vector<int> boundaryNodes, double value)
+void IBConditions::SetDirichletBC(vector<int> boundaryNodes, double value)
 {
 	for (int n = 0; n < boundaryNodes.size(); n++)
 	{
@@ -159,7 +191,7 @@ void IBConditions::InputBC(string filePath)
 
 void IBConditions::SetInitialCondition()
 {
-	Temp_0 = -2.0 * Temp_0.Ones(MESH->NumberOfNodes);
+	Temp_0 = -2.5 * Temp_0.Ones(MESH->NumberOfNodes);
 	TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
 	Residual = Residual.Zero(MESH->NumberOfNodes);
 	Temp = Temp_0;
@@ -168,8 +200,10 @@ void IBConditions::SetInitialCondition()
 
 void IBConditions::SetBoundaryConditions()
 {
-	DirichletDof = oneDimensionalBC();
-	SetBoundaryNodes();
+	TopBC = FindTopBoundaryNodes();
+	BottomBC = FindBottomBoundaryNodes();
+	DirichletBC = FindDirichletBoundaryNodes();
+	SetBoundaryNodes(DirichletBC);
 	//DirichletBC(DirichletDof, 1);
 	SetPlotNodes();
 }

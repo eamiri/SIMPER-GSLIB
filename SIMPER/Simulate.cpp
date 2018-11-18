@@ -15,7 +15,7 @@ double *TolResidual = &PROPS.Solution.TolPsi;
 void InitializeSolution();
 void ComputePotentialStar();
 void POSTPROCESS(VectorXd temp, double solutionTime);
-void UpdateTempBC(int iTimestep);
+void UpdateTopBC(int iTimestep);
 void Simulate();
 double SATUR(double Tgau);
 double dSATUR(double Tgau);
@@ -78,7 +78,7 @@ void InitializeSolution()
 {
 	StiffSparse.resize(nond, nond);
 	Residual = Residual.Zero(nond);
-	bcResidual.resize(DirichletDof.size());
+	bcResidual.resize(DirichletBoundary.size());
 	//delTempStar = delTempStar.Zero(nond);
 	TempStar = Temp;
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
@@ -163,11 +163,11 @@ void ComputePotentialStar()
 	}
 }
 
-void UpdateTempBC(int iTimestep)
+void UpdateTopBC(int iTimestep)
 {
-	for (int i = 0; i < DirichletDof.size(); i++)
+	for (int i = 0; i < TopBoundary.size(); i++)
 	{
-		Temp(DirichletDof[i]) = BCInputData(iTimestep, 1);
+		Temp(TopBoundary[i]) = BCInputData(iTimestep, 1);
 	}
 }
 
@@ -184,7 +184,7 @@ void Simulate()
 	{
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
-		UpdateTempBC(iTimestep);
+		UpdateTopBC(iTimestep);
 
 		// initialize solution vectors and variables
 		InitializeSolution();
@@ -301,11 +301,11 @@ void Simulate()
 					NormResidual_0 = Residual.norm();
 				}
 
-				for (int iBC = 0; iBC < DirichletDof.size(); iBC++)
+				for (int iBC = 0; iBC < DirichletBoundary.size(); iBC++)
 				{
-					bcResidual(iBC) = Residual(DirichletDof[iBC]);
-					Residual(DirichletDof[iBC]) = 0.0;
-					StiffSparse.coeffRef(DirichletDof[iBC], DirichletDof[iBC]) = 1.0;
+					bcResidual(iBC) = Residual(DirichletBoundary[iBC]);
+					Residual(DirichletBoundary[iBC]) = 0.0;
+					StiffSparse.coeffRef(DirichletBoundary[iBC], DirichletBoundary[iBC]) = 1.0;
 				}
 
 				Solver.compute(StiffSparse);

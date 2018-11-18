@@ -28,21 +28,25 @@ public:
 	VectorXd Residual;
 	VectorXd Temp;
 	VectorXd TempDot;
-	vector<int> DirichletDof;
+	vector<int> TopBC;
+	vector<int> BottomBC;
+	vector<int> DirichletBC;
 	vector<int> PlotNodes;
 	MatrixXd BCInputData;
 	double DeltaTimeBC;
 	int  EndTimestepBC;
 
 private:
-	void SetBoundaryNodes();
+	void SetBoundaryNodes(vector<int> boundaryNodes);
 	void SetInitialCondition();
 	void SetBoundaryConditions();
 	void SetPlotNodes();
-	vector<int> oneDimensionalBC();
+	vector<int> FindDirichletBoundaryNodes();
+	vector<int> FindTopBoundaryNodes();
+	vector<int> FindBottomBoundaryNodes();
 	vector<int> CornerFreezing();
 	vector<int> DiskProblem();
-	void DirichletBC(vector<int> boundaryNodes, double value);
+	void SetDirichletBC(vector<int> boundaryNodes, double value);
 	void InputBC(string filePath);
 	Mesh *MESH;
 	Properties *PROPS;

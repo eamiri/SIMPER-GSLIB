@@ -41,7 +41,9 @@ extern VectorXd TempDot;
 extern VectorXd Temp_0;
 extern VectorXd TempDot_0;
 extern VectorXd Residual;
-extern vector<int> DirichletDof;
+extern vector<int> DirichletBoundary;
+extern vector<int> TopBoundary;
+extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 

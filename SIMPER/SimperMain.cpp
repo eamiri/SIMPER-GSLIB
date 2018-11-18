@@ -16,7 +16,9 @@ VectorXd TempDot_0;
 VectorXd Residual;
 VectorXd Temp;
 VectorXd TempDot;
-vector<int> DirichletDof;
+vector<int> DirichletBoundary;
+vector<int> TopBoundary;
+vector<int> BottomBoundary;
 
 MatrixXd BCInputData;
 
@@ -59,7 +61,9 @@ int main(int argc, char* argv[])
 	Temp_0 = Conditions.Temp_0;
 	TempDot_0 = Conditions.TempDot_0;
 	Residual = Conditions.Residual;
-	DirichletDof = Conditions.DirichletDof;
+	DirichletBoundary = Conditions.DirichletBC;
+	TopBoundary = Conditions.TopBC;
+	BottomBoundary = Conditions.BottomBC;
 	PROPS.PlotNodes = Conditions.PlotNodes;
 	BCInputData.resize(PROPS.Solution.MaxTimestep, 2);
 	BCInputData = Conditions.BCInputData;
