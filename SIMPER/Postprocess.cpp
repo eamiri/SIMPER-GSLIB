@@ -88,7 +88,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		{
 			waterSat = SATUR(Temp(n));
 			iceSat = 1 - waterSat;
-			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, GSLIBCoeffs(n));
+			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, NodalGSLIBCoeffs(n));
 		}
 	}
 	else

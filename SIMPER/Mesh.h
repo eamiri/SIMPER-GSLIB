@@ -17,7 +17,6 @@ struct Node
 	int n;
 	bool IsBoundary = false;
 	Coords Coordinates;
-	double GSLIBCoeff;
 };
 
 struct Element

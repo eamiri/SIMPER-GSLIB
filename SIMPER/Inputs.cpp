@@ -14,6 +14,7 @@ int ndoe;
 int nGP;
 Mesh MESH;
 VectorXd GSLIBCoeffs;
+VectorXd NodalGSLIBCoeffs;
 MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
@@ -243,30 +244,35 @@ void GSLIBRunSGSIM()
 	getline(gslibFile, line);
 	int index = 0;
 	double gslibCoeff;
-	double xCoord;
-	double yCoord;
+	double xGrid;
+	double yGrid;
 	double zCoord;
 	while (getline(gslibFile, line))
 	{
-		if (!(gslibFile >> xCoord >> yCoord >> zCoord >> gslibCoeff))
+		if (!(gslibFile >> xGrid >> yGrid >> zCoord >> gslibCoeff))
 		{
 			break;
 		}
 
-		GSLIBGrid(0, index) = xCoord;
-		GSLIBGrid(1, index) = yCoord;
+		GSLIBGrid(index, 0) = xGrid;
+		GSLIBGrid(index, 1) = yGrid;
 		GSLIBCoeffs(index) = gslibCoeff;
+		fprintf(inputFileGSLIB, "%e\t%e\t%e\n", xGrid, yGrid, gslibCoeff);
+		index++;
 	}
 
+	fflush(inputFileGSLIB);
 }
 
 void UpscaleGSLIBtoSIMPER(string filePath)
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
+		NodalGSLIBCoeffs.resize(nond);
+		NodalGSLIBCoeffs.setZero();
 		double maxGslibCoeff = GSLIBCoeffs.maxCoeff();
 		double minGslibCoeff = GSLIBCoeffs.minCoeff();
-		for (int n = 0; n < MESH.NumberOfNodes; n++)
+		for (int n = 0; n < nond; n++)
 		{
 			double xNode = MESH.Nodes[n].Coordinates.x;
 			double yNode = MESH.Nodes[n].Coordinates.y;
@@ -274,34 +280,34 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			double distanceP = INFINITY;
 			for (int i = 0; i < (PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1); i++)
 			{
-				double distance = sqrt((xNode - GSLIBGrid(i, 0)) * (xNode - GSLIBGrid(i, 0)) + (yNode - GSLIBGrid(i, 1)) * (yNode - GSLIBGrid(i, 1)));
+				double xGrid = GSLIBGrid(i, 0);
+				double yGrid = GSLIBGrid(i, 1);
+				double distance = sqrt((xNode - xGrid) * (xNode - xGrid) + (yNode - yGrid) * (yNode - yGrid));
 				if (distance < distanceP)
 				{
 					distanceP = distance;
 					gslibCoeff = GSLIBCoeffs(i);
+
+					if (gslibCoeff > 0)
+					{
+						NodalGSLIBCoeffs(n) = gslibCoeff / maxGslibCoeff;
+					}
+					else
+					{
+						NodalGSLIBCoeffs(n) = gslibCoeff / abs(minGslibCoeff);
+					}
 				}
 			}
-
-			if (gslibCoeff > 0)
-			{
-				MESH.Nodes[n].GSLIBCoeff = gslibCoeff / maxGslibCoeff;
-			}
-			else
-			{
-				MESH.Nodes[n].GSLIBCoeff = gslibCoeff / abs(minGslibCoeff);
-			}
-
-			break;
 		}
 
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
 		FILE *plotHeatCapacity = fopen("../Results/HeatCapacity.plt", "w");
-		for (int e = 0; e < MESH.NumberOfElements; e++)
+		for (int e = 0; e < noel; e++)
 		{
 			elementDofs = MESH.GetElementDofs(e, ndoe);
-			GSLIBCoeffsNode = MESH.GetNodalValues(GSLIBCoeffs, elementDofs);
+			GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs, elementDofs);
 			GSLIBCoeffE = 0;
 			for (int ig = 1; ig < 4; ig++)
 			{
@@ -310,11 +316,12 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE / 4;
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\"\n");
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"Coeff_GSLIB\"\n");
 			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity);
+				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, NodalGSLIBCoeffs(nodeIndex));
 			}
 
 			fprintf(plotHeatCapacity, "1 2 3 4");

@@ -2,33 +2,33 @@
  Covariance Look up table and search for previously
  simulated grid nodes.  The maximum range in each 
  coordinate direction for covariance look up is:
-           X direction:         1.250000
-           Y direction:         1.250000
+           X direction:        12.500000
+           Y direction:        12.500000
            Z direction:     0.000000E+00
  Node Values are not searched beyond this distance!
  
 
- Realization   1: number   =    40401
-                  mean     =       0.0986 (close to 0.0?)
-                  variance =       1.3005 (close to gammabar(V,V)? approx. 1.0)
+ Realization   1: number   =    10201
+                  mean     =       0.0114 (close to 0.0?)
+                  variance =       1.7381 (close to gammabar(V,V)? approx. 1.0)
 
 
- Realization   2: number   =    40401
-                  mean     =      -0.2038 (close to 0.0?)
-                  variance =       0.4905 (close to gammabar(V,V)? approx. 1.0)
+ Realization   2: number   =    10201
+                  mean     =       0.2955 (close to 0.0?)
+                  variance =       1.2300 (close to gammabar(V,V)? approx. 1.0)
 
 
- Realization   3: number   =    40401
-                  mean     =       0.3375 (close to 0.0?)
-                  variance =       0.6641 (close to gammabar(V,V)? approx. 1.0)
+ Realization   3: number   =    10201
+                  mean     =      -0.1136 (close to 0.0?)
+                  variance =       0.9470 (close to gammabar(V,V)? approx. 1.0)
 
 
- Realization   4: number   =    40401
-                  mean     =      -0.6306 (close to 0.0?)
-                  variance =       0.7454 (close to gammabar(V,V)? approx. 1.0)
+ Realization   4: number   =    10201
+                  mean     =      -0.0222 (close to 0.0?)
+                  variance =       1.2328 (close to gammabar(V,V)? approx. 1.0)
 
 
- Realization   5: number   =    40401
-                  mean     =       0.2690 (close to 0.0?)
-                  variance =       0.3965 (close to gammabar(V,V)? approx. 1.0)
+ Realization   5: number   =    10201
+                  mean     =       0.1654 (close to 0.0?)
+                  variance =       0.9579 (close to gammabar(V,V)? approx. 1.0)
 
