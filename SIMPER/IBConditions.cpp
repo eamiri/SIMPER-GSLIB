@@ -143,6 +143,8 @@ void IBConditions::SetDirichletBC(vector<int> boundaryNodes, double value)
 
 void IBConditions::InputBC(string filePath)
 {
+	BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
+	BCInputData.setZero();
 	if (PROPS->Solution.IsInputBC)
 	{
 		ifstream bcInputFile;
@@ -164,8 +166,6 @@ void IBConditions::InputBC(string filePath)
 				>> DeltaTimeBC 
 				>> EndTimestepBC;
 			getline(bcInputFile, line);
-			BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
-			BCInputData.setZero();
 			int lastIBC = 0;
 			for (int ibc = 0; ibc < PROPS->Solution.MaxTimestep; ibc++)
 			{

@@ -184,8 +184,18 @@ void Simulate()
 	{
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
-		UpdateTopBC(iTimestep);
-
+		if (PROPS.Solution.IsInputBC)
+		{
+			UpdateTopBC(iTimestep);
+		}
+		else if (!PROPS.Solution.IsInputBC && iTimestep == 0)
+		{
+			for (int i = 0; i < TopBoundary.size(); i++)
+			{
+				Temp(TopBoundary[i]) = PROPS.BCs.Value[0];
+			}
+		}
+		
 		// initialize solution vectors and variables
 		InitializeSolution();
 		bool isDelTempStarApproved = true;
