@@ -46,8 +46,12 @@ struct GaussQuadrature
 	int NumberOfPoints;
 };
 
-struct GSLIB
+struct GSLIBProps
 {
+	bool isHeterC;
+	bool isHeterK;
+	bool isHeterD;
+	bool isHeterBC;
 	double CorrelationLength;
 	int NumberOfCells;
 	double GridSize;

@@ -138,6 +138,17 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.NumberOfCells
 			>> props.GSLIB.GridSize
 			>> props.GSLIB.NumberOfRealizations;
+		getline(propsFile, line);
+		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
+		isDataLine
+			>> props.GSLIB.isHeterC
+			>> props.GSLIB.isHeterK
+			>> props.GSLIB.isHeterBC
+			>> props.GSLIB.isHeterD;
+
 		/*getline(propsFile, line);
 		while (getline(propsFile, line))
 		{
@@ -290,11 +301,11 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 
 					if (gslibCoeff > 0)
 					{
-						NodalGSLIBCoeffs(n) = gslibCoeff / maxGslibCoeff;
+						NodalGSLIBCoeffs(n) = 1 + gslibCoeff / maxGslibCoeff;
 					}
 					else
 					{
-						NodalGSLIBCoeffs(n) = gslibCoeff / abs(minGslibCoeff);
+						NodalGSLIBCoeffs(n) = 1 + gslibCoeff / abs(minGslibCoeff);
 					}
 				}
 			}
@@ -311,17 +322,20 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			GSLIBCoeffE = 0;
 			for (int ig = 1; ig < 4; ig++)
 			{
-				GSLIBCoeffE += abs(1 + GSLIBCoeffsNode(ig));
+				GSLIBCoeffE += abs(GSLIBCoeffsNode(ig));
 			}
 
-			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE / 4;
+			GSLIBCoeffE = GSLIBCoeffE * 0.25;
+			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE;
+			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity * GSLIBCoeffE;
+			MESH.Elements[e].SoilDensity = PROPS.Soil.Density * GSLIBCoeffE;
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"Coeff_GSLIB\"\n");
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Coeff_GSLIB\"\n");
 			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, NodalGSLIBCoeffs(nodeIndex));
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, NodalGSLIBCoeffs(nodeIndex));
 			}
 
 			fprintf(plotHeatCapacity, "1 2 3 4");
@@ -334,6 +348,8 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
+			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
+			MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
 		}
 	}	
 }

@@ -112,6 +112,8 @@ void ComputePotentialStar()
 		TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 		// GSLIB
 		*Csol = MESH.Elements[e].SoilHeatCapacity;
+		*Dsol = MESH.Elements[e].SoilDensity;
+		*Ksol = MESH.Elements[e].SoilThermalConductivity;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -167,7 +169,14 @@ void UpdateTopBC(int iTimestep)
 {
 	for (int i = 0; i < TopBoundary.size(); i++)
 	{
-		Temp(TopBoundary[i]) = BCInputData(iTimestep, 1);
+		if (PROPS.GSLIB.isHeterBC)
+		{
+			Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * BCInputData(iTimestep, 1);
+		}
+		else
+		{
+			Temp(TopBoundary[i]) = BCInputData(iTimestep, 1);
+		}
 	}
 }
 
@@ -192,7 +201,14 @@ void Simulate()
 		{
 			for (int i = 0; i < TopBoundary.size(); i++)
 			{
-				Temp(TopBoundary[i]) = PROPS.BCs.Value[0];
+				if (PROPS.GSLIB.isHeterBC)
+				{
+					Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * PROPS.BCs.Value[0];
+				}
+				else
+				{
+					Temp(TopBoundary[i]) = PROPS.BCs.Value[0];
+				}
 			}
 		}
 		
@@ -234,6 +250,8 @@ void Simulate()
 					TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 					// GSLIB
 					*Csol = MESH.Elements[e].SoilHeatCapacity;
+					*Dsol = MESH.Elements[e].SoilDensity;
+					*Ksol = MESH.Elements[e].SoilThermalConductivity;
 
 					for (int i = 0; i < nGP; i++)
 					{
@@ -355,11 +373,11 @@ void Simulate()
 			printf("\tTR_SUCCESS= %s", TR.IsTRSuccess ? "TRUE" : "FALSE");
 			if (TR.Error > 0)
 			{
-				printf("\tTR_ERR=  %.3e", TR.Error);
+				printf("TR_ERR=  %.3e", TR.Error);
 			}
 			else
 			{
-				printf("\tTR_ERR= %.3e", TR.Error);
+				printf("TR_ERR= %.3e", TR.Error);
 			}
 
 			if (!TR.IsTRSuccess && TR.Error > 1.0E+3)
@@ -387,14 +405,14 @@ void Simulate()
 				TR_Ratio = 1.0;
 			}
 
-			printf("\tIS_FNR= %s", TR.IsFullNewtonRaphson ? "TRUE" : "FALSE");
+			printf("IS_FNR= %s", TR.IsFullNewtonRaphson ? "TRUE" : "FALSE");
 			if (TR_Ratio > 0)
 			{
-				printf("\tTR_RATIO=  %.3e", TR_Ratio);
+				printf("TR_RATIO=  %.3e", TR_Ratio);
 			}
 			else
 			{
-				printf("\tTR_RATIO= %.3e", TR_Ratio);
+				printf("TR_RATIO= %.3e", TR_Ratio);
 			}
 
 			//update solution estimate

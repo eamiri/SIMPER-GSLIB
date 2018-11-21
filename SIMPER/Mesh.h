@@ -24,6 +24,8 @@ struct Element
 	int e;
 	vector<Node> Nodes;
 	double SoilHeatCapacity;
+	double SoilThermalConductivity;
+	double SoilDensity;
 };
 
 class Mesh

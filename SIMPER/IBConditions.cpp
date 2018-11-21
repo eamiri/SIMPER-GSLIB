@@ -202,7 +202,8 @@ void IBConditions::SetBoundaryConditions()
 {
 	TopBC = FindTopBoundaryNodes();
 	BottomBC = FindBottomBoundaryNodes();
-	DirichletBC = FindDirichletBoundaryNodes();
+	DirichletBC = TopBC;
+	//DirichletBC = FindDirichletBoundaryNodes();
 	SetBoundaryNodes(DirichletBC);
 	//DirichletBC(DirichletDof, 1);
 	SetPlotNodes();

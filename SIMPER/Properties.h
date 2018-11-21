@@ -13,7 +13,7 @@ struct Properties
 	GaussQuadrature GQ;
 	SolutionVariables Solution;
 	vector<int> PlotNodes;
-	GSLIB GSLIB;
+	GSLIBProps GSLIB;
 };
 
 #endif 
