@@ -373,11 +373,11 @@ void Simulate()
 			printf("\tTR_SUCCESS= %s", TR.IsTRSuccess ? "TRUE" : "FALSE");
 			if (TR.Error > 0)
 			{
-				printf("TR_ERR=  %.3e", TR.Error);
+				printf("\tTR_ERR=  %.3e", TR.Error);
 			}
 			else
 			{
-				printf("TR_ERR= %.3e", TR.Error);
+				printf("\tTR_ERR= %.3e", TR.Error);
 			}
 
 			if (!TR.IsTRSuccess && TR.Error > 1.0E+3)
@@ -405,14 +405,14 @@ void Simulate()
 				TR_Ratio = 1.0;
 			}
 
-			printf("IS_FNR= %s", TR.IsFullNewtonRaphson ? "TRUE" : "FALSE");
+			printf("\tIS_FNR= %s", TR.IsFullNewtonRaphson ? "TRUE" : "FALSE");
 			if (TR_Ratio > 0)
 			{
-				printf("TR_RATIO=  %.3e", TR_Ratio);
+				printf("\tTR_RATIO=  %.3e", TR_Ratio);
 			}
 			else
 			{
-				printf("TR_RATIO= %.3e", TR_Ratio);
+				printf("\tTR_RATIO= %.3e", TR_Ratio);
 			}
 
 			//update solution estimate

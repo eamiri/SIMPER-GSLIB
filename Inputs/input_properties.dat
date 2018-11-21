@@ -18,7 +18,7 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	GMSH	InputBC
-2			7200			1E-3			300						0.6							30		1		0
+21000			7200			1E-3			300						0.6							30		1		0
 GSLIB input data
 Correlation Length		Number of Cells		Grid Size		Number of Realizations		
 12.8					100						0.5			5
