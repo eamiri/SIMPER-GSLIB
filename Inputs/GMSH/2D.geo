@@ -1,6 +1,6 @@
 //Inputs
-width=50;
-depth=8;
+width=10;
+depth=20;
 gridsize=0.5;
 
 
@@ -21,9 +21,9 @@ Line(5)={3,6};
 Line(6)={6,5};
 Line(7)={5,4};
 
-Transfinite Line {1,3,6} = Ceil(width/(3*gridsize)) Using Progression 1;
-Transfinite Line {7,5} = Ceil(width/(3*gridsize)) Using Progression 1;
-Transfinite Line {4,2} = Ceil(width/(3*2*gridsize)) Using Progression 1;
+Transfinite Line {1,3,6} = Ceil(1*width/(gridsize)) Using Progression 1;
+Transfinite Line {7,5} = Ceil(20*width/(3*gridsize)) Using Progression 1;
+Transfinite Line {4,2} = Ceil(4*width/(3*gridsize)) Using Progression 1;
 
 Line Loop(1)={1,2,3,4};
 Plane Surface(1) = {1};

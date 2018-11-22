@@ -169,7 +169,7 @@ void UpdateTopBC(int iTimestep)
 {
 	for (int i = 0; i < TopBoundary.size(); i++)
 	{
-		if (PROPS.GSLIB.isHeterBC)
+		if (PROPS.GSLIB.isHeterBC && PROPS.Soil.IsGSLIB)
 		{
 			Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * BCInputData(iTimestep, 1);
 		}
@@ -201,7 +201,7 @@ void Simulate()
 		{
 			for (int i = 0; i < TopBoundary.size(); i++)
 			{
-				if (PROPS.GSLIB.isHeterBC)
+				if (PROPS.GSLIB.isHeterBC && PROPS.Soil.IsGSLIB)
 				{
 					Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * PROPS.BCs.Value[0];
 				}

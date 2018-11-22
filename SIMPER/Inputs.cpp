@@ -375,12 +375,12 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
 			MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Coeff_GSLIB\"\n");
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\"\n");
 			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, NodalGSLIBCoeffs(nodeIndex));
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity);
 			}
 
 			fprintf(plotHeatCapacity, "1 2 3 4\n");
