@@ -61,18 +61,7 @@ double detJacob;
 double ErrorResidual, ErrorTemp, ErrorPotential, Reaction;
 double m_Temp, m_TempStar, TR_Ratio, actualReduce, modelReduce;
 
-double *Cwat = &PROPS.Fluid.LHeatCapacity;
-double *Kwat = &PROPS.Fluid.LThermalConductivity;
-double *Dwat = &PROPS.Fluid.LDensity;
-double *Cice = &PROPS.Fluid.SHeatCapacity;
-double *Kice = &PROPS.Fluid.SThermalConductivity;
-double *Dice = &PROPS.Fluid.SDensity;
-double *Lhea = &PROPS.Fluid.LatentHeat;
-double *npor = &PROPS.Soil.Porosity;
-double *Csol = &PROPS.Soil.HeatCapacity;
-double *Ksol = &PROPS.Soil.ThermalConductivity;
-double *Dsol = &PROPS.Soil.Density;
-double *Sresi = &PROPS.Soil.ResidualWaterSaturation;
+double Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, Csol, Ksol, Dsol, Sresi;
 
 void InitializeSolution()
 {
@@ -111,9 +100,9 @@ void ComputePotentialStar()
 		TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 		TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 		// GSLIB
-		*Csol = MESH.Elements[e].SoilHeatCapacity;
-		*Dsol = MESH.Elements[e].SoilDensity;
-		*Ksol = MESH.Elements[e].SoilThermalConductivity;
+		Csol = MESH.Elements[e].SoilHeatCapacity;
+		Dsol = MESH.Elements[e].SoilDensity;
+		Ksol = MESH.Elements[e].SoilThermalConductivity;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -145,10 +134,10 @@ void ComputePotentialStar()
 				ISicexT = TempG * TempG / 2.0 - ISwatxT;
 				dSice = -dSwat;
 				//
-				Cpar = *npor * (Swat * *Dwat * *Cwat + Sice * *Dice * *Cice) + (1.0 - *npor)* *Dsol* *Csol + *npor * *Dice * *Lhea * dSwat;
-				ICparxT = *npor * (ISwatxT * *Dwat * *Cwat + ISicexT * *Dice * *Cice) + (1 - *npor) * *Dsol * *Csol * TempG * TempG / 2.0 + *npor * *Dice * *Lhea * IdSwatxT;
-				ICpar = *npor * (ISwat * *Dwat * *Cwat + ISice * *Dice * *Cice) + (1.0 - *npor) * *Dsol * *Csol * TempG + *npor * *Dice * *Lhea*(Swat - *Sresi);
-				Kpar = pow(*Kwat, (Swat * *npor)) * pow(*Kice, (Sice * *npor))* pow(*Ksol, (1.0 - *npor));
+				Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
+				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
+				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sresi);
+				Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 				//
 				detJacob = Jacob.determinant();
 				//
@@ -187,7 +176,20 @@ void Simulate()
 	trustRegionRadius = 1000 * trRatioParameter;
 	iPlot = 0;
 
-
+	//
+	Cwat = PROPS.Fluid.LHeatCapacity;
+	Kwat = PROPS.Fluid.LThermalConductivity;
+	Dwat = PROPS.Fluid.LDensity;
+	Cice = PROPS.Fluid.SHeatCapacity;
+	Kice = PROPS.Fluid.SThermalConductivity;
+	Dice = PROPS.Fluid.SDensity;
+	Lhea = PROPS.Fluid.LatentHeat;
+	npor = PROPS.Soil.Porosity;
+	Csol = PROPS.Soil.HeatCapacity;
+	Ksol = PROPS.Soil.ThermalConductivity;
+	Dsol = PROPS.Soil.Density;
+	Sresi = PROPS.Soil.ResidualWaterSaturation;
+	//
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
 	{
@@ -249,9 +251,9 @@ void Simulate()
 					TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 					TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 					// GSLIB
-					*Csol = MESH.Elements[e].SoilHeatCapacity;
-					*Dsol = MESH.Elements[e].SoilDensity;
-					*Ksol = MESH.Elements[e].SoilThermalConductivity;
+					Csol = MESH.Elements[e].SoilHeatCapacity;
+					Dsol = MESH.Elements[e].SoilDensity;
+					Ksol = MESH.Elements[e].SoilThermalConductivity;
 
 					for (int i = 0; i < nGP; i++)
 					{
@@ -284,10 +286,10 @@ void Simulate()
 							ISicexT = TempG * TempG / 2.0 - ISwatxT;
 							dSice = -dSwat;
 							//
-							Cpar = *npor * (Swat * *Dwat * *Cwat + Sice * *Dice * *Cice) + (1.0 - *npor)* *Dsol* *Csol + *npor * *Dice * *Lhea * dSwat;
-							ICparxT = *npor * (ISwatxT * *Dwat * *Cwat + ISicexT * *Dice * *Cice) + (1 - *npor) * *Dsol * *Csol * TempG * TempG / 2.0 + *npor * *Dice * *Lhea * IdSwatxT;
-							ICpar = *npor * (ISwat * *Dwat * *Cwat + ISice * *Dice * *Cice) + (1.0 - *npor) * *Dsol * *Csol * TempG + *npor * *Dice * *Lhea*(Swat - *Sresi);
-							Kpar = pow(*Kwat, (Swat * *npor)) * pow(*Kice, (Sice * *npor))* pow(*Ksol, (1.0 - *npor));
+							Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
+							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
+							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sresi);
+							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
 							detJacob = Jacob.determinant();
 							Jmat = Jmat + Wi * Wj*Bmat.transpose()*Kpar*Bmat*detJacob;
