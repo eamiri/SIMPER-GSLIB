@@ -1,19 +1,8 @@
 #include "SimperInclude.h"
 
-int rSFC;
-double Tsol, Tliq, Sres, Wpar, Mpar;
-
-double SATUR(double Tgau)
+double SATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC)
 {
 	double satur, Btem;
-	//
-	rSFC = PROPS.Soil.rSFC;
-	Tsol = PROPS.Nonisothermal.TempSolid;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
-	//
 	switch (rSFC)
 	{
 	case 1:
@@ -70,7 +59,7 @@ double SATUR(double Tgau)
 	return satur;
 }
 
-double dSATUR(double Tgau)
+double dSATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC)
 {
 	double dSatur, Btem;
 	//
@@ -136,7 +125,7 @@ double dSATUR(double Tgau)
 	return dSatur;
 }
 
-double ISATUR(double Tgau)
+double ISATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC)
 {
 	double iSatur, CSw1, CSw2, CSw1p, Btem;
 	//
@@ -205,7 +194,7 @@ double ISATUR(double Tgau)
 	return iSatur;
 }
 
-double ISATURxT(double Tgau)
+double ISATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC)
 {
 	double iSatxT, CSw1, CSw2, CSw1p, Btem;
 	//
@@ -261,7 +250,7 @@ double ISATURxT(double Tgau)
 	return iSatxT;
 }
 
-double IdSATURxT(double Tgau)
+double IdSATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC)
 {
 	double idSaturxT, IdSwxT_0, IdSwxT_0p, Btem;
 	//

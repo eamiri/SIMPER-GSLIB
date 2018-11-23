@@ -17,12 +17,12 @@ void ComputePotentialStar();
 void POSTPROCESS(VectorXd temp, double solutionTime);
 void UpdateTopBC(int iTimestep);
 void Simulate();
-double SATUR(double Tgau);
-double dSATUR(double Tgau);
-double ISATUR(double Tgau);
-double ISATURxT(double Tgau);
-double IdSATURxT(double Tgau);
-double IdSATURxT(double Tgau);
+double SATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
+double dSATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
+double ISATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
+double ISATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
+double IdSATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
+double IdSATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
 
 VectorXd delTempStar, TempStar, TempHat, TempDotStar;
 VectorXd dResidual;
@@ -61,7 +61,8 @@ double detJacob;
 double ErrorResidual, ErrorTemp, ErrorPotential, Reaction;
 double m_Temp, m_TempStar, TR_Ratio, actualReduce, modelReduce;
 
-double Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, Csol, Ksol, Dsol, Sresi;
+int rSFC;
+double Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, Csol, Ksol, Dsol, Sres, Tsol, Tliq, Wpar, Mpar;
 
 void InitializeSolution()
 {
@@ -124,11 +125,11 @@ void ComputePotentialStar()
 				TempGDot = SF * TempNodeDot;
 				GradTemp = Bmat * TempNode;
 				//
-				Swat = SATUR(TempG);
-				ISwat = ISATUR(TempG);
-				ISwatxT = ISATURxT(TempG);
-				dSwat = dSATUR(TempG);
-				IdSwatxT = IdSATURxT(TempG);
+				Swat = SATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+				ISwat = ISATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+				ISwatxT = ISATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+				dSwat = dSATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+				IdSwatxT = IdSATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
 				Sice = 1 - Swat;
 				ISice = TempG - ISwat;
 				ISicexT = TempG * TempG / 2.0 - ISwatxT;
@@ -136,7 +137,7 @@ void ComputePotentialStar()
 				//
 				Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
 				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
-				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sresi);
+				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
 				Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 				//
 				detJacob = Jacob.determinant();
@@ -188,7 +189,13 @@ void Simulate()
 	Csol = PROPS.Soil.HeatCapacity;
 	Ksol = PROPS.Soil.ThermalConductivity;
 	Dsol = PROPS.Soil.Density;
-	Sresi = PROPS.Soil.ResidualWaterSaturation;
+	//
+	rSFC = PROPS.Soil.rSFC;
+	Tsol = PROPS.Nonisothermal.TempSolid;
+	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+	Wpar = PROPS.Soil.Wpar;
+	Mpar = PROPS.Soil.Mpar;
 	//
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
@@ -276,11 +283,11 @@ void Simulate()
 							TempGDot = SF * TempNodeDot;
 							GradTemp = Bmat * TempNode;
 							//
-							Swat = SATUR(TempG);
-							ISwat = ISATUR(TempG);
-							ISwatxT = ISATURxT(TempG);
-							dSwat = dSATUR(TempG);
-							IdSwatxT = IdSATURxT(TempG);
+							Swat = SATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+							ISwat = ISATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+							ISwatxT = ISATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+							dSwat = dSATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
+							IdSwatxT = IdSATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
 							Sice = 1 - Swat;
 							ISice = TempG - ISwat;
 							ISicexT = TempG * TempG / 2.0 - ISwatxT;
@@ -288,7 +295,7 @@ void Simulate()
 							//
 							Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
 							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
-							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sresi);
+							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
 							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
 							detJacob = Jacob.determinant();

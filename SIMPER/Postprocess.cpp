@@ -1,6 +1,6 @@
 #include "SimperInclude.h"
 
-double SATUR(double tempNode);
+double SATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
 
 void POSTPROCESS(VectorXd Temp, double solutionTime)
 {
@@ -16,6 +16,18 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	double waterSat, iceSat;
 	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode;
 	double distance;
+
+	int rSFC;
+	double Tsol, Tliq, Sres, Wpar, Mpar;
+
+	//
+	rSFC = PROPS.Soil.rSFC;
+	Tsol = PROPS.Nonisothermal.TempSolid;
+	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+	Wpar = PROPS.Soil.Wpar;
+	Mpar = PROPS.Soil.Mpar;
+	//
 
 	derTemp = derTemp.Zero(nond, 2);
 
@@ -86,7 +98,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			waterSat = SATUR(Temp(n));
+			waterSat = SATUR(Temp(n), Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
 			iceSat = 1 - waterSat;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, NodalGSLIBCoeffs(n));
 		}
@@ -97,7 +109,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			waterSat = SATUR(Temp(n));
+			waterSat = SATUR(Temp(n), Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
 			iceSat = 1 - waterSat;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat);
 		}
