@@ -17,12 +17,6 @@ void ComputePotentialStar();
 void POSTPROCESS(VectorXd temp, double solutionTime);
 void UpdateTopBC(int iTimestep);
 void Simulate();
-double SATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
-double dSATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
-double ISATUR(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
-double ISATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
-double IdSATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
-double IdSATURxT(double Tgau, double Tsol, double Tliq, double Sres, double Wpar, double Mpar, int rSFC);
 
 VectorXd delTempStar, TempStar, TempHat, TempDotStar;
 VectorXd dResidual;
@@ -53,7 +47,7 @@ double solutionTime;
 double trustRegionRadius, maxTrustRegionRadius;
 double Potential, PotentialStar, Potential_0, PotetialP, PI1, PI2, PI3, NormResidual, NormResidualP, NormResidual_0;
 double GPi, GPj, Wi, Wj;
-double Swat, ISwat, dSwat, ISwatxT, IdSwatxT, Sice, ISice, ISicexT, dSice;
+double Swat, ISwat, dSwat, ISwatxT, IdSwatxT, Sice, ISice, ISicexT, dSice, IdSicexT;
 double CPar, ICparxT, ICpar, Kpar, Cpar;
 double Hfun, Gfun;
 double TempG, TempGHat, TempGDot, GradTempGradTemp, GSLIBCoeffG;
@@ -125,19 +119,21 @@ void ComputePotentialStar()
 				TempGDot = SF * TempNodeDot;
 				GradTemp = Bmat * TempNode;
 				//
-				Swat = SATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-				ISwat = ISATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-				ISwatxT = ISATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-				dSwat = dSATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-				IdSwatxT = IdSATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-				Sice = 1 - Swat;
-				ISice = TempG - ISwat;
-				ISicexT = TempG * TempG / 2.0 - ISwatxT;
-				dSice = -dSwat;
+				SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres);
+				Swat = SATFUNCS.Swat;
+				ISwat = SATFUNCS.ISwat;
+				ISwatxT = SATFUNCS.ISwatxT;
+				dSwat = SATFUNCS.dSwat;
+				IdSwatxT = SATFUNCS.IdSwatxT;
+				Sice = SATFUNCS.Sice;
+				ISice = SATFUNCS.ISice;
+				ISicexT = SATFUNCS.ISicexT;
+				IdSicexT = SATFUNCS.IdSicexT;
 				//
-				Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
-				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
-				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
+				Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * (-dSice);
+				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * (-IdSicexT);
+				//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
+				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(1 - Sice - Sres);
 				Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 				//
 				detJacob = Jacob.determinant();
@@ -283,19 +279,21 @@ void Simulate()
 							TempGDot = SF * TempNodeDot;
 							GradTemp = Bmat * TempNode;
 							//
-							Swat = SATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-							ISwat = ISATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-							ISwatxT = ISATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-							dSwat = dSATUR(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-							IdSwatxT = IdSATURxT(TempG, Tsol, Tliq, Sres, Wpar, Mpar, rSFC);
-							Sice = 1 - Swat;
-							ISice = TempG - ISwat;
-							ISicexT = TempG * TempG / 2.0 - ISwatxT;
-							dSice = -dSwat;
+							SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres);
+							Swat = SATFUNCS.Swat;
+							ISwat = SATFUNCS.ISwat;
+							ISwatxT = SATFUNCS.ISwatxT;
+							dSwat = SATFUNCS.dSwat;
+							IdSwatxT = SATFUNCS.IdSwatxT;
+							Sice = SATFUNCS.Sice;
+							ISice = SATFUNCS.ISice;
+							ISicexT = SATFUNCS.ISicexT;
+							IdSicexT = SATFUNCS.IdSicexT;
 							//
-							Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * dSwat;
-							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * IdSwatxT;
-							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
+							Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * (-dSice);
+							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * (-IdSicexT);
+							//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
+							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(1 - Sice - Sres);
 							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
 							detJacob = Jacob.determinant();

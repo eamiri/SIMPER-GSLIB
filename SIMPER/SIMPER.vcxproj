@@ -138,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="CommonFunctions.h" />
     <ClInclude Include="GaussPoints.h" />
+    <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="IBConditions.h" />
     <ClInclude Include="TrustRegion.h" />
     <ClInclude Include="Mesh.h" />

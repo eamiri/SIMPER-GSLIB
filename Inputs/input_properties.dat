@@ -1,6 +1,6 @@
 Solid Grains Material Properties
 Csol	Ksol	Dsol	npor		Sres    Rsat (1.0: Exponential, 0.0: Linear) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)
-630		0.05	250		0.8 		0.0     2									 	0.2		2.0		0
+630		0.05	250		0.8 		0.1     2									 	0.2		2.0		0
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat			
 2108			2.14			920		    4182			0.6				1000			334000	  		
@@ -11,9 +11,9 @@ Boundary Conditions
 Dirichlet BC Input File
 PlateauBC_Corrected.dat
 Nodes
-1	+5
-3	+5
-6	+5						
+1	-10
+3	-10
+6	-10						
 nGAUSS								
 2							
 Solution variables 

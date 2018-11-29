@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	clock_t     t0, t1;          //computational time markers
 
 	Options.Pause = true;
-	Options.Version = "1.5.0";
+	Options.Version = "1.1.0";
 
 	if (!Options.Silent) {
 		int year = StringToInteger(SimPerBuildDate.substr(SimPerBuildDate.length() - 4, 4).c_str());

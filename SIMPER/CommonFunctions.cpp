@@ -22,3 +22,37 @@ vector<vector<double>> Inv2x2(vector<vector<double>> A)
 
 	return Ap;
 }
+
+double heaviside(double x)
+{
+	double hs = 0.0;
+	if (x > 0)
+	{
+		hs = 1.0;
+	}
+	else
+	{
+		hs = 0.0;
+	}
+
+	return hs;
+}
+
+double sign(double x)
+{
+	double s;
+	if (x > 0)
+	{
+		s = 1.0;
+	}
+	else if (x == 0)
+	{
+		s = 0.0;
+	}
+	else
+	{
+		s = -1.0;
+	}
+
+	return s;
+}

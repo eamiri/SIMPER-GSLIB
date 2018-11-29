@@ -24,6 +24,7 @@
 #include "CommonFunctions.h"
 #include "FEMFunctions.h"
 #include "TrustRegion.h"
+#include "SaturationFunctions.h"
 
 using namespace std;
 using namespace Eigen;
