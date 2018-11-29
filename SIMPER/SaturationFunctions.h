@@ -4,7 +4,7 @@
 class SaturationFunctions
 {
 public:
-	SaturationFunctions(double Tgau, double Tsol, double Tliq, double Sres);
+	SaturationFunctions(double Tgau, double Tsol, double Tliq, double Sres, bool isSaturated);
 
 	double Swat;
 	double dSwat;
@@ -15,9 +15,9 @@ public:
 	double Sice;
 	double dSice;
 	double ISice;
+	double IdSice;
 	double ISicexT;
 	double IdSicexT;
-
 };
 
 #endif 

@@ -11,6 +11,7 @@ struct SoilProperties
 	double Mpar;
 	int rSFC;
 	bool IsGSLIB;
+	bool IsSaturated;
 };
 
 struct FluidProperties

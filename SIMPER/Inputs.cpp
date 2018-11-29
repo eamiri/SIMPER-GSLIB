@@ -60,7 +60,8 @@ Properties InputProperties(string filePath)
 			>> props.Soil.rSFC
 			>> props.Soil.Wpar
 			>> props.Soil.Mpar
-			>> props.Soil.IsGSLIB;
+			>> props.Soil.IsGSLIB
+			>> props.Soil.IsSaturated;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);

@@ -47,13 +47,15 @@ double solutionTime;
 double trustRegionRadius, maxTrustRegionRadius;
 double Potential, PotentialStar, Potential_0, PotetialP, PI1, PI2, PI3, NormResidual, NormResidualP, NormResidual_0;
 double GPi, GPj, Wi, Wj;
-double Swat, ISwat, dSwat, ISwatxT, IdSwatxT, Sice, ISice, ISicexT, dSice, IdSicexT;
+double Swat, ISwat, dSwat, ISwatxT, IdSwatxT, Sice, ISice, IdSice, ISicexT, dSice, IdSicexT;
 double CPar, ICparxT, ICpar, Kpar, Cpar;
 double Hfun, Gfun;
 double TempG, TempGHat, TempGDot, GradTempGradTemp, GSLIBCoeffG;
 double detJacob;
 double ErrorResidual, ErrorTemp, ErrorPotential, Reaction;
 double m_Temp, m_TempStar, TR_Ratio, actualReduce, modelReduce;
+
+bool IsSaturated;
 
 int rSFC;
 double Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, Csol, Ksol, Dsol, Sres, Tsol, Tliq, Wpar, Mpar;
@@ -119,21 +121,22 @@ void ComputePotentialStar()
 				TempGDot = SF * TempNodeDot;
 				GradTemp = Bmat * TempNode;
 				//
-				SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres);
+				SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres, IsSaturated);
 				Swat = SATFUNCS.Swat;
 				ISwat = SATFUNCS.ISwat;
 				ISwatxT = SATFUNCS.ISwatxT;
 				dSwat = SATFUNCS.dSwat;
-				IdSwatxT = SATFUNCS.IdSwatxT;
 				Sice = SATFUNCS.Sice;
 				ISice = SATFUNCS.ISice;
+				IdSice = SATFUNCS.IdSice;
 				ISicexT = SATFUNCS.ISicexT;
 				IdSicexT = SATFUNCS.IdSicexT;
+				dSice = SATFUNCS.dSice;
 				//
 				Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * (-dSice);
-				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * (-IdSicexT);
+				ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * (TempG * TempG / 2.0 - Tsol * Tsol / 2.0) + npor * Dice * Lhea * (-IdSicexT);
 				//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
-				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(1 - Sice - Sres);
+				ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(- IdSice);
 				Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 				//
 				detJacob = Jacob.determinant();
@@ -168,6 +171,8 @@ void UpdateTopBC(int iTimestep)
 
 void Simulate()
 {
+	IsSaturated = PROPS.Soil.IsSaturated;
+
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
 	maxTrustRegionRadius = 5.0E+3 * trRatioParameter;
 	trustRegionRadius = 1000 * trRatioParameter;
@@ -279,21 +284,22 @@ void Simulate()
 							TempGDot = SF * TempNodeDot;
 							GradTemp = Bmat * TempNode;
 							//
-							SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres);
+							SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres, IsSaturated);
 							Swat = SATFUNCS.Swat;
 							ISwat = SATFUNCS.ISwat;
 							ISwatxT = SATFUNCS.ISwatxT;
 							dSwat = SATFUNCS.dSwat;
-							IdSwatxT = SATFUNCS.IdSwatxT;
 							Sice = SATFUNCS.Sice;
 							ISice = SATFUNCS.ISice;
+							IdSice = SATFUNCS.IdSice;
 							ISicexT = SATFUNCS.ISicexT;
 							IdSicexT = SATFUNCS.IdSicexT;
+							dSice = SATFUNCS.dSice;
 							//
 							Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor)* Dsol* Csol + npor * Dice * Lhea * (-dSice);
-							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * TempG * TempG / 2.0 + npor * Dice * Lhea * (-IdSicexT);
+							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * (TempG * TempG / 2.0 - Tsol * Tsol / 2.0) + npor * Dice * Lhea * (-IdSicexT);
 							//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
-							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(1 - Sice - Sres);
+							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(-IdSice);
 							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
 							detJacob = Jacob.determinant();

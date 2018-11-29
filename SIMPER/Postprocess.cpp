@@ -96,7 +96,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres);
+			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
 			waterSat = SATFUNCS.Swat;
 			iceSat = 1 - waterSat;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, NodalGSLIBCoeffs(n));
@@ -108,7 +108,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres);
+			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
 			waterSat = SATFUNCS.Swat;
 			iceSat = 1 - waterSat;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat);
