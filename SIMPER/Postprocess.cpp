@@ -98,7 +98,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		{
 			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
 			waterSat = SATFUNCS.Swat;
-			iceSat = 1 - waterSat;
+			iceSat = SATFUNCS.Sice;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat, NodalGSLIBCoeffs(n));
 		}
 	}
@@ -110,7 +110,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		{
 			SaturationFunctions SATFUNCS(Temp(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
 			waterSat = SATFUNCS.Swat;
-			iceSat = 1 - waterSat;
+			iceSat = SATFUNCS.Sice;
 			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat, iceSat);
 		}
 	}

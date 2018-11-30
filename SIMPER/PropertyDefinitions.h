@@ -23,6 +23,9 @@ struct FluidProperties
 	double SHeatCapacity;
 	double SThermalConductivity;
 	double LatentHeat;
+	double ADensity;
+	double AHeatCapacity;
+	double AThermalConductivity;
 };
 
 struct NonisothermalProperties

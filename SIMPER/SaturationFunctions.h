@@ -18,6 +18,10 @@ public:
 	double IdSice;
 	double ISicexT;
 	double IdSicexT;
+
+	double Sair;
+	double ISair;
+	double ISairxT;
 };
 
 #endif 

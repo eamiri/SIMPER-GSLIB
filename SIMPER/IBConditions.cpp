@@ -126,7 +126,7 @@ void IBConditions::SetPlotNodes()
 	{
 		double xNode = MESH->Nodes[n].Coordinates.x;
 		double yNode = MESH->Nodes[n].Coordinates.y;
-		if (yNode == xNode)
+		if (xNode == 0.0)
 		{
 			PlotNodes.push_back(MESH->Nodes[n].n);
 		}
@@ -191,7 +191,7 @@ void IBConditions::InputBC(string filePath)
 
 void IBConditions::SetInitialCondition()
 {
-	Temp_0 = -0.5 * Temp_0.Ones(MESH->NumberOfNodes);
+	Temp_0 = -2.5 * Temp_0.Ones(MESH->NumberOfNodes);
 	TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
 	Residual = Residual.Zero(MESH->NumberOfNodes);
 	Temp = Temp_0;

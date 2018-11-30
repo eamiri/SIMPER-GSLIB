@@ -74,7 +74,10 @@ Properties InputProperties(string filePath)
 			>> props.Fluid.LHeatCapacity
 			>> props.Fluid.LThermalConductivity
 			>> props.Fluid.LDensity
-			>> props.Fluid.LatentHeat;
+			>> props.Fluid.LatentHeat
+			>> props.Fluid.AHeatCapacity
+			>> props.Fluid.AThermalConductivity
+			>> props.Fluid.ADensity;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
