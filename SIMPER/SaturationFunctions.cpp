@@ -56,11 +56,10 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 						(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi)) - (Sres*Tgau*Tgau * heaviside(Tgau - Tsol))
 			/ 2.0 - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi) + (Sres*Tsol*Tsol * (heaviside(Tgau - Tsol) - 1.0)) / 2.0;
 
+
 		Sice =
 
-			(sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol))) + 1.0)*(Sres / 2.0 - 1.0 / 2.0)
-			*(heaviside(Tgau - Tliq) - heaviside(Tgau - Tsol)) - (9.0 * heaviside(Tgau - Tsol)) / 10.0 + 9.0 / 10.0;
-
+			(heaviside(Tgau - Tsol) - 1.0)*(Sres - 1.0) + (sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol))) + 1.0)*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tliq) - heaviside(Tgau - Tsol));
 
 
 		dSice =
@@ -70,50 +69,56 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 
 		ISice =
 
-			(9.0 * Tgau) / 10.0 + (Tsol*(Sres - 1.0)) / 2.0 - (9.0 * Tgau*heaviside(Tgau - Tsol)) / 10.0 +
-			(9.0 * Tsol*(heaviside(Tgau - Tsol) - 1.0)) / 10.0 + ((Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi) +
-			(heaviside(Tgau - Tliq)*(Sres - 1.0)*(pi*Tgau + 2.0 * Tliq*cos((pi*(Tliq - 2.0 * Tgau + Tsol))
-				/ (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol))
-					/ (4.0 * (Tliq - Tsol))) - 2.0 * Tsol*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))))
-			/ (2.0 * pi) - (heaviside(Tgau - Tsol)*(Sres - 1.0)*(pi*Tgau + 2.0 * Tliq*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) /
-			(4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) /
-				(4.0 * (Tliq - Tsol))) - 2.0 * Tsol*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))))) / (2.0 * pi)
-			- ((heaviside(Tgau - Tliq) - 1.0)*(Sres - 1.0)*(Tliq - Tsol + pi * Tliq)) / (2.0 * pi) + ((heaviside(Tgau - Tsol) - 1.0)
-				*(Sres - 1.0)*(Tliq - Tsol + pi * Tsol)) / (2.0 * pi) + ((heaviside(Tliq - Tsol) - 1.0)*(Sres - 1.0)*(Tliq -
-					Tsol + pi * Tsol)) / (2.0 * pi) - (heaviside(Tliq - Tsol)*(Sres - 1.0)*(Tliq - Tsol + pi * Tliq)) / (2.0 * pi);
+			((Sres - 1.0)*(pi*Tliq - 2.0 * pi*Tgau + pi * Tsol - Tliq * heaviside(Tgau - Tliq) + Tliq *
+				heaviside(Tgau - Tsol) + Tsol * heaviside(Tgau - Tliq) - Tsol * heaviside(Tgau - Tsol)
+				+ 2.0 * Tliq*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * heaviside(Tgau - Tliq)
+				- 2.0 * Tliq*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * heaviside(Tgau - Tsol)
+				- 2.0 * Tsol*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * heaviside(Tgau - Tliq)
+				+ 2.0 * Tsol*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) * heaviside(Tgau - Tsol)
+				+ Tgau * pi*heaviside(Tgau - Tliq) - Tliq * pi*heaviside(Tgau - Tliq) + Tgau *
+				pi*heaviside(Tgau - Tsol) - Tliq * pi*heaviside(Tliq - Tsol) - Tsol * pi*heaviside(Tgau - Tsol)
+				+ Tsol * pi*heaviside(Tliq - Tsol))) / (2.0 * pi);
 
 
 		IdSice =
 
-			(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tliq) + sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*heaviside(Tgau - Tliq) - 1.0)
-			- (heaviside(Tgau - Tsol) - 1.0)*(Sres - 1.0 / 10.0) + ((2.0 * heaviside(Tliq - Tsol) - 1.0)*(Sres - 1.0)) / 2.0 - (Sres / 2.0 - 1.0 / 2.0)*(sin((pi
-				*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*heaviside(Tgau - Tsol) - heaviside(Tgau - Tsol) + 1.0) - 9.0 / 20.0;
+			(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tliq) + heaviside(Tgau - Tsol) + 2.0 * heaviside(Tliq - Tsol)
+				+ sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*heaviside(Tgau - Tliq) -
+				sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*heaviside(Tgau - Tsol) - 2.0);
 
 
 		IdSicexT =
 
-			((Sres - 1.0)*(Tliq*heaviside(Tliq - Tsol) - Tsol + Tsol * heaviside(Tliq - Tsol))) / 2.0 - (9.0 * Tsol) /
-			20.0 - (9.0 * Tsol*(heaviside(Tgau - Tsol) - 1.0)) / 10.0 - 2.0 * Tsol*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tsol)
-				- 1.0) - (pi*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tliq)*((cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 *
-				(Tliq - Tsol)))*(Tliq - Tsol)*(Tliq - Tsol)) / (pi*pi) - (Tgau*sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))
-					*(Tliq - Tsol)) / pi) - (Tliq*(heaviside(Tgau - Tliq) - 1.0)*(Tliq - Tsol)) / pi)) / (Tliq - Tsol) +
-					(pi*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tsol)*((cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))
-						*(Tliq - Tsol)*(Tliq - Tsol)) / (pi*pi) - (Tgau*sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol))
-						/ pi) + (Tsol*(heaviside(Tgau - Tsol) - 1.0)*(Tliq - Tsol)) / pi)) / (Tliq - Tsol);
+			((Sres - 1.0)*(Tliq*heaviside(Tliq - Tsol) - Tsol + Tsol * heaviside(Tliq - Tsol)))
+			/ 2.0 + (Tsol*(Sres - 1.0)) / 2.0 + Tsol * (heaviside(Tgau - Tsol) - 1.0)*(Sres - 1.0) -
+			2.0 * Tsol*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tsol) - 1.0) - (pi*(Sres / 2.0 - 1.0 / 2.0)*
+			(heaviside(Tgau - Tliq)*((cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*
+				(Tliq - Tsol)*(Tliq - Tsol)) / (pi * pi) - (Tgau*sin((pi*(Tliq - 2.0 * Tgau + Tsol)) /
+				(2.0 * (Tliq - Tsol)))*(Tliq - Tsol)) / pi) - (Tliq*(heaviside(Tgau - Tliq) - 1.0)
+					*(Tliq - Tsol)) / pi)) / (Tliq - Tsol) + (pi*(Sres / 2.0 - 1.0 / 2.0)*(heaviside(Tgau - Tsol)
+						*((cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Tliq - Tsol))
+							/ (pi *pi) - (Tgau*sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*
+							(Tliq - Tsol)) / pi) + (Tsol*(heaviside(Tgau - Tsol) - 1.0)*(Tliq - Tsol)) / pi))
+			/ (Tliq - Tsol);
 
 
 		ISicexT =
 
-			Tsol * Tsol * (Sres / 4.0 - 1.0 / 4.0) + heaviside(Tliq - Tgau)*(Tliq*Tliq * (Sres / 4.0 - 1.0 / 4.0) - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0))
-				/ (2.0 * pi*pi)) - heaviside(Tliq - Tsol)*(Tliq*Tliq * (Sres / 4.0 - 1.0 / 4.0) - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi))
-			- heaviside(Tsol - Tgau)*(Tsol*Tsol * (Sres / 4.0 - 1.0 / 4.0) + ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi)) -
-			heaviside(Tsol - Tliq)*(Tsol*Tsol * (Sres / 4.0 - 1.0 / 4.0) + ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi)) + (9.0 * Tgau*Tgau)
-			/ 20.0 - (9.0 * Tgau*Tgau * heaviside(Tgau - Tsol)) / 20.0 - (9.0 * Tsol*Tsol * heaviside(Tsol - Tgau)) / 20.0 +
-			heaviside(Tgau - Tliq)*(Tgau*Tgau * (Sres / 4.0 - 1.0 / 4.0) + (sin((pi*(Tliq - 2.0 * Tgau + Tsol)) /
-			(2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi) + (Tgau*cos((pi*(Tliq - 2.0 * Tgau + Tsol))
-				/ (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi)) - heaviside(Tgau - Tsol)*(Tgau*Tgau *
-				(Sres / 4.0 - 1.0 / 4.0) + (sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi)
-					+ (Tgau*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi)) + ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi);
+			Tsol * Tsol * (Sres / 4.0 - 1.0 / 4.0) - Tgau * Tgau * (Sres / 2.0 - 1.0 / 2.0) + heaviside(Tliq - Tgau)
+			*(Tliq *Tliq * (Sres / 4.0 - 1.0 / 4.0) - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi))
+			- heaviside(Tliq - Tsol)*(Tliq *Tliq * (Sres / 4.0 - 1.0 / 4.0) - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0))
+				/ (2.0 * pi *pi)) - heaviside(Tsol - Tgau)*(Tsol *Tsol * (Sres / 4.0 - 1.0 / 4.0) + ((Tliq - Tsol)*(Tliq - Tsol) *
+				(Sres - 1.0)) / (2.0 * pi *pi)) - heaviside(Tsol - Tliq)*(Tsol *Tsol * (Sres / 4.0 - 1.0 / 4.0) +
+					((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi)) + heaviside(Tgau - Tliq)*(Tgau *Tgau
+						* (Sres / 4.0 - 1.0 / 4.0) + (sin((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))
+							*(Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi) + (Tgau*cos((pi*(Tliq - 2.0 *
+								Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi))
+			- heaviside(Tgau - Tsol)*(Tgau*Tgau * (Sres / 4.0 - 1.0 / 4.0) + (sin((pi*(Tliq - 2.0 * Tgau + Tsol)) /
+			(2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi *pi) + (Tgau*cos((pi*(Tliq - 2.0
+				* Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi)) + ((Tliq - Tsol)
+					*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi *pi) + Tgau * Tgau * heaviside(Tgau - Tsol)*(Sres / 2.0 - 1.0 / 2.0) +
+			Tsol * Tsol * heaviside(Tsol - Tgau)*(Sres / 2.0 - 1.0 / 2.0);
+
 
 		Sair = 0.0;
 		ISair = 0.0;
