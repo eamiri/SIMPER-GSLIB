@@ -19,6 +19,7 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 
 
 		ISwat =
+
 			Sres * Tgau - heaviside(Tgau - Tliq)*((Tgau*(Sres + 1.0)) / 2.0 +
 			(cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol)))*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (4.0 * (Tliq - Tsol))) *
 				(Tliq - Tsol)*(Sres - 1.0)) / pi) + heaviside(Tgau - Tsol)*
@@ -38,7 +39,9 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 				Tliq + Sres * Tliq - Sres * Tsol + pi * Sres*Tliq)) /
 				(2.0 * pi) - Sres * Tgau*heaviside(Tgau - Tsol);
 
+
 		ISwatxT =
+
 			heaviside(Tliq - Tsol)*(Tliq*Tliq * (Sres / 4.0 + 1.0 / 4.0) - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi))
 			- Tsol * Tsol * (Sres / 4.0 + 1.0 / 4.0) - (Tliq*Tliq * (heaviside(Tgau - Tliq) - 1.0)) / 2.0 +
 			(Tsol*Tsol * (heaviside(Tliq - Tsol) - 1.0)) / 2.0 + (Sres*Tgau*Tgau) / 2.0 + (Tliq*Tliq *
@@ -55,6 +58,7 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 						(2.0 * pi*pi) + (Tgau*cos((pi*(Tliq - 2.0 * Tgau + Tsol)) / (2.0 * (Tliq - Tsol)))*
 						(Tliq - Tsol)*(Sres - 1.0)) / (2.0 * pi)) - (Sres*Tgau*Tgau * heaviside(Tgau - Tsol))
 			/ 2.0 - ((Tliq - Tsol)*(Tliq - Tsol) * (Sres - 1.0)) / (2.0 * pi*pi) + (Sres*Tsol*Tsol * (heaviside(Tgau - Tsol) - 1.0)) / 2.0;
+
 
 		Sice =
 
@@ -265,6 +269,7 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 			+ Tliq * heaviside(Tliq - Tsol)*((3.0 * Sres) / 8.0 - 3.0 / 8.0) + Tsol * (heaviside(Tgau - Tsol) - 1.0)*(Sres - 1.0) + Tliq * ((3.0 * Sres) / 8.0 - 3.0 / 8.0)
 			*(heaviside(Tgau - Tliq) - 1.0) - Tsol * ((3.0 * Sres) / 8.0 - 3.0 / 8.0)*(heaviside(Tgau - Tsol) - 1.0) - Tsol * ((3.0 * Sres) / 8.0 - 3.0 / 8.0)*(heaviside(Tliq - Tsol) - 1.0);
 
+
 		ISairxT =
 
 			(Tsol*Tsol * (Sres / 4.0 - 1.0 / 4.0)) / 4.0 + Tsol * Tsol * (Sres / 8.0 - 1.0 / 8.0) + heaviside(Tgau - Tliq)*(Tgau*Tgau * (Sres / 8.0 - 1.0 / 8.0) +
@@ -285,7 +290,5 @@ SaturationFunctions::SaturationFunctions(double Tgau, double Tsol, double Tliq, 
 				(Sres - 1.0)*(3.0 * Tliq*Tliq - 6 * Tliq*Tsol + 3.0 * Tsol*Tsol + Tsol * Tsol * pi*pi)) / (16.0 * pi*pi) + (3.0 * (heaviside(Tliq - Tsol)
 					- 1.0)*(Sres - 1.0)*(3.0 * Tliq*Tliq - 6 * Tliq*Tsol + 3.0 * Tsol*Tsol + Tsol * Tsol * pi*pi)) / (16.0 * pi*pi) -
 					(heaviside(Tliq - Tsol)*(Sres - 1.0)*(14 * Tliq*Tsol - 7.0 * Tliq*Tliq - 7.0 * Tsol*Tsol + 3.0 * Tliq*Tliq * pi*pi)) / (16.0 * pi*pi);
-
-
 	}
 }
