@@ -4,9 +4,9 @@ clear
 syms Tgau
 
 % syms Sres Tliq Tsol npor Dwat Dice Cice Cwat Kwat Kice Lhea Csol Ksol Dsol Cair Kair Dair
-% 
+
 TempG = -0.5;
-Sres = 0.0;
+Sres = 0.1;
 Rsat = 2;
 Wpar = 1;
 Mpar = 1;
@@ -39,7 +39,7 @@ Sair = 1 - Swat - Sice
 
 % SATURATED CONDITION
 % SFC_Sres = 0.5*(1+Sres)+0.5*(1-Sres)*sin(pi*(Tgau-0.5*(Tliq+Tsol))/(Tliq-Tsol));
-% Sice = simplify(HS(Tgau)*(1.0 - SFC_Sres) + (1-Sres) * heaviside(-Tgau + Tsol))
+% Sice = simplify(HS(Tgau)*(1.0 - SFC_Sres) + 0.9 * heaviside(-Tgau + Tsol))
 % Swat = simplify(HS(Tgau)*(SFC_Sres) + 1.0 * heaviside(Tgau - Tliq) + Sres * (heaviside(- Tgau + Tsol)))
 % Sair = 1 - Swat - Sice
 
@@ -81,26 +81,26 @@ ISairxT = simplify(simplify(ISairxT - subs(ISairxT, Tgau, Tsol)))
 
 % % % % % % % % % % % % % % % % 
 
-Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice + Sair * Dair * Cair) + (1.0 - npor) * Dsol * Csol + npor * Dice * Lhea * (-dSice);
+Cpar = npor * (Swat * Dwat * Cwat + Sice * Dice * Cice) + (1.0 - npor) * Dsol * Csol + npor * Dice * Lhea * (-dSice);
 % ICparxT = int(Cpar * Tgau, Tgau ,[Tsol Tgau]);
 % ICpar = int(Cpar, Tgau ,[Tsol Tgau]);
-ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice + ISairxT * Dair * Cair) + (1 - npor) * Dsol * Csol * (Tgau * Tgau - Tsol*Tsol)/ 2.0 + npor * Dice * Lhea * (-IdSicexT);
-ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice + ISair * Dair * Cair) + (1.0 - npor) * Dsol * Csol * (Tgau-Tsol) + npor * Dice * Lhea*(1 - Sice - Sres);
-Kpar = (Kwat ^ (Swat * npor)) * (Kice ^ (Sice * npor))*(Kair ^ (Sair * npor))* (Ksol ^ (1.0 - npor));
+ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice) + (1 - npor) * Dsol * Csol * Tgau * Tgau / 2.0 + npor * Dice * Lhea * (-IdSicexT);
+ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * Tgau + npor * Dice * Lhea*(1 - Sice - Sres);
+Kpar = (Kwat ^ (Swat * npor)) * (Kice ^ (Sice * npor))* (Ksol ^ (1.0 - npor));
 
 subplot(2,2,1); 
-fplot(Sice, [Tsol-0.5, Tliq+0.5]);
+fplot(Sair, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,2); 
-fplot(dSice, [Tsol-0.5, Tliq+0.5]);
+fplot(dSair, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,3); 
-fplot(ISice, [Tsol-0.5, Tliq+0.5]);
+fplot(ISair, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,4); 
-fplot(IdSicexT , [Tsol-0.5, Tliq+0.5]);
-% 
-% 
+fplot(IdSairxT , [Tsol-0.5, Tliq+0.5]);
+
+
 Swat = eval(subs(Swat, Tgau, TempG))
 dSwat = eval(subs(dSwat, Tgau, TempG))
 ISwat = eval(subs(ISwat, Tgau, TempG))
