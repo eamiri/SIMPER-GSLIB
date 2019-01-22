@@ -139,6 +139,8 @@
   <ItemGroup>
     <ClInclude Include="CommonFunctions.h" />
     <ClInclude Include="GaussPoints.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="IBConditions.h" />
     <ClInclude Include="TrustRegion.h" />
@@ -147,6 +149,12 @@
     <ClInclude Include="PropertyDefinitions.h" />
     <ClInclude Include="FEMFunctions.h" />
     <ClInclude Include="SimperInclude.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SIMPER1.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\SIMPER.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

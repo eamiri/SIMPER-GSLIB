@@ -92,13 +92,13 @@ subplot(2,2,1);
 fplot(Sice, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,2); 
-fplot(dSice, [Tsol-0.5, Tliq+0.5]);
+fplot(Swat, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,3); 
-fplot(ISice, [Tsol-0.5, Tliq+0.5]);
+fplot(Cpar, [Tsol-0.5, Tliq+0.5]);
 
 subplot(2,2,4); 
-fplot(IdSicexT , [Tsol-0.5, Tliq+0.5]);
+fplot(Kpar , [Tsol-0.5, Tliq+0.5]);
 % 
 % 
 Swat = eval(subs(Swat, Tgau, TempG))
