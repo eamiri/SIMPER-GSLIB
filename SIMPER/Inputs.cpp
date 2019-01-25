@@ -151,7 +151,8 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.isHeterC
 			>> props.GSLIB.isHeterK
 			>> props.GSLIB.isHeterBC
-			>> props.GSLIB.isHeterD;
+			>> props.GSLIB.isHeterD
+			>> props.GSLIB.isHeterFP;
 
 		/*getline(propsFile, line);
 		while (getline(propsFile, line))
@@ -355,14 +356,23 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			else
 			{
 				MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
-			}			
+			}	
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Coeff_GSLIB\"\n");
+			if (PROPS.GSLIB.isHeterFP) // Check if soil density is heterogeneous
+			{
+				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * GSLIBCoeffE;
+			}
+			else
+			{
+				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
+			}
+
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Coeff_GSLIB\"\n");
 			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, NodalGSLIBCoeffs(nodeIndex));
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint, NodalGSLIBCoeffs(nodeIndex));
 			}
 
 			fprintf(plotHeatCapacity, "1 2 3 4\n");
@@ -378,13 +388,14 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
 			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
 			MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
+			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\"\n");
+			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\"\n");
 			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity);
+				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint);
 			}
 
 			fprintf(plotHeatCapacity, "1 2 3 4\n");

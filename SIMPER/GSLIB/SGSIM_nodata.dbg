@@ -9,26 +9,26 @@
  
 
  Realization   1: number   =    10201
-                  mean     =       0.0431 (close to 0.0?)
-                  variance =       0.8659 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =      -0.0082 (close to 0.0?)
+                  variance =       0.8580 (close to gammabar(V,V)? approx. 1.0)
 
 
  Realization   2: number   =    10201
-                  mean     =      -0.1107 (close to 0.0?)
-                  variance =       0.9053 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =       0.1083 (close to 0.0?)
+                  variance =       0.9045 (close to gammabar(V,V)? approx. 1.0)
 
 
  Realization   3: number   =    10201
-                  mean     =       0.1754 (close to 0.0?)
-                  variance =       0.8908 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =      -0.2833 (close to 0.0?)
+                  variance =       1.1951 (close to gammabar(V,V)? approx. 1.0)
 
 
  Realization   4: number   =    10201
-                  mean     =       0.2121 (close to 0.0?)
-                  variance =       0.9594 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =       0.1230 (close to 0.0?)
+                  variance =       0.8885 (close to gammabar(V,V)? approx. 1.0)
 
 
  Realization   5: number   =    10201
-                  mean     =      -0.0857 (close to 0.0?)
-                  variance =       0.9517 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =      -0.0540 (close to 0.0?)
+                  variance =       0.9756 (close to gammabar(V,V)? approx. 1.0)
 

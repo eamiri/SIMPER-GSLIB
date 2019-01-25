@@ -26,6 +26,7 @@ struct Element
 	double SoilHeatCapacity;
 	double SoilThermalConductivity;
 	double SoilDensity;
+	double SoilFreezingPoint;
 };
 
 class Mesh

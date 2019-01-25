@@ -77,6 +77,8 @@ void ComputePotentialStar()
 	TempDotStar = (TempStar - TempHat) / (*gammaNewmark * *deltaTime);
 	for (int e = 0; e < noel; e++)
 	{
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		//
 		dMmat = dMmat.Zero(ndoe, ndoe);
 		Mmat = Mmat.Zero(ndoe, 1);
 		//
@@ -199,7 +201,6 @@ void Simulate()
 	Dsol = PROPS.Soil.Density;
 	//
 	rSFC = PROPS.Soil.rSFC;
-	Tsol = PROPS.Nonisothermal.TempSolid;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
 	Sres = PROPS.Soil.ResidualWaterSaturation;
 	Wpar = PROPS.Soil.Wpar;
@@ -246,6 +247,8 @@ void Simulate()
 
 				for (int e = 0; e < noel; e++)
 				{
+					Tsol = MESH.Elements[e].SoilFreezingPoint;
+					//
 					dMmat = dMmat.Zero(ndoe, ndoe);
 					Mmat = Mmat.Zero(ndoe, 1);
 					//

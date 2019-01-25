@@ -191,7 +191,7 @@ void IBConditions::InputBC(string filePath)
 
 void IBConditions::SetInitialCondition()
 {
-	Temp_0 = -2.5 * Temp_0.Ones(MESH->NumberOfNodes);
+	Temp_0 = -5.0 * Temp_0.Ones(MESH->NumberOfNodes);
 	TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
 	Residual = Residual.Zero(MESH->NumberOfNodes);
 	Temp = Temp_0;
