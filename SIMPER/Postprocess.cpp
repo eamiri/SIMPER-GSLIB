@@ -2,7 +2,7 @@
 
 void POSTPROCESS(VectorXd Temp, double solutionTime)
 {
-	VectorXd xNodes, yNodes, waterSat, iceSat;;
+	VectorXd xNodes, yNodes, waterSat, iceSat, distance;
 	VectorXd TempNode;
 	VectorXd GradTemp;
 	VectorXi elementDofs;
@@ -12,8 +12,6 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	RowVectorXd SF;
 	
 	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode;
-	double distance;
-
 	int rSFC;
 	double Tsol, Tliq, Sres, Wpar, Mpar;
 
@@ -24,11 +22,10 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	Wpar = PROPS.Soil.Wpar;
 	Mpar = PROPS.Soil.Mpar;
 	//
-
 	derTemp = derTemp.Zero(nond, 2);
-
-	waterSat.setZero(nond);
-	iceSat.setZero(nond);
+	waterSat = waterSat.Zero(nond);
+	iceSat = iceSat.Zero(nond);
+	distance = distance.Zero(nond);
 
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
@@ -41,7 +38,6 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		//
 		TempNode = MESH.GetNodalValues(Temp, elementDofs);
 		//
-		distance = 0.0;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -68,24 +64,24 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 					dNodeGP = sqrt((globalGPx - xNode)*(globalGPx - xNode) + (globalGPy - yNode)*(globalGPy - yNode));
 
 					SaturationFunctions SATFUNCS(Temp(elementDofs(n)), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
-					waterSat(elementDofs(n)) = SATFUNCS.Swat;
-					iceSat(elementDofs(n)) = SATFUNCS.Sice;
+					waterSat(elementDofs(n)) += dNodeGP * SATFUNCS.Swat;
+					iceSat(elementDofs(n)) += dNodeGP * SATFUNCS.Sice;
 
 					derTemp(elementDofs(n), 0) +=  dNodeGP * GradTemp(0);
 					derTemp(elementDofs(n), 1) += dNodeGP * GradTemp(1);
 
-					distance += dNodeGP;
+					distance(elementDofs(n)) += dNodeGP;
 				}
 			}
 		}
+	}
 
-		for (int n = 0; n < ndoe; n++)
-		{
-			derTemp(elementDofs(n), 0) /= distance;
-			derTemp(elementDofs(n), 1) /= distance;
-			waterSat(elementDofs(n)) /= distance;
-			iceSat(elementDofs(n)) /= distance;
-		}
+	for (int n = 0; n < nond; n++)
+	{
+		derTemp(n) /= distance(n);
+		derTemp(n) /= distance(n);
+		waterSat(n) /= distance(n);
+		iceSat(n) /= distance(n);
 	}
 
 	if (PROPS.PlotNodes.size())
