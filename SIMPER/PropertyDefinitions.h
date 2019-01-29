@@ -61,6 +61,7 @@ struct GSLIBProps
 	int NumberOfCells;
 	double GridSize;
 	int NumberOfRealizations;
+	long Seed;
 };
 
 struct SolutionVariables

@@ -141,7 +141,8 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.CorrelationLength
 			>> props.GSLIB.NumberOfCells
 			>> props.GSLIB.GridSize
-			>> props.GSLIB.NumberOfRealizations;
+			>> props.GSLIB.NumberOfRealizations
+			>> props.GSLIB.Seed;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -203,7 +204,15 @@ void SgsimParameterFile()
 	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
 	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
-	fprintf(inputFileGSLIB, "%ld                               -random number seed\n", seedGSLIB);
+	if (!PROPS.GSLIB.Seed)
+	{
+		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", seedGSLIB);
+	}
+	else
+	{
+		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", PROPS.GSLIB.Seed);	
+	}
+
 	fprintf(inputFileGSLIB, "0 8                                     -Min and max original data for sim\n");
 	fprintf(inputFileGSLIB, "12                                      -number of simulated nodes to use\n");
 	fprintf(inputFileGSLIB, "1                                       -assign data to nodes (0=no, 1=yes)\n");
