@@ -70,7 +70,7 @@ void InitializeSolution()
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
 }
-
+ 
 void ComputePotentialStar()
 {
 	PotentialStar = 0.0;

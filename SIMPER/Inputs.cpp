@@ -334,7 +334,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			elementDofs = MESH.GetElementDofs(e, ndoe);
 			GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs, elementDofs);
 			GSLIBCoeffE = 0;
-			for (int ig = 1; ig < 4; ig++)
+			for (int ig = 0; ig < 4; ig++)
 			{
 				GSLIBCoeffE += abs(GSLIBCoeffsNode(ig));
 			}
@@ -367,7 +367,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 				MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
 			}	
 
-			if (PROPS.GSLIB.isHeterFP) // Check if soil density is heterogeneous
+			if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 			{
 				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * GSLIBCoeffE;
 			}
