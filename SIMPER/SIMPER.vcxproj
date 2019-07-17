@@ -73,7 +73,7 @@
     <IncludePath>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\SIMPER-GSLIB\SIMPER\EigenLib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\SIMPER-GSLIB\SIMPER\EigenLib;$(IncludePath)</IncludePath>
+    <IncludePath>..\SIMPER\EigenLib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -91,7 +91,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\Github\SIMPER\EigenLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\SIMPER\EigenLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,8 +139,7 @@
   <ItemGroup>
     <ClInclude Include="CommonFunctions.h" />
     <ClInclude Include="GaussPoints.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
+    <ClInclude Include="Postprocess.h" />
     <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="IBConditions.h" />
     <ClInclude Include="TrustRegion.h" />

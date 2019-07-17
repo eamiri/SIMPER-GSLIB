@@ -1,24 +1,66 @@
-#include "SimperInclude.h"
+#include "Postprocess.h"
 
-void POSTPROCESS(VectorXd Temp, double solutionTime)
+Postprocess::Postprocess(Mesh m, Properties p, FILE *plot, FILE *node, FILE *area, int ngp, VectorXd nodalGSLIBCoeffs)
 {
-	VectorXd xNodes, yNodes, waterSat, iceSat, distance;
-	VectorXd TempNode;
-	VectorXd GradTemp;
-	VectorXi elementDofs;
-	MatrixXd derTemp;
-	FEMFunctions femFunctions;
-	MatrixXd Bmat;
-	RowVectorXd SF;
-	
-	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode, AreaElement;
-	int rSFC;
-	double Tsol, Tliq, Sres, Wpar, Mpar;
-	double frozenArea = 0.0;
-	double thawedArea = 0.0;
-	double slushyArea = 0.0;
-	int iFrozen, iThawed, iSlushy;
+	MESH = m;
+	PROPS = p;
+	FILE OutputFile = *plot;
+	FILE AreaAnalysisFile = *area;
+	FILE NodePlotFile = *node;
+	nGP = ngp;
+	GP.GP(nGP);
+	noel = MESH.NumberOfElements;
+	nond = MESH.NumberOfNodes;
+	ndoe = MESH.ElementNumberOfNodes;
+	NodalGSLIBCoeffs = nodalGSLIBCoeffs;
+}
 
+void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
+{
+	rSFC = PROPS.Soil.rSFC;
+	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+
+	for (int e = 0; e < MESH.NumberOfElements; e++)
+	{
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		//
+		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
+		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+		AreaElement = MESH.GetElementArea(e, ndoe);
+		//
+		elementDofs = MESH.GetElementDofs(e, ndoe);
+		//
+		TempNode = MESH.GetNodalValues(Temp, elementDofs);
+		//
+		iFrozen = 0; iThawed = 0; iSlushy = 0;
+		for (int n = 0; n < ndoe; n++)
+		{
+			if (TempNode(n) <= PROPS.Nonisothermal.TempSolid)
+			{
+				iFrozen++;
+			}
+			else if (TempNode(n) > PROPS.Nonisothermal.TempSolid && TempNode(n) < PROPS.Nonisothermal.TempLiquid)
+			{
+				iSlushy++;
+			}
+			else
+			{
+				iThawed++;
+			}
+		}
+
+		frozenArea += iFrozen * AreaElement / ndoe;
+		slushyArea += iSlushy * AreaElement / ndoe;
+		thawedArea += iThawed * AreaElement / ndoe;
+	}
+
+	fprintf(AreaAnalysisFile, "%e, %e, %e, %e\n", solutionTime, frozenArea, thawedArea, slushyArea);
+	fflush(AreaAnalysisFile);
+}
+
+void Postprocess::Plot(VectorXd Temp, double solutionTime)
+{
 	//
 	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
@@ -43,27 +85,6 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		//
 		TempNode = MESH.GetNodalValues(Temp, elementDofs);
 		//
-		iFrozen = 0; iThawed = 0; iSlushy = 0;
-		for (int n = 0; n < ndoe; n++)
-		{
-			if (TempNode(n) <= PROPS.Nonisothermal.TempSolid)
-			{
-				iFrozen++;
-			}
-			else if (TempNode(n) > PROPS.Nonisothermal.TempSolid || TempNode(n) < PROPS.Nonisothermal.TempLiquid)
-			{
-				iSlushy++;
-			}
-			else
-			{
-				iThawed++;
-			}
-		}
-
-		frozenArea += iFrozen * AreaElement / ndoe;
-		slushyArea += iSlushy * AreaElement / ndoe;
-		thawedArea += iThawed * AreaElement / ndoe;
-
 		for (int i = 0; i < nGP; i++)
 		{
 			for (int j = 0; j < nGP; j++)
@@ -145,7 +166,4 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	}
 
 	fflush(OutputFile);
-
-	fprintf(AreaAnalysisFile, "%e, %e, %e, %e\n", solutionTime, frozenArea, thawedArea, slushyArea);
-	fflush(AreaAnalysisFile);
 }

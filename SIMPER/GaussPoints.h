@@ -1,3 +1,6 @@
+#ifndef __GP__
+#define __GP__
+
 #include <vector>
 
 using namespace std;
@@ -44,3 +47,5 @@ public:
 		}
 	}
 };
+
+#endif

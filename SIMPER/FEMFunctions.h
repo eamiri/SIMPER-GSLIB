@@ -1,3 +1,6 @@
+#ifndef __FENFUNCTIONS__
+#define __FENFUNCTIONS__
+
 #include <Eigen/Core>
 #include <Eigen/LU>
 
@@ -64,3 +67,5 @@ private:
 		return J.inverse() * dN;
 	}
 };
+
+#endif

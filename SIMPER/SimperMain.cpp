@@ -14,7 +14,7 @@ void Simulate();
 VectorXd Temp_0;
 VectorXd TempDot_0;
 VectorXd Residual;
-VectorXd Temp;
+VectorXd Temp, TempMin, Tempmax;
 VectorXd TempDot;
 vector<int> DirichletBoundary;
 vector<int> TopBoundary;

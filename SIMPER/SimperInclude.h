@@ -25,6 +25,7 @@
 #include "FEMFunctions.h"
 #include "TrustRegion.h"
 #include "SaturationFunctions.h"
+#include "Postprocess.h"
 
 using namespace std;
 using namespace Eigen;
@@ -38,6 +39,8 @@ extern VectorXd NodalGSLIBCoeffs;
 extern Properties PROPS;
 extern GaussPoints GP;
 extern VectorXd Temp;
+extern VectorXd TempMin;
+//extern VectorXd TempMax;
 extern VectorXd TempDot;
 extern VectorXd Temp_0;
 extern VectorXd TempDot_0;

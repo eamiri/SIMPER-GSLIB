@@ -45,10 +45,7 @@
     <ClInclude Include="SaturationFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource1.h">
+    <ClInclude Include="Postprocess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

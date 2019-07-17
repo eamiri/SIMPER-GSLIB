@@ -9,12 +9,13 @@ int iTimestep, iIteration, iPlot;
 int *maxTimestep = &PROPS.Solution.MaxTimestep;
 int *maxIterations = &PROPS.Solution.MaxIterations;
 int *plotInterval = &PROPS.Solution.PlotInterval;
+int talikYear, permafrostYear;
 
 double *TolResidual = &PROPS.Solution.TolPsi;
 
 void InitializeSolution();
 void ComputePotentialStar();
-void POSTPROCESS(VectorXd temp, double solutionTime);
+Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, nGP, NodalGSLIBCoeffs);
 void UpdateTopBC(int iTimestep);
 void Simulate();
 
@@ -70,6 +71,8 @@ void InitializeSolution()
 	TempStar = Temp;
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
+	TempMin = Temp;
+	//TempMax = Temp;
 }
  
 void ComputePotentialStar()
@@ -212,6 +215,13 @@ void Simulate()
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
 	{
+		//Second to Year, Month, Day Conversion
+		solutionTime = (iTimestep + 1) * *deltaTime;
+		double Year = floor(solutionTime / (3600.0 * 24.0 * 365.0));
+		double Month = floor(solutionTime / (3600.0 * 24.0 * 31.0));
+		double Week = floor(solutionTime / (3600.0 * 24.0 * 7));
+		double Day = floor(solutionTime / (3600.0 * 24.0));
+		//
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
 		if (PROPS.Solution.IsInputBC)
@@ -327,11 +337,11 @@ void Simulate()
 							{
 								if (MESH.Elements[e].SoilType == "Fen")
 								{
-									FenFlux = Dwat * Cwat * (0.6) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
+									FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
 								}
 								else
 								{
-									FenFlux = Dwat * Cwat * (0.6) * (-HydCon * FenSATFUNCS.Swat * 0.01);
+									FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 0.01);
 								}
 							}
 							
@@ -420,14 +430,7 @@ void Simulate()
 			}
 
 			printf("\tTR_SUCCESS= %s", TR.IsTRSuccess ? "TRUE" : "FALSE");
-			if (TR.Error > 0)
-			{
-				printf("\tTR_ERR=  %.3e", TR.Error);
-			}
-			else
-			{
-				printf("\tTR_ERR= %.3e", TR.Error);
-			}
+			printf("\n\t\t\t\tTR_ERR=  %.3e", abs(TR.Error));
 
 			if (!TR.IsTRSuccess && TR.Error > 1.0E+3)
 			{
@@ -486,11 +489,26 @@ void Simulate()
 			}			
 		}
 
+		// Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
+		// and talik: every year - based on the official definition)
+
+		//for (int n = 0; n < nond; n++)
+		//{
+		//	if (Temp(n) < TempMin(n))
+		//	{
+		//		TempMin(n) = Temp(n);
+		//	}
+
+		//	if (Temp(n) > TempMax(n))
+		//	{
+		//		TempMax(n) = Temp(n);
+		//	}
+		//}
+
 		if (iTimestep == iPlot * *plotInterval)
 		{
 			iPlot++;
-			solutionTime = (iTimestep + 1) * *deltaTime;
-			POSTPROCESS(Temp, solutionTime);
+			//POSTPROCESS(Temp, solutionTime);
 		}
 	}
 }

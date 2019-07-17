@@ -1,4 +1,4 @@
-#ifndef __SATFUNCTIONs__
+#ifndef __SATFUNCTIONS__
 #define __SATFUNCTIONS__
 
 class SaturationFunctions
