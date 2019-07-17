@@ -1,13 +1,14 @@
 #include "Postprocess.h"
 
-Postprocess::Postprocess(Mesh m, Properties p, FILE *plot, FILE *node, FILE *area, int ngp, VectorXd nodalGSLIBCoeffs)
+Postprocess::Postprocess(Mesh m, Properties p, FILE *plot, FILE *node, FILE *area, VectorXd nodalGSLIBCoeffs)
 {
 	MESH = m;
 	PROPS = p;
-	FILE OutputFile = *plot;
-	FILE AreaAnalysisFile = *area;
-	FILE NodePlotFile = *node;
-	nGP = ngp;
+	OutputFile = plot;
+	AreaAnalysisFile = area;
+	NodePlotFile = node;
+	nGP = PROPS.GQ.NumberOfPoints;
+
 	GP.GP(nGP);
 	noel = MESH.NumberOfElements;
 	nond = MESH.NumberOfNodes;

@@ -27,7 +27,7 @@ public:
 	VectorXd Temp;
 	double SolutionTime;
 
-	Postprocess(Mesh mesh, Properties props, FILE *plot, FILE *node, FILE *area, int ngp, VectorXd nodalGSLIBCoeffs);
+	Postprocess(Mesh mesh, Properties props, FILE *plot, FILE *node, FILE *area, VectorXd nodalGSLIBCoeffs);
 	void Plot(VectorXd Temp, double SolutionTime);
 	void AreaAnalysis(VectorXd Temp, double solutionTime);
 

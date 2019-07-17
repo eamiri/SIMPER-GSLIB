@@ -15,7 +15,6 @@ double *TolResidual = &PROPS.Solution.TolPsi;
 
 void InitializeSolution();
 void ComputePotentialStar();
-Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, nGP, NodalGSLIBCoeffs);
 void UpdateTopBC(int iTimestep);
 void Simulate();
 
@@ -183,6 +182,7 @@ void UpdateTopBC(int iTimestep)
 
 void Simulate()
 {
+	Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, NodalGSLIBCoeffs);
 	IsSaturated = PROPS.Soil.IsSaturated;
 
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
@@ -489,26 +489,27 @@ void Simulate()
 			}			
 		}
 
-		// Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
-		// and talik: every year - based on the official definition)
+		 // Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
+		 // and talik: every year - based on the official definition)
 
-		//for (int n = 0; n < nond; n++)
-		//{
-		//	if (Temp(n) < TempMin(n))
-		//	{
-		//		TempMin(n) = Temp(n);
-		//	}
+		for (int n = 0; n < nond; n++)
+		{
+			if (Temp(n) < TempMin(n))
+			{
+				TempMin(n) = Temp(n);
+			}
 
-		//	if (Temp(n) > TempMax(n))
-		//	{
-		//		TempMax(n) = Temp(n);
-		//	}
-		//}
+			if (Temp(n) > TempMax(n))
+			{
+				TempMax(n) = Temp(n);
+			}
+		}
 
 		if (iTimestep == iPlot * *plotInterval)
 		{
 			iPlot++;
-			//POSTPROCESS(Temp, solutionTime);
+			POSTPROCESS.Plot(Temp, solutionTime);
+			POSTPROCESS.AreaAnalysis(Temp, solutionTime);
 		}
 	}
 }
