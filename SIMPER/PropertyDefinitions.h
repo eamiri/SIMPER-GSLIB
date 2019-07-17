@@ -7,6 +7,7 @@ struct SoilProperties
 	double ResidualWaterSaturation;
 	double HeatCapacity;
 	double ThermalConductivity;
+	double HydraulicConductivity;
 	double Wpar;
 	double Mpar;
 	int rSFC;
@@ -52,6 +53,7 @@ struct GaussQuadrature
 
 struct GSLIBProps
 {
+	bool isHeterLambda;
 	bool isHeterC;
 	bool isHeterK;
 	bool isHeterD;

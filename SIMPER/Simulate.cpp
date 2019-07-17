@@ -29,7 +29,7 @@ VectorXd bcResidual;
 SparseMatrix<double> StiffSparse;
 
 MatrixXd dSTIFF;
-MatrixXd dMmat, Mmat;
+MatrixXd dMmat, Mmat, Fmat;
 MatrixXd Jmat, dJmat;
 MatrixXd xyNodes;
 FEMFunctions femFunctions;
@@ -45,7 +45,7 @@ double *gammaNewmark = &PROPS.Solution.NewmarkGamma;
 double *deltaTime = &PROPS.Solution.DeltaTime;
 double solutionTime;
 double trustRegionRadius, maxTrustRegionRadius;
-double Potential, PotentialStar, Potential_0, PotetialP, PI1, PI2, PI3, NormResidual, NormResidualP, NormResidual_0;
+double Potential, PotentialStar, Potential_0, PotetialP, PI1, PI2, PI3, PI4, NormResidual, NormResidualP, NormResidual_0;
 double GPi, GPj, Wi, Wj;
 double Sair, ISair, ISairxT, Swat, ISwat, dSwat, ISwatxT, IdSwatxT, Sice, ISice, IdSice, ISicexT, dSice, IdSicexT;
 double CPar, ICparxT, ICpar, Kpar, Cpar;
@@ -54,11 +54,12 @@ double TempG, TempGHat, TempGDot, GradTempGradTemp, GSLIBCoeffG;
 double detJacob;
 double ErrorResidual, ErrorTemp, ErrorPotential, Reaction;
 double m_Temp, m_TempStar, TR_Ratio, actualReduce, modelReduce;
+double FenFlux;
 
 bool IsSaturated;
 
 int rSFC;
-double Cair, Kair, Dair, Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, Csol, Ksol, Dsol, Sres, Tsol, Tliq, Wpar, Mpar;
+double Cair, Kair, Dair, Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, HydCon, Csol, Ksol, Dsol, Sres, Tsol, Tliq, Wpar, Mpar;
 
 void InitializeSolution()
 {
@@ -85,6 +86,7 @@ void ComputePotentialStar()
 		PI1 = 0.0;
 		PI2 = 0.0;
 		PI3 = 0.0;
+		PI4 = 0.0;
 		//
 		Jmat = Jmat.Zero(ndoe, ndoe);
 		dJmat = dJmat.Zero(ndoe, ndoe);
@@ -153,10 +155,11 @@ void ComputePotentialStar()
 				PI2 += TempGHat / (*deltaTime * *gammaNewmark) * Wi * Wj * Hfun * detJacob;
 				GradTempGradTemp = (GradTemp.transpose()) * GradTemp;
 				PI3 += 0.5 * Wi * Wj * Kpar * GradTempGradTemp * detJacob;
+				//PI4 += Swat * Wi * Wj * FenFlux * TempG * detJacob;
 			}
 		}
 
-		PotentialStar += PI1 - PI2 + PI3;
+		PotentialStar += PI1 - PI2 + PI3 + PI4;
 	}
 }
 
@@ -251,10 +254,12 @@ void Simulate()
 					//
 					dMmat = dMmat.Zero(ndoe, ndoe);
 					Mmat = Mmat.Zero(ndoe, 1);
+					Fmat = Fmat.Zero(ndoe, 1);
 					//
 					PI1 = 0.0;
 					PI2 = 0.0;
 					PI3 = 0.0;
+					PI4 = 0.0;
 					//
 					Jmat = Jmat.Zero(ndoe, ndoe);
 					dJmat = dJmat.Zero(ndoe, ndoe);
@@ -272,6 +277,7 @@ void Simulate()
 					Csol = MESH.Elements[e].SoilHeatCapacity;
 					Dsol = MESH.Elements[e].SoilDensity;
 					Ksol = MESH.Elements[e].SoilThermalConductivity;
+					HydCon = MESH.Elements[e].SoilHydraulicConductivity;
 
 					for (int i = 0; i < nGP; i++)
 					{
@@ -292,7 +298,7 @@ void Simulate()
 							TempG = SF * TempNode;
 							TempGHat = SF * TempNodeHat;
 							TempGDot = SF * TempNodeDot;
-							GradTemp = Bmat * TempNode;
+							GradTemp = Bmat * TempNode;							
 							//
 							SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres, IsSaturated);
 							Swat = SATFUNCS.Swat;
@@ -315,10 +321,26 @@ void Simulate()
 							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice + ISair * Dair * Cair) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(-IdSice);
 							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
+							SaturationFunctions FenSATFUNCS(TempG, -0.1, 0, 0, IsSaturated);
+							FenFlux = 0.0;
+							if (BCInputData(iTimestep, 1) < 0)
+							{
+								if (MESH.Elements[e].SoilType == "Fen")
+								{
+									FenFlux = Dwat * Cwat * (0.6) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
+								}
+								else
+								{
+									FenFlux = Dwat * Cwat * (0.6) * (-HydCon * FenSATFUNCS.Swat * 0.01);
+								}
+							}
+							
+							//
 							detJacob = Jacob.determinant();
 							Jmat = Jmat + Wi * Wj*Bmat.transpose()*Kpar*Bmat*detJacob;
 							dMmat = dMmat + Wi * Wj*SF.transpose()*Cpar*SF*detJacob;
 							Mmat = Mmat + Wi * Wj*SF.transpose()*Cpar*TempGDot*detJacob;
+							Fmat = Fmat + Wi * Wj*SF.transpose()*FenFlux*detJacob;
 							//
 							Hfun = ICpar;
 							Gfun = ICparxT;
@@ -326,12 +348,13 @@ void Simulate()
 							PI2 += TempGHat / (*deltaTime * *gammaNewmark)*Wi*Wj*Hfun*detJacob;
 							GradTempGradTemp = (GradTemp.transpose()) * GradTemp;
 							PI3 += 0.5 * Wi * Wj * Kpar * GradTempGradTemp * detJacob;
+							//PI4 += Wi * Wj * FenFlux * TempG * detJacob;
 						}
 					}
 
-					Potential += PI1 - PI2 + PI3;
+					Potential += PI1 - PI2 + PI3 + PI4;
 					dSTIFF = Jmat + dMmat / (*gammaNewmark * *deltaTime);
-					dResidual = Jmat * TempNode + Mmat;
+					dResidual = Jmat * TempNode + Mmat + Fmat;
 
 					for (int m = 0; m < ndoe; m++)
 					{
@@ -448,7 +471,7 @@ void Simulate()
 			}
 			else if (TR_Ratio > 3 / 4 && !TR.IsFullNewtonRaphson)
 			{
-				trustRegionRadius = max(2 * trustRegionRadius, maxTrustRegionRadius);
+				trustRegionRadius = min(2 * trustRegionRadius, maxTrustRegionRadius);
 			}
 
 			// update trust region radius

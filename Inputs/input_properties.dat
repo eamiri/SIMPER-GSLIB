@@ -1,12 +1,12 @@
 Solid Grains Material Properties
-Csol	Ksol	Dsol	npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
-630		0.05	250		0.8 		0.1     2							 	0.2		2.0		1							1
+LambdaSol     	Csol	Ksol	Dsol	npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
+6.0E-6			630		0.05	250		0.8 		0.1     2							 	0.2		2.0		1							1
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		
-2108			2.14			920		    4182			0.6				1000			334000	  	1.0		0.024	1.3
+2108			2.14			1000		4182			0.6				1000			334000	  	1.0		0.024	1.3
 (Non)isothermal condition
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq		
-0			2618150			0.0			2.823	  		-1.6		0.0
+0			2618150			0.0			2.823	  		-1.0		0.0
 Boundary Conditions
 Dirichlet BC Input File
 PlateauBC_Corrected.dat
@@ -18,13 +18,13 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	MESH (0: GID, 1: GMSH)	InputBC
-432000			3600			1E-3			100						0.6							100		0						1
+432000			3600			1E-3			25						0.6							100		1						1
 GSLIB input data
 Correlation Length		Number of Cells		Grid Size		Number of Realizations	GSLIB SEED (0: Random)
-12.8					100						0.5			5						8546100
+12.8					100						0.2			5						8184730
 Apply Heterogeneity on
-C		K		BC		D		FP
-1		1		0		0		1	
+Lambda	C		K		BC		D		FP
+1		1		1		0		0		0	
 Temperature Plot Nodes
 3526 
 3565 

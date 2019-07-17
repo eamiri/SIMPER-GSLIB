@@ -11,9 +11,13 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	MatrixXd Bmat;
 	RowVectorXd SF;
 	
-	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode;
+	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode, AreaElement;
 	int rSFC;
 	double Tsol, Tliq, Sres, Wpar, Mpar;
+	double frozenArea = 0.0;
+	double thawedArea = 0.0;
+	double slushyArea = 0.0;
+	int iFrozen, iThawed, iSlushy;
 
 	//
 	rSFC = PROPS.Soil.rSFC;
@@ -33,11 +37,32 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+		AreaElement = MESH.GetElementArea(e, ndoe);
 		//
 		elementDofs = MESH.GetElementDofs(e, ndoe);
 		//
 		TempNode = MESH.GetNodalValues(Temp, elementDofs);
 		//
+		iFrozen = 0; iThawed = 0; iSlushy = 0;
+		for (int n = 0; n < ndoe; n++)
+		{
+			if (TempNode(n) <= PROPS.Nonisothermal.TempSolid)
+			{
+				iFrozen++;
+			}
+			else if (TempNode(n) > PROPS.Nonisothermal.TempSolid || TempNode(n) < PROPS.Nonisothermal.TempLiquid)
+			{
+				iSlushy++;
+			}
+			else
+			{
+				iThawed++;
+			}
+		}
+
+		frozenArea += iFrozen * AreaElement / ndoe;
+		slushyArea += iSlushy * AreaElement / ndoe;
+		thawedArea += iThawed * AreaElement / ndoe;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -120,4 +145,7 @@ void POSTPROCESS(VectorXd Temp, double solutionTime)
 	}
 
 	fflush(OutputFile);
+
+	fprintf(AreaAnalysisFile, "%e, %e, %e, %e\n", solutionTime, frozenArea, thawedArea, slushyArea);
+	fflush(AreaAnalysisFile);
 }

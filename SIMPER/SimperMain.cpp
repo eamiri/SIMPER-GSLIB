@@ -5,7 +5,7 @@ static string SimPerBuildDate(__DATE__);
 const string PropertiesInputFile = "../Inputs/input_properties.dat";
 const string MeshInputFile = "../Inputs/input_mesh.msh";
 GlobalOptions Options;
-FILE *OutputFile, *NodePlotFile;
+FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile;
 ofstream outputFile;
 
 bool Inputs(string propsInputFile, string meshInputFile);
@@ -78,12 +78,14 @@ int main(int argc, char* argv[])
 	}
 	
 	OutputFile = fopen("../Results/OutPut.plt", "w"); 
-
+	AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
+	fprintf(AreaAnalysisFile, "SolutionTime, FrozenArea, ThawedArea, SlushyArea\n");
 	//SOLUTION
 	Simulate();
 
 	fclose(OutputFile);
 	fclose(NodePlotFile);
+	fclose(AreaAnalysisFile);
 
 	cin.get();
 	

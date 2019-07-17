@@ -4,6 +4,6 @@ START OF PARAMETERS
 GSLIB/SGSIM_output.out
 GSLIB/ADDCOOR_output.out
 1                                   -realization number to add coordinate
-101 0 5.000000e-01                  -nx, xmin, xsize
-101 0 5.000000e-01                  -ny, ymin, ysize
+101 0 2.000000e-01                  -nx, xmin, xsize
+101 0 2.000000e-01                  -ny, ymin, ysize
 1 0 1                               -nz, zmin, zsize

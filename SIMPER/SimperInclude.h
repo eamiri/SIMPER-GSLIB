@@ -48,7 +48,7 @@ extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 
-extern FILE *OutputFile, *NodePlotFile;
+extern FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile;
 extern ofstream outputFile;
 
 

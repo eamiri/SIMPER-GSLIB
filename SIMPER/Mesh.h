@@ -23,6 +23,9 @@ struct Element
 {
 	int e;
 	vector<Node> Nodes;
+	double Area;
+	string SoilType;
+	double SoilHydraulicConductivity;
 	double SoilHeatCapacity;
 	double SoilThermalConductivity;
 	double SoilDensity;
@@ -50,6 +53,7 @@ public:
 	MatrixXd GetNodesXYCoordinates(int e, int ndoe);
 	VectorXi GetElementDofs(int e, int ndoe);
 	VectorXd GetNodalValues(VectorXd vector, VectorXi indices);
+	double GetElementArea(int e, int ndoe);
 };
 
 #endif

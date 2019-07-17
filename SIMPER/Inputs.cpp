@@ -1,4 +1,5 @@
 #include "SimperInclude.h"
+#include <regex>
 
 bool Inputs(string propsInputFile, string meshInputFile);
 Properties InputProperties(string filePath);
@@ -52,6 +53,7 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		istringstream isDataLine(line);
 		isDataLine
+			>> props.Soil.HydraulicConductivity
 			>> props.Soil.HeatCapacity
 			>> props.Soil.ThermalConductivity
 			>> props.Soil.Density
@@ -149,6 +151,7 @@ Properties InputProperties(string filePath)
 		isDataLine.clear();
 		isDataLine.str(line);
 		isDataLine
+			>> props.GSLIB.isHeterLambda
 			>> props.GSLIB.isHeterC
 			>> props.GSLIB.isHeterK
 			>> props.GSLIB.isHeterBC
@@ -328,7 +331,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
-		FILE *plotHeatCapacity = fopen("../Results/SoilProperties.plt", "w");
+		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
 		for (int e = 0; e < noel; e++)
 		{
 			elementDofs = MESH.GetElementDofs(e, ndoe);
@@ -340,6 +343,15 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			}
 
 			GSLIBCoeffE = GSLIBCoeffE * 0.25;
+			if (PROPS.GSLIB.isHeterLambda) // Check if soil hydraulic conductivity is heterogeneous
+			{
+				MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil.HydraulicConductivity * GSLIBCoeffE;
+			}
+			else
+			{
+				MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil.HydraulicConductivity;
+			}
+
 			if (PROPS.GSLIB.isHeterC) // Check if soil heat capacity is heterogeneous
 			{
 				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE;
@@ -376,22 +388,22 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
 			}
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Coeff_GSLIB\"\n");
-			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
+			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Coeff_GSLIB\"\n");
+			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint, NodalGSLIBCoeffs(nodeIndex));
+				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHydraulicConductivity, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint, NodalGSLIBCoeffs(nodeIndex));
 			}
 
-			fprintf(plotHeatCapacity, "1 2 3 4\n");
-			fflush(plotHeatCapacity);
+			fprintf(plotSoilProperties, "1 2 3 4\n");
+			fflush(plotSoilProperties);
 		}
 	}
 	else
 	{
 		cout << "Homogeneous Media" << endl;
-		FILE *plotHeatCapacity = fopen("../Results/SoilProperties.plt", "w");
+		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
@@ -399,16 +411,16 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
 			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
 
-			fprintf(plotHeatCapacity, "variables =\"X\" \"Y\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\"\n");
-			fprintf(plotHeatCapacity, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
+			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\"\n");
+			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotHeatCapacity, "%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint);
+				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHydraulicConductivity, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint);
 			}
 
-			fprintf(plotHeatCapacity, "1 2 3 4\n");
-			fflush(plotHeatCapacity);
+			fprintf(plotSoilProperties, "1 2 3 4\n");
+			fflush(plotSoilProperties);
 		}
 	}	
 }
@@ -452,13 +464,27 @@ Mesh InputMesh(string filePath)
 			getline(meshFile, line);
 
 			istringstream isSurfaceNumber(line);
-			double nSurface;
+			int nSurface;
+			vector<int> surfaceCode;
+			int dimensions;
+			vector<string> SoilType;
 
 			isSurfaceNumber >> nSurface;
+			surfaceCode.resize(nSurface);
+			SoilType.resize(nSurface);
 
 			for (int i = 0; i < nSurface; i++)
 			{
 				getline(meshFile, line);
+				istringstream surfaceCodeStr(line);
+				if (surfaceCodeStr >> dimensions >> surfaceCode[i] >> SoilType[i])
+				{
+					surfaceCodeStr >> dimensions >> surfaceCode[i] >> SoilType[i];
+					SoilType[i].erase(
+						remove(SoilType[i].begin(), SoilType[i].end(), '\"'),
+						SoilType[i].end()
+					);
+				}				
 			}
 
 			getline(meshFile, line);
@@ -507,6 +533,7 @@ Mesh InputMesh(string filePath)
 				}
 
 				element.Nodes.clear();
+				element.SoilType = SoilType[X3 - 1];
 				element.e = e;
 				node.n = n1;
 				node.Coordinates = mesh.Nodes[n1 - 1].Coordinates;
@@ -613,6 +640,11 @@ Mesh InputMesh(string filePath)
 			nond = mesh.NumberOfNodes;
 			ndoe = mesh.ElementNumberOfNodes;
 		}		
+	}
+
+	for (int e = 0; e < noel; e++)
+	{
+		mesh.Elements[e].Area = mesh.GetElementArea(e, ndoe);
 	}
 
 	return mesh;

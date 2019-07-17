@@ -69,3 +69,24 @@ VectorXd Mesh::GetNodalValues(VectorXd vector, VectorXi indices)
 
 	return nodalValues;
 }
+
+double Mesh::GetElementArea(int e, int ndoe)
+{
+	VectorXd xNodes(ndoe + 1);
+	VectorXd yNodes(ndoe + 1);
+
+	xNodes.head(ndoe) = GetNodesXCoordinates(e, ndoe);
+	yNodes.head(ndoe) = GetNodesYCoordinates(e, ndoe);
+	xNodes(ndoe) = xNodes(0);
+	yNodes(ndoe) = yNodes(0);
+
+	double area = 0.0;
+	for (int i = 0; i < ndoe; i++)
+	{
+		area += xNodes(i)*yNodes(i + 1) - yNodes(i)*xNodes(i + 1);
+	}
+	
+	area = 0.5 * abs(area);
+
+	return area;
+}

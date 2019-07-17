@@ -16,10 +16,10 @@ vmodel.var
 GSLIB/SGSIM_nodata.dbg
 GSLIB/SGSIM_output.out
 5                                       -number of realizations to generate
-101 0 5.000000e-01                              -nx, xmin, xsize
-101 0 5.000000e-01                              -ny, ymin, ysize
+101 0 2.000000e-01                              -nx, xmin, xsize
+101 0 2.000000e-01                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize
-8546100                               -random number seed
+8184730                               -random number seed
 0 8                                     -Min and max original data for sim
 12                                      -number of simulated nodes to use
 1                                       -assign data to nodes (0=no, 1=yes)
