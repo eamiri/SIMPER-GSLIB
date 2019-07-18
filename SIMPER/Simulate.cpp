@@ -9,7 +9,7 @@ int iTimestep, iIteration, iPlot;
 int *maxTimestep = &PROPS.Solution.MaxTimestep;
 int *maxIterations = &PROPS.Solution.MaxIterations;
 int *plotInterval = &PROPS.Solution.PlotInterval;
-int talikYear, permafrostYear;
+int iTalikYear, iPermafrostYear;
 
 double *TolResidual = &PROPS.Solution.TolPsi;
 
@@ -71,7 +71,7 @@ void InitializeSolution()
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
 	TempMin = Temp;
-	//TempMax = Temp;
+	TempMax = Temp;
 }
  
 void ComputePotentialStar()
