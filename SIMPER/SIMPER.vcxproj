@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{A6A70A7E-1D18-4342-8A15-3D560BCE63B8}</ProjectGuid>
+    <ProjectGuid>{2F3C7DE5-6440-43E3-93D2-0477486F5727}</ProjectGuid>
     <RootNamespace>SIMPER</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -28,13 +28,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -69,29 +69,23 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\SIMPER-GSLIB\SIMPER\EigenLib;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\SIMPER\EigenLib;$(IncludePath)</IncludePath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\SIMPER\SIMPER\EigenLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\SIMPER\EigenLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\SIMPER\EigenLib</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,11 +108,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\-=Erfan=-\PhD\-=Projects=-\MAIN\Github\SIMPER\EigenLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions); _CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>../SIMPER/EigenLib</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -126,31 +119,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CommonFunctions.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Postprocess.cpp" />
-    <ClCompile Include="SimperMain.cpp" />
-    <ClCompile Include="Inputs.cpp" />
-    <ClCompile Include="IBConditions.cpp" />
-    <ClCompile Include="Simulate.cpp" />
-    <ClCompile Include="SaturationFunctions.cpp" />
-    <ClCompile Include="TrustRegion.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CommonFunctions.h" />
+    <ClInclude Include="FEMFunctions.h" />
     <ClInclude Include="GaussPoints.h" />
-    <ClInclude Include="Postprocess.h" />
-    <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="IBConditions.h" />
-    <ClInclude Include="TrustRegion.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Postprocess.h" />
     <ClInclude Include="Properties.h" />
     <ClInclude Include="PropertyDefinitions.h" />
-    <ClInclude Include="FEMFunctions.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="SimperInclude.h" />
+    <ClInclude Include="TrustRegion.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SIMPER1.rc" />
+    <ClCompile Include="CommonFunctions.cpp" />
+    <ClCompile Include="FEMFunctions.cpp" />
+    <ClCompile Include="IBConditions.cpp" />
+    <ClCompile Include="Inputs.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Postprocess.cpp" />
+    <ClCompile Include="SaturationFunctions.cpp" />
+    <ClCompile Include="SimperMain.cpp" />
+    <ClCompile Include="Simulate.cpp" />
+    <ClCompile Include="TrustRegion.cpp" />
+    <ClCompile Include="TrustRegionIteration.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SIMPER.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\SIMPER.ico" />

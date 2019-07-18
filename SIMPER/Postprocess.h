@@ -51,9 +51,9 @@ private:
 	FILE *PermaforsAreaAnalysisFile;
 	int nGP;
 	GaussPoints GP;
-	size_t noel;
-	size_t nond;
-	size_t ndoe;
+	int noel;
+	int nond;
+	int ndoe;
 
 	VectorXd xNodes, yNodes, waterSat, iceSat, distance;
 	VectorXd TempNode;
