@@ -1,12 +1,21 @@
 #include "Postprocess.h"
 
-Postprocess::Postprocess(Mesh m, Properties p, FILE *plot, FILE *node, FILE *area, VectorXd nodalGSLIBCoeffs)
+Postprocess::Postprocess(Mesh mesh, 
+	                     Properties props, 
+	                     FILE *plotFile, 
+				         FILE *nodeFile, 
+	                     FILE *areaFile, 
+				         FILE *talikAreaFile,
+				         FILE *permafrostAreaFile,
+				         VectorXd nodalGSLIBCoeffs)
 {
-	MESH = m;
-	PROPS = p;
-	OutputFile = plot;
-	AreaAnalysisFile = area;
-	NodePlotFile = node;
+	MESH = mesh;
+	PROPS = props;
+	OutputFile = plotFile;
+	AreaAnalysisFile = areaFile;
+	TalikAreaAnalysis = talikAreaFile;
+	PermaforsAreaAnalysis = permafrostAreaFile;
+	NodePlotFile = nodeFile;
 	nGP = PROPS.GQ.NumberOfPoints;
 
 	GP.GP(nGP);
@@ -16,14 +25,76 @@ Postprocess::Postprocess(Mesh m, Properties p, FILE *plot, FILE *node, FILE *are
 	NodalGSLIBCoeffs = nodalGSLIBCoeffs;
 }
 
+void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
+{
+	Tliq = PROPS.Nonisothermal.TempLiquid;
+	//
+	talikArea = 0.0;
+	for (int e = 0; e < MESH.NumberOfElements; e++)
+	{	
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		//
+		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
+		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+		AreaElement = MESH.GetElementArea(e, ndoe);
+		//
+		elementDofs = MESH.GetElementDofs(e, ndoe);
+		//
+		TempNode = MESH.GetNodalValues(Temp, elementDofs);
+		//
+		iThawed = 0;
+		for (int n = 0; n < ndoe; n++)
+		{
+			if (minTemp(n) <= Tsol)
+			{
+				iThawed++;
+			}
+		}
+
+		talikArea += iThawed * AreaElement / ndoe;
+	}
+}
+
+void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year)
+{
+	Tliq = PROPS.Nonisothermal.TempLiquid;
+	//
+	talikArea = 0.0;
+	for (int e = 0; e < MESH.NumberOfElements; e++)
+	{	
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		//
+		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
+		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+		AreaElement = MESH.GetElementArea(e, ndoe);
+		//
+		elementDofs = MESH.GetElementDofs(e, ndoe);
+		//
+		TempNode = MESH.GetNodalValues(Temp, elementDofs);
+		//
+		iFrozen = 0;
+		for (int n = 0; n < ndoe; n++)
+		{
+			if (maxTemp(n) <= Tsol)
+			{
+				iFrozen++;
+			}
+		}
+
+		talikArea += iThawed * AreaElement / ndoe;
+	}
+}
+
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 {
-	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
 	Sres = PROPS.Soil.ResidualWaterSaturation;
-
+	//
+	frozenArea = 0.0;
+	thawedArea = 0.0;
+	slushyArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
-	{
+	{	
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -37,11 +108,11 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 		iFrozen = 0; iThawed = 0; iSlushy = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (TempNode(n) <= PROPS.Nonisothermal.TempSolid)
+			if (TempNode(n) <= Tsol)
 			{
 				iFrozen++;
 			}
-			else if (TempNode(n) > PROPS.Nonisothermal.TempSolid && TempNode(n) < PROPS.Nonisothermal.TempLiquid)
+			else if (TempNode(n) > Tsol && TempNode(n) < Tliq)
 			{
 				iSlushy++;
 			}

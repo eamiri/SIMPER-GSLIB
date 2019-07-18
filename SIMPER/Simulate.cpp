@@ -9,7 +9,8 @@ int iTimestep, iIteration, iPlot;
 int *maxTimestep = &PROPS.Solution.MaxTimestep;
 int *maxIterations = &PROPS.Solution.MaxIterations;
 int *plotInterval = &PROPS.Solution.PlotInterval;
-int iTalikYear, iPermafrostYear;
+int iTalikYear = 0;
+int iPermafrostYear = 0;
 
 double *TolResidual = &PROPS.Solution.TolPsi;
 
@@ -25,6 +26,7 @@ VectorXd TempNode, TempNodeDot, TempNodeHat, TempNode_0, GSLIBCoeffsNode;
 VectorXd GradTemp;
 VectorXi elementDofs;
 VectorXd bcResidual;
+VectorXd minTempTalikAnal, maxTempTalikAnal, minTempPermAnal, maxTempPermAnal;
 
 SparseMatrix<double> StiffSparse;
 
@@ -70,8 +72,10 @@ void InitializeSolution()
 	TempStar = Temp;
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
-	TempMin = Temp;
-	TempMax = Temp;
+	minTempPermAnal = Temp;
+	minTempTalikAnal = Temp;
+	maxTempPermAnal = Temp;
+	maxTempTalikAnal = Temp;
 }
  
 void ComputePotentialStar()
@@ -491,17 +495,42 @@ void Simulate()
 
 		 // Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
 		 // and talik: every year - based on the official definition)
+		if (Year = iTalikYear)
+		{
+			iTalikYear++;
+			POSTPROCESS.GetTalikArea(minTempTalikAnal, maxTempTalikAnal, Year);
+			minTempTalikAnal = Temp;
+			maxTempTalikAnal = Temp;
+		}
+
+		if(Year = iPermafrostYear)
+		{
+			iPermafrostYear += 2;
+			POSTPROCESS.GetPermafrostArea();
+			minTempPermAnal = Temp;
+			maxTempPermAnal = Temp;
+		}
 
 		for (int n = 0; n < nond; n++)
 		{
-			if (Temp(n) < TempMin(n))
+			if (Temp(n) < minTempTalikAnal(n))
 			{
-				TempMin(n) = Temp(n);
+				minTempTalikAnal(n) = Temp(n);
 			}
 
-			if (Temp(n) > TempMax(n))
+			if (Temp(n) > maxTempTalikAnal(n))
 			{
-				TempMax(n) = Temp(n);
+				maxTempTalikAnal(n) = Temp(n);
+			}
+
+			if (Temp(n) < minTempPermAnal(n))
+			{
+				minTempPermAnal(n) = Temp(n);
+			}
+
+			if (Temp(n) > maxTempPermAnal(n))
+			{
+				maxTempPermAnal(n) = Temp(n);
 			}
 		}
 

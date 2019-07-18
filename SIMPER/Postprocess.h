@@ -27,9 +27,18 @@ public:
 	VectorXd Temp;
 	double SolutionTime;
 
-	Postprocess(Mesh mesh, Properties props, FILE *plot, FILE *node, FILE *area, VectorXd nodalGSLIBCoeffs);
+	Postprocess(Mesh mesh, 
+	            Properties props, 
+	            FILE *plotFile, 
+				FILE *nodeFile, 
+	            FILE *areaFile, 
+				FILE *talikAreaFile,
+				FILE *permafrostAreaFile,
+				VectorXd nodalGSLIBCoeffs);
 	void Plot(VectorXd Temp, double SolutionTime);
 	void AreaAnalysis(VectorXd Temp, double solutionTime);
+	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year);
+	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year);
 
 private:
 	VectorXd NodalGSLIBCoeffs;
@@ -38,6 +47,8 @@ private:
 	FILE *OutputFile;
 	FILE *NodePlotFile;
 	FILE *AreaAnalysisFile;
+	FILE *TalikAreaAnalysis;
+	FILE *PermaforsAreaAnalysis;
 	int nGP;
 	GaussPoints GP;
 	int noel;
@@ -56,9 +67,8 @@ private:
 	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode, AreaElement;
 	int rSFC;
 	double Tsol, Tliq, Sres, Wpar, Mpar;
-	double frozenArea = 0.0;
-	double thawedArea = 0.0;
-	double slushyArea = 0.0;
+	double frozenArea, thawedArea, slushyArea;
+	double talikArea, permafrostArea;
 	int iFrozen, iThawed, iSlushy;
 };
 

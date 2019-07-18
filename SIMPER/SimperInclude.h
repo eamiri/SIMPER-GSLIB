@@ -39,8 +39,6 @@ extern VectorXd NodalGSLIBCoeffs;
 extern Properties PROPS;
 extern GaussPoints GP;
 extern VectorXd Temp;
-extern VectorXd TempMin;
-extern VectorXd TempMax;
 extern VectorXd TempDot;
 extern VectorXd Temp_0;
 extern VectorXd TempDot_0;
@@ -51,7 +49,7 @@ extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 
-extern FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile;
+extern FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile, *TalikAreaFile, *PermafrostAreaFile;
 extern ofstream outputFile;
 
 
