@@ -97,6 +97,15 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
+		isDataLine
+			>> props.Fen.IsFen
+			>> props.Fen.FenDelTemp
+			>> props.Fen.FenLambdaRatio;
+		getline(propsFile, line);
+		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
 		isDataLine >> props.BCs.InputFile;
 		getline(propsFile, line);
 		while (getline(propsFile, line))

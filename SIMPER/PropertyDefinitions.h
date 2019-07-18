@@ -39,6 +39,13 @@ struct NonisothermalProperties
 	double TempSolid;
 };
 
+struct FenProperties
+{
+	bool IsFen;
+	double FenDelTemp;
+	double FenLambdaRatio;
+};
+
 struct BoundaryConditions
 {
 	string InputFile;

@@ -7,6 +7,9 @@ Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair
 (Non)isothermal condition
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq		
 0			2618150			0.0			2.823	  		-1.0		0.0
+Fen Properties
+FenExists		FensTemperature		HydraulicConductivityRatio
+1				0.2					100
 Boundary Conditions
 Dirichlet BC Input File
 PlateauBC_Corrected.dat

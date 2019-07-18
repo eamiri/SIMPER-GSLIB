@@ -334,20 +334,24 @@ void Simulate()
 							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice + ISair * Dair * Cair) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(-IdSice);
 							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
 							//
-							SaturationFunctions FenSATFUNCS(TempG, -0.1, 0, 0, IsSaturated);
-							FenFlux = 0.0;
-							if (BCInputData(iTimestep, 1) < 0)
+							if (PROPS.Fen.IsFen)
 							{
-								if (MESH.Elements[e].SoilType == "Fen")
+								SaturationFunctions FenSATFUNCS(TempG, -0.1, 0, 0, IsSaturated);
+								FenFlux = 0.0;
+								if (Temp(TopBoundary[0]) < 0)
 								{
-									FenFlux = Dwat * Cwat * (10) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
+									if (MESH.Elements[e].SoilType == "Fen")
+									{
+										double fenDelTemp = PROPS.Fen.FenDelTemp;
+										double rLambdaFen = PROPS.Fen.FenLambdaRatio;
+										FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * rLambdaFen * 0.01);
+									}
+									else
+									{
+										FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 0.01);
+									}
 								}
-								else
-								{
-									FenFlux = Dwat * Cwat * (10) * (-HydCon * FenSATFUNCS.Swat * 0.01);
-								}
-							}
-							
+							}							
 							//
 							detJacob = Jacob.determinant();
 							Jmat = Jmat + Wi * Wj*Bmat.transpose()*Kpar*Bmat*detJacob;

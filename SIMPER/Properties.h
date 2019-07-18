@@ -9,6 +9,7 @@ struct Properties
 	SoilProperties Soil;
 	FluidProperties Fluid;
 	NonisothermalProperties Nonisothermal;
+	FenProperties Fen;
 	BoundaryConditions BCs;
 	GaussQuadrature GQ;
 	SolutionVariables Solution;
