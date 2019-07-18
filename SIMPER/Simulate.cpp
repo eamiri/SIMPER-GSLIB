@@ -26,7 +26,7 @@ VectorXd TempNode, TempNodeDot, TempNodeHat, TempNode_0, GSLIBCoeffsNode;
 VectorXd GradTemp;
 VectorXi elementDofs;
 VectorXd bcResidual;
-VectorXd minTempTalikAnal, maxTempTalikAnal, minTempPermAnal, maxTempPermAnal;
+VectorXd minTempTalikAna, maxTempTalikAna, minTempPermAna, maxTempPermAna;
 
 SparseMatrix<double> StiffSparse;
 
@@ -72,10 +72,10 @@ void InitializeSolution()
 	TempStar = Temp;
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
-	minTempPermAnal = Temp;
-	minTempTalikAnal = Temp;
-	maxTempPermAnal = Temp;
-	maxTempTalikAnal = Temp;
+	minTempPermAna = Temp;
+	minTempTalikAna = Temp;
+	maxTempPermAna = Temp;
+	maxTempTalikAna = Temp;
 }
  
 void ComputePotentialStar()
@@ -186,14 +186,13 @@ void UpdateTopBC(int iTimestep)
 
 void Simulate()
 {
-	Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, NodalGSLIBCoeffs);
+	Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, TalikAreaFile, PermafrostAreaFile, NodalGSLIBCoeffs);
 	IsSaturated = PROPS.Soil.IsSaturated;
 
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
 	maxTrustRegionRadius = 5.0E+3 * trRatioParameter;
 	trustRegionRadius = 1000 * trRatioParameter;
 	iPlot = 0;
-
 	//
 	Cair = PROPS.Fluid.AHeatCapacity;
 	Kair = PROPS.Fluid.AThermalConductivity;
@@ -221,10 +220,10 @@ void Simulate()
 	{
 		//Second to Year, Month, Day Conversion
 		solutionTime = (iTimestep + 1) * *deltaTime;
-		double Year = floor(solutionTime / (3600.0 * 24.0 * 365.0));
-		double Month = floor(solutionTime / (3600.0 * 24.0 * 31.0));
-		double Week = floor(solutionTime / (3600.0 * 24.0 * 7));
-		double Day = floor(solutionTime / (3600.0 * 24.0));
+		int Year = floor(solutionTime / (3600.0 * 24.0 * 365.0));
+		int Month = floor(solutionTime / (3600.0 * 24.0 * 31.0));
+		int Week = floor(solutionTime / (3600.0 * 24.0 * 7));
+		int Day = floor(solutionTime / (3600.0 * 24.0));
 		//
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
@@ -341,11 +340,11 @@ void Simulate()
 							{
 								if (MESH.Elements[e].SoilType == "Fen")
 								{
-									FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
+									FenFlux = Dwat * Cwat * (10) * (-HydCon * FenSATFUNCS.Swat * 100.0 * 0.01);
 								}
 								else
 								{
-									FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 0.01);
+									FenFlux = Dwat * Cwat * (10) * (-HydCon * FenSATFUNCS.Swat * 0.01);
 								}
 							}
 							
@@ -495,45 +494,47 @@ void Simulate()
 
 		 // Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
 		 // and talik: every year - based on the official definition)
-		if (Year = iTalikYear)
+		if (Year == iTalikYear)
 		{
 			iTalikYear++;
-			POSTPROCESS.GetTalikArea(minTempTalikAnal, maxTempTalikAnal, Year);
-			minTempTalikAnal = Temp;
-			maxTempTalikAnal = Temp;
+			POSTPROCESS.GetTalikArea(minTempTalikAna, maxTempTalikAna, Year);
+			// Reseting the min and max temperatures for the next year round
+			minTempTalikAna = Temp;
+			maxTempTalikAna = Temp;
 		}
 
-		if(Year = iPermafrostYear)
+		if(Year == iPermafrostYear)
 		{
 			iPermafrostYear += 2;
-			POSTPROCESS.GetPermafrostArea();
-			minTempPermAnal = Temp;
-			maxTempPermAnal = Temp;
+			POSTPROCESS.GetPermafrostArea(minTempPermAna, maxTempPermAna, Year);
+			// Reseting the min and max temperatures for the next 2 years round
+			minTempPermAna = Temp;
+			maxTempPermAna = Temp;
 		}
-
+		// Updating min and max temperatures
 		for (int n = 0; n < nond; n++)
 		{
-			if (Temp(n) < minTempTalikAnal(n))
+			if (Temp(n) < minTempTalikAna(n))
 			{
-				minTempTalikAnal(n) = Temp(n);
+				minTempTalikAna(n) = Temp(n);
 			}
 
-			if (Temp(n) > maxTempTalikAnal(n))
+			if (Temp(n) > maxTempTalikAna(n))
 			{
-				maxTempTalikAnal(n) = Temp(n);
+				maxTempTalikAna(n) = Temp(n);
 			}
 
-			if (Temp(n) < minTempPermAnal(n))
+			if (Temp(n) < minTempPermAna(n))
 			{
-				minTempPermAnal(n) = Temp(n);
+				minTempPermAna(n) = Temp(n);
 			}
 
-			if (Temp(n) > maxTempPermAnal(n))
+			if (Temp(n) > maxTempPermAna(n))
 			{
-				maxTempPermAnal(n) = Temp(n);
+				maxTempPermAna(n) = Temp(n);
 			}
 		}
-
+		// Plots
 		if (iTimestep == iPlot * *plotInterval)
 		{
 			iPlot++;

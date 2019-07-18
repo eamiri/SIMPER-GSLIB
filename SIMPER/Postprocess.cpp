@@ -13,8 +13,8 @@ Postprocess::Postprocess(Mesh mesh,
 	PROPS = props;
 	OutputFile = plotFile;
 	AreaAnalysisFile = areaFile;
-	TalikAreaAnalysis = talikAreaFile;
-	PermaforsAreaAnalysis = permafrostAreaFile;
+	TalikAreaAnalysisFile = talikAreaFile;
+	PermaforsAreaAnalysisFile = permafrostAreaFile;
 	NodePlotFile = nodeFile;
 	nGP = PROPS.GQ.NumberOfPoints;
 
@@ -28,7 +28,6 @@ Postprocess::Postprocess(Mesh mesh,
 void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 {
 	Tliq = PROPS.Nonisothermal.TempLiquid;
-	//
 	talikArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
@@ -40,12 +39,13 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 		//
 		elementDofs = MESH.GetElementDofs(e, ndoe);
 		//
-		TempNode = MESH.GetNodalValues(Temp, elementDofs);
+		minTempNode = MESH.GetNodalValues(minTemp, elementDofs);
+		maxTempNode = MESH.GetNodalValues(maxTemp, elementDofs);
 		//
 		iThawed = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (minTemp(n) <= Tsol)
+			if (minTempNode(n) >= Tliq)
 			{
 				iThawed++;
 			}
@@ -53,15 +53,17 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 
 		talikArea += iThawed * AreaElement / ndoe;
 	}
+
+	fprintf(TalikAreaAnalysisFile, "%i, %e\n", year, talikArea);
+	fflush(TalikAreaAnalysisFile);
 }
 
 void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year)
 {
 	Tliq = PROPS.Nonisothermal.TempLiquid;
-	//
-	talikArea = 0.0;
+	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
-	{	
+	{
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -70,25 +72,28 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 		//
 		elementDofs = MESH.GetElementDofs(e, ndoe);
 		//
-		TempNode = MESH.GetNodalValues(Temp, elementDofs);
+		minTempNode = MESH.GetNodalValues(minTemp, elementDofs);
+		maxTempNode = MESH.GetNodalValues(maxTemp, elementDofs);
 		//
 		iFrozen = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (maxTemp(n) <= Tsol)
+			if (maxTempNode(n) <= Tsol)
 			{
 				iFrozen++;
 			}
 		}
 
-		talikArea += iThawed * AreaElement / ndoe;
+		permafrostArea += iFrozen * AreaElement / ndoe;
 	}
+
+	fprintf(PermaforsAreaAnalysisFile, "%i, %e\n", year, permafrostArea);
+	fflush(PermaforsAreaAnalysisFile);
 }
 
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 {
 	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
 	//
 	frozenArea = 0.0;
 	thawedArea = 0.0;

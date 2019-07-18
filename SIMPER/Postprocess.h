@@ -47,13 +47,13 @@ private:
 	FILE *OutputFile;
 	FILE *NodePlotFile;
 	FILE *AreaAnalysisFile;
-	FILE *TalikAreaAnalysis;
-	FILE *PermaforsAreaAnalysis;
+	FILE *TalikAreaAnalysisFile;
+	FILE *PermaforsAreaAnalysisFile;
 	int nGP;
 	GaussPoints GP;
-	int noel;
-	int	nond;
-	int	ndoe;
+	size_t noel;
+	size_t nond;
+	size_t ndoe;
 
 	VectorXd xNodes, yNodes, waterSat, iceSat, distance;
 	VectorXd TempNode;
@@ -67,9 +67,12 @@ private:
 	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode, AreaElement;
 	int rSFC;
 	double Tsol, Tliq, Sres, Wpar, Mpar;
+
 	double frozenArea, thawedArea, slushyArea;
 	double talikArea, permafrostArea;
 	int iFrozen, iThawed, iSlushy;
+	VectorXd minTempNode;
+	VectorXd maxTempNode;
 };
 
 #endif

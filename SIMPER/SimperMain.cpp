@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	clock_t     t0, t1;          //computational time markers
 
 	Options.Pause = true;
-	Options.Version = "1.5.0";
+	Options.Version = "1.9.0";
 
 	if (!Options.Silent) {
 		int year = StringToInteger(SimPerBuildDate.substr(SimPerBuildDate.length() - 4, 4).c_str());
@@ -82,6 +82,8 @@ int main(int argc, char* argv[])
 	TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
 	PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
 	fprintf(AreaAnalysisFile, "SolutionTime, FrozenArea, ThawedArea, SlushyArea\n");
+	fprintf(TalikAreaFile, "Year, TalikArea\n");
+	fprintf(PermafrostAreaFile, "Year, PermafrostArea\n");
 	//SOLUTION
 	Simulate();
 
