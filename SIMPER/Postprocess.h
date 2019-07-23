@@ -66,7 +66,7 @@ private:
 
 	double GPi, GPj, Wi, Wj, globalGPx, globalGPy, dNodeGP, xNode, yNode, AreaElement;
 	int rSFC;
-	double Tsol, Tliq, Sres, Wpar, Mpar;
+	double Tsol, Tliq, Sres, Wpar, Mpar, SwSol, SwLiq;
 
 	double frozenArea, thawedArea, slushyArea;
 	double talikArea, permafrostArea;

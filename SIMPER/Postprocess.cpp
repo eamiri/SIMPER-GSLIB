@@ -27,7 +27,12 @@ Postprocess::Postprocess(Mesh mesh,
 
 void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 {
+	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+	Wpar = PROPS.Soil.Wpar;
+	Mpar = PROPS.Soil.Mpar;
+	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	talikArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
@@ -45,7 +50,8 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 		iThawed = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (minTempNode(n) >= Tliq)
+			SaturationFunctions SATFUNCS(minTempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			if (SATFUNCS.Swat >= SwLiq)
 			{
 				iThawed++;
 			}
@@ -60,7 +66,12 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 
 void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year)
 {
+	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+	Wpar = PROPS.Soil.Wpar;
+	Mpar = PROPS.Soil.Mpar;
+	SwSol = PROPS.Nonisothermal.SolidSatIndex;
 	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
@@ -78,7 +89,8 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 		iFrozen = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (maxTempNode(n) <= Tsol)
+			SaturationFunctions SATFUNCS(maxTempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			if (SATFUNCS.Swat <= SwSol)
 			{
 				iFrozen++;
 			}
@@ -93,7 +105,13 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 {
+	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
+	Sres = PROPS.Soil.ResidualWaterSaturation;
+	Wpar = PROPS.Soil.Wpar;
+	Mpar = PROPS.Soil.Mpar;
+	SwSol = PROPS.Nonisothermal.SolidSatIndex;
+	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	//
 	frozenArea = 0.0;
 	thawedArea = 0.0;
@@ -113,11 +131,12 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 		iFrozen = 0; iThawed = 0; iSlushy = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			if (TempNode(n) <= Tsol)
+			SaturationFunctions SATFUNCS(TempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			if (SATFUNCS.Swat <= SwSol)
 			{
 				iFrozen++;
 			}
-			else if (TempNode(n) > Tsol && TempNode(n) < Tliq)
+			else if (SATFUNCS.Swat > SwSol && SATFUNCS.Swat < SwLiq)
 			{
 				iSlushy++;
 			}

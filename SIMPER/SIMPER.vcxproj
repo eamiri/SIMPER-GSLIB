@@ -145,12 +145,6 @@
     <ClCompile Include="TrustRegion.cpp" />
     <ClCompile Include="TrustRegionIteration.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="SIMPER.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\SIMPER.ico" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

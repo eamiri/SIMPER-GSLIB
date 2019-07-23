@@ -81,15 +81,17 @@ int main(int argc, char* argv[])
 	AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
 	TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
 	PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
-	fprintf(AreaAnalysisFile, "SolutionTime, FrozenArea, ThawedArea, SlushyArea\n");
-	fprintf(TalikAreaFile, "Year, TalikArea\n");
-	fprintf(PermafrostAreaFile, "Year, PermafrostArea\n");
+	fprintf(AreaAnalysisFile, "SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
+	fprintf(TalikAreaFile, "Year,TalikArea\n");
+	fprintf(PermafrostAreaFile, "Year,PermafrostArea\n");
 	//SOLUTION
 	Simulate();
 
 	fclose(OutputFile);
 	fclose(NodePlotFile);
 	fclose(AreaAnalysisFile);
+	fclose(TalikAreaFile);
+	fclose(PermafrostAreaFile);
 
 	cin.get();
 	

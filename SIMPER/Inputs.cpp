@@ -91,7 +91,9 @@ Properties InputProperties(string filePath)
 			>> props.Nonisothermal.TempTransition
 			>> props.Nonisothermal.ThermalConductivity
 			>> props.Nonisothermal.TempSolid
-			>> props.Nonisothermal.TempLiquid;
+			>> props.Nonisothermal.TempLiquid
+			>> props.Nonisothermal.SolidSatIndex
+			>> props.Nonisothermal.LiquidSatIndex;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -150,10 +152,13 @@ Properties InputProperties(string filePath)
 		isDataLine.str(line);
 		isDataLine
 			>> props.GSLIB.CorrelationLength
-			>> props.GSLIB.NumberOfCells
-			>> props.GSLIB.GridSize
+			>> props.GSLIB.NumberOfCellsX
+			>> props.GSLIB.GridSizeX
+			>> props.GSLIB.NumberOfCellsY
+			>> props.GSLIB.GridSizeY
 			>> props.GSLIB.NumberOfRealizations
-			>> props.GSLIB.Seed;
+			>> props.GSLIB.Seed
+			>> props.GSLIB.AnisotropyRatio;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -213,8 +218,8 @@ void SgsimParameterFile()
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_nodata.dbg\n");
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
 	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", PROPS.GSLIB.NumberOfRealizations);
-	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
-	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
+	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
 	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
 	if (!PROPS.GSLIB.Seed)
 	{
@@ -251,8 +256,8 @@ void AddcoorParameterFile(int realizationNumber)
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
 	fprintf(inputFileGSLIB, "GSLIB/ADDCOOR_output.out\n");
 	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", realizationNumber);
-	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
-	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCells + 1, PROPS.GSLIB.GridSize);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
 	fprintf(inputFileGSLIB, "1 0 1                               -nz, zmin, zsize\n");
 	fflush(inputFileGSLIB);
 }
@@ -266,9 +271,9 @@ void GSLIBRunSGSIM()
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 
 	FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
-	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1));
+	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1));
 	GSLIBCoeffs.setZero();
-	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1), 2);
+	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
 	GSLIBGrid.setZero();
 	string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
 	ifstream gslibFile;
@@ -315,10 +320,11 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			double yNode = MESH.Nodes[n].Coordinates.y;
 			double gslibCoeff;
 			double distanceP = INFINITY;
-			for (int i = 0; i < (PROPS.GSLIB.NumberOfCells + 1) * (PROPS.GSLIB.NumberOfCells + 1); i++)
+			for (int i = 0; i < (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1); i++)
 			{
+				double ar = PROPS.GSLIB.AnisotropyRatio;
 				double xGrid = GSLIBGrid(i, 0);
-				double yGrid = GSLIBGrid(i, 1);
+				double yGrid = GSLIBGrid(i, 1) / ar;
 				double distance = sqrt((xNode - xGrid) * (xNode - xGrid) + (yNode - yGrid) * (yNode - yGrid));
 				if (distance < distanceP)
 				{

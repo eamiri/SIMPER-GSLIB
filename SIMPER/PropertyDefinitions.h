@@ -37,6 +37,8 @@ struct NonisothermalProperties
 	double TempTransition;
 	double TempLiquid;
 	double TempSolid;
+	double SolidSatIndex;
+	double LiquidSatIndex;
 };
 
 struct FenProperties
@@ -67,8 +69,11 @@ struct GSLIBProps
 	bool isHeterBC;
 	bool isHeterFP;
 	double CorrelationLength;
-	int NumberOfCells;
-	double GridSize;
+	int NumberOfCellsX;
+	int NumberOfCellsY;
+	double GridSizeX;
+	double GridSizeY;
+	double AnisotropyRatio;
 	int NumberOfRealizations;
 	long Seed;
 };
