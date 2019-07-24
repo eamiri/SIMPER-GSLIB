@@ -1,3 +1,9 @@
+#ifdef _unix_        
+#define linux
+#elif defined(_WIN32) || defined(WIN32) 
+#define _windows_
+#endif
+
 #include "SimperInclude.h"
 #include <regex>
 
@@ -29,7 +35,7 @@ bool Inputs(string propsInputFile, string meshInputFile)
 		SgsimParameterFile();
 		GSLIBRunSGSIM();
 	}
-	
+
 	UpscaleGSLIBtoSIMPER("GSLIB/GSLIB_DATA.out");
 
 	return true;
@@ -227,7 +233,7 @@ void SgsimParameterFile()
 	}
 	else
 	{
-		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", PROPS.GSLIB.Seed);	
+		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", PROPS.GSLIB.Seed);
 	}
 
 	fprintf(inputFileGSLIB, "0 8                                     -Min and max original data for sim\n");
@@ -265,9 +271,15 @@ void AddcoorParameterFile(int realizationNumber)
 void GSLIBRunSGSIM()
 {
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+#ifdef _windows_
 	int ExecuteGSLIB = system("GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\""); // simulation
 	AddcoorParameterFile(1);
 	ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
+#else
+	int ExecuteGSLIB = system("GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\""); // simulation
+	AddcoorParameterFile(1);
+	ExecuteGSLIB = system("GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\""); // adding coordinates
+#endif  
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 
 	FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
@@ -392,7 +404,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			else
 			{
 				MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
-			}	
+			}
 
 			if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 			{
@@ -437,7 +449,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			fprintf(plotSoilProperties, "1 2 3 4\n");
 			fflush(plotSoilProperties);
 		}
-	}	
+	}
 }
 
 Mesh InputMesh(string filePath)
@@ -499,7 +511,7 @@ Mesh InputMesh(string filePath)
 						remove(SoilType[i].begin(), SoilType[i].end(), '\"'),
 						SoilType[i].end()
 					);
-				}				
+				}
 			}
 
 			getline(meshFile, line);
@@ -654,7 +666,7 @@ Mesh InputMesh(string filePath)
 			noel = mesh.NumberOfElements;
 			nond = mesh.NumberOfNodes;
 			ndoe = mesh.ElementNumberOfNodes;
-		}		
+		}
 	}
 
 	for (int e = 0; e < noel; e++)
