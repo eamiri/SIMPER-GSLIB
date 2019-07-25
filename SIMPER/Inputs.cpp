@@ -200,7 +200,7 @@ Properties InputProperties(string filePath)
 
 void SgsimParameterFile()
 {
-	srand(time(0));
+	srand(static_cast<int>(time(0)));
 	long seedGSLIB = 305 * abs(rand());
 
 	/*for (int i = 0; i < 5; ++i) {
@@ -693,8 +693,8 @@ Mesh InputMesh(string filePath)
 				mesh.Elements.push_back(element);
 			}
 
-			mesh.NumberOfElements = mesh.Elements.size();
-			mesh.NumberOfNodes = mesh.Nodes.size();
+			mesh.NumberOfElements = static_cast<int>(mesh.Elements.size());
+			mesh.NumberOfNodes = static_cast<int>(mesh.Nodes.size());
 			mesh.ElementNumberOfNodes = 4;
 			noel = mesh.NumberOfElements;
 			nond = mesh.NumberOfNodes;
@@ -775,8 +775,8 @@ Mesh InputMesh(string filePath)
 				mesh.Elements.push_back(element);
 			}
 
-			mesh.NumberOfElements = mesh.Elements.size();
-			mesh.NumberOfNodes = mesh.Nodes.size();
+			mesh.NumberOfElements = static_cast<int>(mesh.Elements.size());
+			mesh.NumberOfNodes = static_cast<int>(mesh.Nodes.size());
 			mesh.ElementNumberOfNodes = 4;
 			noel = mesh.NumberOfElements;
 			nond = mesh.NumberOfNodes;

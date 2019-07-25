@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
 {
 	//double      t;
 	string      filebase;
-	clock_t     t0, t1;          //computational time markers
+	//clock_t     t0, t1;          //computational time markers
 
 	Options.Pause = true;
-	Options.Version = "1.9.0";
+	Options.Version = "1.5.0";
 
 	if (!Options.Silent) {
 		int year = StringToInteger(SimPerBuildDate.substr(SimPerBuildDate.length() - 4, 4).c_str());

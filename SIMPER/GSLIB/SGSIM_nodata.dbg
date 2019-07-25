@@ -9,6 +9,6 @@
  
 
  Realization   1: number   =    20301
-                  mean     =      -0.0973 (close to 0.0?)
-                  variance =       1.0327 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =       0.0661 (close to 0.0?)
+                  variance =       0.7700 (close to gammabar(V,V)? approx. 1.0)
 

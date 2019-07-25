@@ -222,10 +222,10 @@ void Simulate(int iRealization)
 	{
 		//Second to Year, Month, Day Conversion
 		solutionTime = (iTimestep + 1) * *deltaTime;
-		int Year = floor(solutionTime / (3600.0 * 24.0 * 365.0));
-		int Month = floor(solutionTime / (3600.0 * 24.0 * 31.0));
-		int Week = floor(solutionTime / (3600.0 * 24.0 * 7));
-		int Day = floor(solutionTime / (3600.0 * 24.0));
+		int Year = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 365.0)));
+		int Month = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 31.0)));
+		int Week = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 7)));
+		int Day = static_cast<int>(floor(solutionTime / (3600.0 * 24.0)));
 		//
 		printf("======================================================================================================================================================================");
 		// update boundary conditions

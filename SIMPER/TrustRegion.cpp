@@ -4,7 +4,7 @@ void TrustRegion::Iterate(SparseMatrix<double> B, VectorXd R, double TRRadius)
 {
 	B = 0.5 * (SparseMatrix<double>(B.transpose()) + B);
 	SimplicialLLT<SparseMatrix<double> > Solver;
-	int n = R.size();
+	int n = static_cast<int>(R.size());
 	double lambdaLow = 0.0;
 	double lambda = 0.0;
 	double traceBxBtran = calculateTrace(B * B);

@@ -37,8 +37,8 @@ class Mesh
 public:
 	vector<Element> Elements;
 	vector<Node> Nodes;
-	size_t NumberOfElements;
-	size_t NumberOfNodes;
+	int NumberOfElements;
+	int NumberOfNodes;
 	int ElementNumberOfNodes;
 	double MaxX;
 	double MaxY;
