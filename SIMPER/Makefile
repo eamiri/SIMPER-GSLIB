@@ -2,7 +2,7 @@
 appname := SIMPER.exe
 
 CXX      := g++ 
-CXXFLAGS := -Wno-deprecated -O3 -std=c++11 -I ./EigenLib
+CXXFLAGS := -Wno-deprecated -O3 -std=c++11
 
 srcfiles := $(shell find . -name "*.cpp")
 objects  := $(patsubst %.cpp, %.o, $(srcfiles))
@@ -33,6 +33,8 @@ clean:
 
 dist-clean: clean
 	rm -f *~ .depend
+	
+all: clean $(binaries)
 
 include .depend
 
