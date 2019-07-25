@@ -275,23 +275,36 @@ void GSLIBRunSGSIM()
 	#ifdef _windows_
 		const char * sgsimArg = "GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\"";
 		const char * addCoorArg = "GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\"";
+		if (remove("GSLIB\\ADDCOOR_output.out") != 0 || 
+			remove("GSLIB\\GSLIB_DATA.out") != 0 ||
+			remove("GSLIB\\SGSIM_output.out") != 0)
+		{
+			cout << "Error deleting GSLIB \".out\" files" << endl;
+		}
+
 	#else
 		const char * sgsimArg = "GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\"";
 		const char * addCoorArg = "GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\"";
+		if (remove("GSLIB/ADDCOOR_output.out") != 0 ||
+			remove("GSLIB/GSLIB_DATA.out") != 0 ||
+			remove("GSLIB/SGSIM_output.out") != 0)
+		{
+			cout << "Error deleting GSLIB \".out\" files" << endl;
+}
 	#endif  
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 	int ExecuteGSLIB = system(sgsimArg); // simulation
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), nRealization);
+	GSLIBCoeffs.setZero();
+	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
+	GSLIBGrid.setZero();
 	for (int iRealization = 0; iRealization < nRealization; iRealization++)
 	{
-		AddcoorParameterFile(iRealization);
-		ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
+		AddcoorParameterFile(iRealization + 1);
+		ExecuteGSLIB = system(addCoorArg); // adding coordinates
 
 		FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
-		GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), nRealization);
-		GSLIBCoeffs.setZero();
-		GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
-		GSLIBGrid.setZero();
 		string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
 		ifstream gslibFile;
 		gslibFile.open(AddcoorOutputFilePath.c_str());
@@ -331,14 +344,15 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		NodalGSLIBCoeffs.resize(nond, nRealization);
 		NodalGSLIBCoeffs.setZero();
 		int gslibNumberOfNodes = (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1);
-		for (int n = 0; n < nond; n++)
+		for (int iReal = 0; iReal < nRealization; iReal++)
 		{
-			double xNode = MESH.Nodes[n].Coordinates.x;
-			double yNode = MESH.Nodes[n].Coordinates.y;
-			double gslibCoeff;
-			double distanceP = INFINITY;
-			for (int iReal = 0; iReal < nRealization; iReal++)
+			for (int n = 0; n < nond; n++)
 			{
+				double xNode = MESH.Nodes[n].Coordinates.x;
+				double yNode = MESH.Nodes[n].Coordinates.y;
+				double gslibCoeff;
+				double distanceP = INFINITY;
+
 				double maxGslibCoeff = GSLIBCoeffs.col(iReal).maxCoeff();
 				double minGslibCoeff = GSLIBCoeffs.col(iReal).minCoeff();
 				for (int i = 0; i < gslibNumberOfNodes; i++)
@@ -362,9 +376,9 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 						}
 					}
 				}
+
 			}
 		}
-
 		//creating properties for each realization
 		for (int e = 0; e < noel; e++)
 		{
@@ -444,39 +458,39 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			fprintf(plotSoilProperties, "variables =\"X\" \"Y\"");
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i <greek>l</greek><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <greek>l</greek><sub>soil</sub>\"", iReal + 1);
 			}
 
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i <i>c</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>c</i><sub>soil</sub>\"", iReal + 1);
 			}
 
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i <i>K</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>K</i><sub>soil</sub>\"", iReal + 1);
 			}
 
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i <i>D</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>D</i><sub>soil</sub>\"", iReal + 1);
 			}
 
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i Freezing Point\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i Freezing Point\"", iReal + 1);
 			}
 
 			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " \"Realization %i Coeff_GSLIB\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i Coeff_GSLIB\"", iReal + 1);
 			}
 
 			fprintf(plotSoilProperties, "\nZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			
 			for (int inod = 0; inod < ndoe; inod++)
 			{
-				fprintf(plotSoilProperties, "\n%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
+				fprintf(plotSoilProperties, "%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
 													    MESH.Elements[e].Nodes[inod].Coordinates.y);
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
 				for (int iReal = 0; iReal < nRealization; iReal++)
@@ -508,6 +522,8 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 				{
 					fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, iReal));
 				}
+
+				fprintf(plotSoilProperties, "\n");
 			}
 			
 			fprintf(plotSoilProperties, "\n1 2 3 4");
