@@ -280,7 +280,7 @@ void GSLIBRunSGSIM()
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 	int ExecuteGSLIB = system(sgsimArg); // simulation
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
+	for (int iRealization = 0; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
 	{
 		AddcoorParameterFile(iRealization);
 		ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
