@@ -78,19 +78,19 @@ int main(int argc, char* argv[])
 	OutputFiles.OutputFile = fopen("../Results/OutPut.plt", "w");
 	OutputFiles.AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
 	OutputFiles.TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
-	OutputFiles.AnnualMinTemperatures = fopen("../Results/TalikMinTemperatures.csv", "w");
-	OutputFiles.AnnualMaxTemperatures = fopen("../Results/TalikMaxTemperatures.csv", "w");
+	OutputFiles.AnnualMinTemperatures = fopen("../Results/AnnualMinTemperatures.csv", "w");
+	OutputFiles.AnnualMaxTemperatures = fopen("../Results/AnnualMaxTemperatures.csv", "w");
 	OutputFiles.PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
-	OutputFiles.BiannualMinTemperatures = fopen("../Results/PermafrostMinTemperatures.csv", "w");
-	OutputFiles.BiannualMaxTemperatures = fopen("../Results/PermafrostMinTemperatures.csv", "w");
+	OutputFiles.BiannualMinTemperatures = fopen("../Results/BiannualMinTemperatures.csv", "w");
+	OutputFiles.BiannualMaxTemperatures = fopen("../Results/BiannualMaxTemperatures.csv", "w");
 
 	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
 	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");
 	fprintf(OutputFiles.PermafrostAreaFile, "Realization,Year,PermafrostArea\n");
-	fprintf(OutputFiles.AnnualMinTemperatures, "Annual minimum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
-	fprintf(OutputFiles.AnnualMaxTemperatures, "Annual maximum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
-	fprintf(OutputFiles.BiannualMinTemperatures, "Biannual minimum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
-	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
+	fprintf(OutputFiles.AnnualMinTemperatures, "Annual minimum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.AnnualMaxTemperatures, "Annual maximum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.BiannualMinTemperatures, "Biannual minimum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
 
 	//SOLUTION
 	for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)

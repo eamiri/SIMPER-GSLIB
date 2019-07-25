@@ -52,8 +52,8 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int
 	fprintf(Files.AnnualMaxTemperatures, "%i,%i,", iRealization, year);
 	for (int n = 0; n < nond; n++)
 	{
-		fprintf(Files.AnnualMinTemperatures, "%e", minTemp(n));
-		fprintf(Files.AnnualMaxTemperatures, "%e", maxTemp(n));
+		fprintf(Files.AnnualMinTemperatures, "%e,", minTemp(n));
+		fprintf(Files.AnnualMaxTemperatures, "%e,", maxTemp(n));
 	}
 
 	fprintf(Files.AnnualMinTemperatures, "\n");
@@ -103,8 +103,8 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	fprintf(Files.BiannualMaxTemperatures, "%i,%i,", iRealization, year);
 	for (int n = 0; n < nond; n++)
 	{
-		fprintf(Files.BiannualMinTemperatures, "%e", minTemp(n));
-		fprintf(Files.BiannualMaxTemperatures, "%e", maxTemp(n));
+		fprintf(Files.BiannualMinTemperatures, "%e,", minTemp(n));
+		fprintf(Files.BiannualMaxTemperatures, "%e,", maxTemp(n));
 	}
 
 	fprintf(Files.BiannualMinTemperatures, "\n");
