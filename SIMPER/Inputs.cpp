@@ -270,60 +270,56 @@ void AddcoorParameterFile(int realizationNumber)
 
 void GSLIBRunSGSIM()
 {
+	#ifdef _windows_
+		const char * sgsimArg = "GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\"";
+		const char * addCoorArg = "GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\"";
+	#else
+		const char * sgsimArg = "GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\"";
+		const char * addCoorArg = "GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\"";
+	#endif  
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-#ifdef _windows_
-	int ExecuteGSLIB = system("GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\""); // simulation
-	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
-	{
-		AddcoorParameterFile(iRealization);
-	}
-
-	ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
-#else
-	int ExecuteGSLIB = system("GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\""); // simulation
-	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
-	{
-		AddcoorParameterFile(iRealization);
-	}
-
-	ExecuteGSLIB = system("GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\""); // adding coordinates
-#endif  
+	int ExecuteGSLIB = system(sgsimArg); // simulation
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-
-	FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
-	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), PROPS.GSLIB.NumberOfRealizations);
-	GSLIBCoeffs.setZero();
-	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
-	GSLIBGrid.setZero();
-	string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
-	ifstream gslibFile;
-	gslibFile.open(AddcoorOutputFilePath.c_str());
-	string line;
-	getline(gslibFile, line);
-	getline(gslibFile, line);
-	getline(gslibFile, line);
-	getline(gslibFile, line);
-	getline(gslibFile, line);
-	int index = 0;
-	double gslibCoeff;
-	double xGrid;
-	double yGrid;
-	double zCoord;
-	while (getline(gslibFile, line))
+	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
 	{
-		if (!(gslibFile >> xGrid >> yGrid >> zCoord >> gslibCoeff))
+		AddcoorParameterFile(iRealization);
+		ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
+
+		FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
+		GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), PROPS.GSLIB.NumberOfRealizations);
+		GSLIBCoeffs.setZero();
+		GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
+		GSLIBGrid.setZero();
+		string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
+		ifstream gslibFile;
+		gslibFile.open(AddcoorOutputFilePath.c_str());
+		string line;
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		int index = 0;
+		double gslibCoeff;
+		double xGrid;
+		double yGrid;
+		double zCoord;
+		while (getline(gslibFile, line))
 		{
-			break;
+			if (!(gslibFile >> xGrid >> yGrid >> zCoord >> gslibCoeff))
+			{
+				break;
+			}
+
+			GSLIBGrid(index, 0) = xGrid;
+			GSLIBGrid(index, 1) = yGrid;
+			GSLIBCoeffs(index, iRealization) = gslibCoeff;
+			fprintf(inputFileGSLIB, "%e\t%e\t%e\n", xGrid, yGrid, gslibCoeff);
+			index++;
 		}
 
-		GSLIBGrid(index, 0) = xGrid;
-		GSLIBGrid(index, 1) = yGrid;
-		GSLIBCoeffs(index, iRealization) = gslibCoeff;
-		fprintf(inputFileGSLIB, "%e\t%e\t%e\n", xGrid, yGrid, gslibCoeff);
-		index++;
+		fflush(inputFileGSLIB);
 	}
-
-	fflush(inputFileGSLIB);
 }
 
 void UpscaleGSLIBtoSIMPER(string filePath)
