@@ -19,6 +19,8 @@ void ComputePotentialStar(int iRealization);
 void UpdateTopBC(int iTimestep);
 void Simulate(int iRealization);
 
+OutputFileStruc OutputFiles;
+
 VectorXd delTempStar, TempStar, TempHat, TempDotStar;
 VectorXd dResidual;
 VectorXd xNodes, yNodes;
@@ -186,7 +188,7 @@ void UpdateTopBC(int iTimestep)
 
 void Simulate(int iRealization)
 {
-	Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, TalikAreaFile, PermafrostAreaFile, NodalGSLIBCoeffs);
+	Postprocess POSTPROCESS(MESH, PROPS, NodalGSLIBCoeffs, OutputFiles);
 	IsSaturated = PROPS.Soil.IsSaturated;
 
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
@@ -253,7 +255,7 @@ void Simulate(int iRealization)
 		while (true)
 		{
 			iIteration++;
-			printf("\nSTEP= %6i \tITRN= %3i", iTimestep + 1, iIteration);
+			printf("\nRLZN= %3i \tSTEP= %6i \tITRN= %3i", iTimestep + 1, iIteration, iRealization);
 			if (isDelTempStarApproved)
 			{
 				Residual = Residual.Zero(MESH.NumberOfNodes);

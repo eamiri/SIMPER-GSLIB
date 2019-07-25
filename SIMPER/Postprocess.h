@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
+#include "OutputFileStruc.h"
 
 using namespace std;
 using namespace Eigen;
@@ -27,14 +28,7 @@ public:
 	VectorXd Temp;
 	double SolutionTime;
 
-	Postprocess(Mesh mesh, 
-	            Properties props, 
-	            FILE *plotFile, 
-				FILE *nodeFile, 
-	            FILE *areaFile, 
-				FILE *talikAreaFile,
-				FILE *permafrostAreaFile,
-				MatrixXd nodalGSLIBCoeffs);
+	Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs, OutputFileStruc files);
 	void Plot(VectorXd Temp, double SolutionTime, int iRealization);
 	void AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization);
 	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
@@ -44,11 +38,7 @@ private:
 	VectorXd NodalGSLIBCoeffs;
 	Mesh MESH;
 	Properties PROPS;
-	FILE *OutputFile;
-	FILE *NodePlotFile;
-	FILE *AreaAnalysisFile;
-	FILE *TalikAreaAnalysisFile;
-	FILE *PermaforsAreaAnalysisFile;
+	OutputFileStruc Files;
 	int nGP;
 	GaussPoints GP;
 	int noel;

@@ -26,6 +26,7 @@
 #include "TrustRegion.h"
 #include "SaturationFunctions.h"
 #include "Postprocess.h"
+#include "OutputFileStruc.h"
 
 using namespace std;
 using namespace Eigen;
@@ -48,9 +49,11 @@ extern vector<int> TopBoundary;
 extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
-
-extern FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile, *TalikAreaFile, *PermafrostAreaFile;
-extern ofstream outputFile;
+extern OutputFileStruc OutputFiles;
+//extern FILE* OutputFile, * NodePlotFile, * AreaAnalysisFile, * TalikAreaFile,
+//		   * PermafrostAreaFile, * TalikMinTemperatures, * TalikMaxTemperatures,
+//		   * PermafrostMinTemperatures, * PermafrostMaxTemperautre;
+//extern ofstream outputFile;
 
 
 struct GlobalOptions

@@ -122,6 +122,7 @@
     <ClInclude Include="CommonFunctions.h" />
     <ClInclude Include="FEMFunctions.h" />
     <ClInclude Include="GaussPoints.h" />
+    <ClInclude Include="OutputFileStruc.h" />
     <ClInclude Include="IBConditions.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Postprocess.h" />

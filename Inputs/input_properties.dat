@@ -24,7 +24,7 @@ MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLT
 432000			7200			1E-3			25						0.6							100		1						1
 GSLIB input data
 Correlation Length		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random) AnisotropyRatio(X/Y)
-12.8					200						0.25			 100					    0.25		   30						8184730					5
+12.8					200						0.25			 100					    0.25		   1						8184730					5
 Apply Heterogeneity on
 Lambda	C		K		BC		D		FP
 1		1		1		0		0		0	

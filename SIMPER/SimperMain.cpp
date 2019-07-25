@@ -5,8 +5,6 @@ static string SimPerBuildDate(__DATE__);
 const string PropertiesInputFile = "../Inputs/input_properties.dat";
 const string MeshInputFile = "../Inputs/input_mesh.msh";
 GlobalOptions Options;
-FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile, *TalikAreaFile, *PermafrostAreaFile;
-ofstream outputFile;
 
 bool Inputs(string propsInputFile, string meshInputFile);
 void Simulate(int iReal);
@@ -69,21 +67,31 @@ int main(int argc, char* argv[])
 	BCInputData = Conditions.BCInputData;
 
 	//PLOT FILES
-	NodePlotFile = fopen("../Results/NodePlot.plt", "w");
-	fprintf(NodePlotFile, "TITLE = \"Temperature profile of the nodes\"\n");
-	fprintf(NodePlotFile, "VARIABLES = \"<i>t</i>(sec)\"");
+	OutputFiles.NodePlotFile = fopen("../Results/NodePlot.plt", "w");
+	fprintf(OutputFiles.NodePlotFile, "TITLE = \"Temperature profile of the nodes\"\n");
+	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"<i>t</i>(sec)\"");
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 	{
-		fprintf(NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", n + 1);
+		fprintf(OutputFiles.NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", n + 1);
 	}
 	
-	OutputFile = fopen("../Results/OutPut.plt", "w"); 
-	AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
-	TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
-	PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
-	fprintf(AreaAnalysisFile, "SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
-	fprintf(TalikAreaFile, "Year,TalikArea\n");
-	fprintf(PermafrostAreaFile, "Year,PermafrostArea\n");
+	OutputFiles.OutputFile = fopen("../Results/OutPut.plt", "w");
+	OutputFiles.AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
+	OutputFiles.TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
+	OutputFiles.AnnualMinTemperatures = fopen("../Results/TalikMinTemperatures.csv", "w");
+	OutputFiles.AnnualMaxTemperatures = fopen("../Results/TalikMaxTemperatures.csv", "w");
+	OutputFiles.PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
+	OutputFiles.BiannualMinTemperatures = fopen("../Results/PermafrostMinTemperatures.csv", "w");
+	OutputFiles.BiannualMaxTemperatures = fopen("../Results/PermafrostMinTemperatures.csv", "w");
+
+	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
+	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");
+	fprintf(OutputFiles.PermafrostAreaFile, "Realization,Year,PermafrostArea\n");
+	fprintf(OutputFiles.AnnualMinTemperatures, "Annual minimum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
+	fprintf(OutputFiles.AnnualMaxTemperatures, "Annual maximum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
+	fprintf(OutputFiles.BiannualMinTemperatures, "Biannual minimum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
+	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Year, Nodal Temperatures\n");
+
 	//SOLUTION
 	for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 	{
@@ -91,12 +99,11 @@ int main(int argc, char* argv[])
 	}
 	
 
-	fclose(OutputFile);
-	fclose(NodePlotFile);
-	fclose(AreaAnalysisFile);
-	fclose(TalikAreaFile);
-	fclose(PermafrostAreaFile);
-
+	fclose(OutputFiles.OutputFile);
+	fclose(OutputFiles.NodePlotFile);
+	fclose(OutputFiles.AreaAnalysisFile);
+	fclose(OutputFiles.TalikAreaFile);
+	fclose(OutputFiles.PermafrostAreaFile);
 	cin.get();
 	
 	return 0;

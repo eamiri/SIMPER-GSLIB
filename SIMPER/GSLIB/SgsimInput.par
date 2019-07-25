@@ -15,7 +15,7 @@ vmodel.var
 0                                       -debug level (0-3)
 GSLIB/SGSIM_nodata.dbg
 GSLIB/SGSIM_output.out
-30                                       -number of realizations to generate
+1                                       -number of realizations to generate
 201 0 2.500000e-01                              -nx, xmin, xsize
 101 0 2.500000e-01                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize

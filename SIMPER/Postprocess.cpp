@@ -1,28 +1,16 @@
 #include "Postprocess.h"
 
-Postprocess::Postprocess(Mesh mesh, 
-	                     Properties props, 
-	                     FILE *plotFile, 
-				         FILE *nodeFile, 
-	                     FILE *areaFile, 
-				         FILE *talikAreaFile,
-				         FILE *permafrostAreaFile,
-				         MatrixXd nodalGSLIBCoeffs)
+Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs, OutputFileStruc files)
 {
 	MESH = mesh;
 	PROPS = props;
-	OutputFile = plotFile;
-	AreaAnalysisFile = areaFile;
-	TalikAreaAnalysisFile = talikAreaFile;
-	PermaforsAreaAnalysisFile = permafrostAreaFile;
-	NodePlotFile = nodeFile;
 	nGP = PROPS.GQ.NumberOfPoints;
-
 	GP.GP(nGP);
 	noel = MESH.NumberOfElements;
 	nond = MESH.NumberOfNodes;
 	ndoe = MESH.ElementNumberOfNodes;
 	NodalGSLIBCoeffs = nodalGSLIBCoeffs;
+	Files = files;
 }
 
 void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
@@ -60,8 +48,21 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int
 		talikArea += iThawed * AreaElement / ndoe;
 	}
 
-	fprintf(TalikAreaAnalysisFile, "%i, %e\n", year, talikArea);
-	fflush(TalikAreaAnalysisFile);
+	fprintf(Files.AnnualMinTemperatures, "%i,%i,", iRealization, year);
+	fprintf(Files.AnnualMaxTemperatures, "%i,%i,", iRealization, year);
+	for (int n = 0; n < nond; n++)
+	{
+		fprintf(Files.AnnualMinTemperatures, "%e", minTemp(n));
+		fprintf(Files.AnnualMaxTemperatures, "%e", maxTemp(n));
+	}
+
+	fprintf(Files.AnnualMinTemperatures, "\n");
+	fprintf(Files.AnnualMaxTemperatures, "\n");
+
+	fprintf(Files.TalikAreaFile, "%i,%i,%e\n", iRealization, year, talikArea);
+	fflush(Files.TalikAreaFile);
+	fflush(Files.AnnualMinTemperatures);
+	fflush(Files.AnnualMaxTemperatures);
 }
 
 void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
@@ -98,9 +99,21 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 
 		permafrostArea += iFrozen * AreaElement / ndoe;
 	}
+	fprintf(Files.BiannualMinTemperatures, "%i,%i,", iRealization, year);
+	fprintf(Files.BiannualMaxTemperatures, "%i,%i,", iRealization, year);
+	for (int n = 0; n < nond; n++)
+	{
+		fprintf(Files.BiannualMinTemperatures, "%e", minTemp(n));
+		fprintf(Files.BiannualMaxTemperatures, "%e", maxTemp(n));
+	}
 
-	fprintf(PermaforsAreaAnalysisFile, "%i, %e\n", year, permafrostArea);
-	fflush(PermaforsAreaAnalysisFile);
+	fprintf(Files.BiannualMinTemperatures, "\n");
+	fprintf(Files.BiannualMaxTemperatures, "\n");
+
+	fprintf(Files.PermafrostAreaFile, "%i,%i,%e\n", iRealization, year, permafrostArea);
+	fflush(Files.PermafrostAreaFile);
+	fflush(Files.BiannualMinTemperatures);
+	fflush(Files.BiannualMaxTemperatures);
 }
 
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization)
@@ -151,8 +164,8 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 		thawedArea += iThawed * AreaElement / ndoe;
 	}
 
-	fprintf(AreaAnalysisFile, "%e, %e, %e, %e\n", solutionTime, frozenArea, thawedArea, slushyArea);
-	fflush(AreaAnalysisFile);
+	fprintf(Files.AreaAnalysisFile, "%i,%e,%e,%e,%e\n", iRealization, solutionTime, frozenArea, thawedArea, slushyArea);
+	fflush(Files.AreaAnalysisFile);
 }
 
 void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
@@ -228,38 +241,38 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 
 	if (PROPS.PlotNodes.size())
 	{
-		fprintf(NodePlotFile, "\n%e\t", solutionTime);
+		fprintf(Files.NodePlotFile, "\n%e\t", solutionTime);
 		for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 		{
-			fprintf(NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));
+			fprintf(Files.NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));
 		}
 
-		fflush(NodePlotFile);
+		fflush(Files.NodePlotFile);
 	}	
 
 	if (PROPS.Soil.IsGSLIB)
 	{
-		fprintf(OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \"GSLIB Coeff\"\n");
-		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
+		fprintf(Files.OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \"GSLIB Coeff\"\n");
+		fprintf(Files.OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n, iRealization));
+			fprintf(Files.OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n, iRealization));
 		}
 	}
 	else
 	{
-		fprintf(OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \n");
-		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
+		fprintf(Files.OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \n");
+		fprintf(Files.OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n));
+			fprintf(Files.OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n));
 		}
 	}
 
 	for (int e = 0; e < noel; e++)
 	{
-		fprintf(OutputFile, "%i\t%i\t%i\t%i\t\n", MESH.Elements[e].Nodes[0].n, MESH.Elements[e].Nodes[1].n, MESH.Elements[e].Nodes[2].n, MESH.Elements[e].Nodes[3].n);
+		fprintf(Files.OutputFile, "%i\t%i\t%i\t%i\t\n", MESH.Elements[e].Nodes[0].n, MESH.Elements[e].Nodes[1].n, MESH.Elements[e].Nodes[2].n, MESH.Elements[e].Nodes[3].n);
 	}
 
-	fflush(OutputFile);
+	fflush(Files.OutputFile);
 }
