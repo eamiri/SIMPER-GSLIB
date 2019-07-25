@@ -25,11 +25,11 @@ struct Element
 	vector<Node> Nodes;
 	double Area;
 	string SoilType;
-	double SoilHydraulicConductivity;
-	double SoilHeatCapacity;
-	double SoilThermalConductivity;
-	double SoilDensity;
-	double SoilFreezingPoint;
+	VectorXd SoilHydraulicConductivity;
+	VectorXd SoilHeatCapacity;
+	VectorXd SoilThermalConductivity;
+	VectorXd SoilDensity;
+	VectorXd SoilFreezingPoint;
 };
 
 class Mesh

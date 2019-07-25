@@ -35,7 +35,7 @@ extern int nond;
 extern int ndoe;
 extern int nGP;
 extern Mesh MESH;
-extern VectorXd NodalGSLIBCoeffs;
+extern MatrixXd NodalGSLIBCoeffs;
 extern Properties PROPS;
 extern GaussPoints GP;
 extern VectorXd Temp;

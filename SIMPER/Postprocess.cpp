@@ -7,7 +7,7 @@ Postprocess::Postprocess(Mesh mesh,
 	                     FILE *areaFile, 
 				         FILE *talikAreaFile,
 				         FILE *permafrostAreaFile,
-				         VectorXd nodalGSLIBCoeffs)
+				         MatrixXd nodalGSLIBCoeffs)
 {
 	MESH = mesh;
 	PROPS = props;
@@ -25,7 +25,7 @@ Postprocess::Postprocess(Mesh mesh,
 	NodalGSLIBCoeffs = nodalGSLIBCoeffs;
 }
 
-void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
+void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
 {
 	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
@@ -36,7 +36,7 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 	talikArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
-		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -64,7 +64,7 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year)
 	fflush(TalikAreaAnalysisFile);
 }
 
-void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year)
+void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
 {
 	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
@@ -75,7 +75,7 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -103,7 +103,7 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	fflush(PermaforsAreaAnalysisFile);
 }
 
-void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
+void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization)
 {
 	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
@@ -118,7 +118,7 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 	slushyArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
-		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -155,7 +155,7 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime)
 	fflush(AreaAnalysisFile);
 }
 
-void Postprocess::Plot(VectorXd Temp, double solutionTime)
+void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 {
 	//
 	rSFC = PROPS.Soil.rSFC;
@@ -171,7 +171,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime)
 
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -243,7 +243,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime)
 		fprintf(OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n));
+			fprintf(OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n, iRealization));
 		}
 	}
 	else

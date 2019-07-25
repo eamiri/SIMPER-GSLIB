@@ -11,7 +11,7 @@ bool Inputs(string propsInputFile, string meshInputFile);
 Properties InputProperties(string filePath);
 Mesh InputMesh(string filePath);
 void SgsimParameterFile();
-void GSLIBRunSGSIM();
+void GSLIBRunSGSIM(int iRealization);
 void UpscaleGSLIBtoSIMPER(string filePath);
 void AddcoorParameterFile(int realizationNumber);
 
@@ -20,8 +20,8 @@ int nond;
 int ndoe;
 int nGP;
 Mesh MESH;
-VectorXd GSLIBCoeffs;
-VectorXd NodalGSLIBCoeffs;
+MatrixXd GSLIBCoeffs;
+MatrixXd NodalGSLIBCoeffs;
 MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
@@ -33,7 +33,10 @@ bool Inputs(string propsInputFile, string meshInputFile)
 	if (PROPS.Soil.IsGSLIB)
 	{
 		SgsimParameterFile();
-		GSLIBRunSGSIM();
+		for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+		{
+			GSLIBRunSGSIM(iReal);
+		}
 	}
 
 	UpscaleGSLIBtoSIMPER("GSLIB/GSLIB_DATA.out");
@@ -268,22 +271,22 @@ void AddcoorParameterFile(int realizationNumber)
 	fflush(inputFileGSLIB);
 }
 
-void GSLIBRunSGSIM()
+void GSLIBRunSGSIM(int iRealization)
 {
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 #ifdef _windows_
 	int ExecuteGSLIB = system("GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\""); // simulation
-	AddcoorParameterFile(1);
+	AddcoorParameterFile(iRealization);
 	ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
 #else
 	int ExecuteGSLIB = system("GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\""); // simulation
-	AddcoorParameterFile(1);
+	AddcoorParameterFile(iRealization);
 	ExecuteGSLIB = system("GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\""); // adding coordinates
 #endif  
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 
 	FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
-	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1));
+	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), PROPS.GSLIB.NumberOfRealizations);
 	GSLIBCoeffs.setZero();
 	GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
 	GSLIBGrid.setZero();
@@ -310,7 +313,7 @@ void GSLIBRunSGSIM()
 
 		GSLIBGrid(index, 0) = xGrid;
 		GSLIBGrid(index, 1) = yGrid;
-		GSLIBCoeffs(index) = gslibCoeff;
+		GSLIBCoeffs(index, iRealization) = gslibCoeff;
 		fprintf(inputFileGSLIB, "%e\t%e\t%e\n", xGrid, yGrid, gslibCoeff);
 		index++;
 	}
@@ -322,108 +325,189 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
-		NodalGSLIBCoeffs.resize(nond);
+		NodalGSLIBCoeffs.resize(nond, PROPS.GSLIB.NumberOfRealizations);
 		NodalGSLIBCoeffs.setZero();
-		double maxGslibCoeff = GSLIBCoeffs.maxCoeff();
-		double minGslibCoeff = GSLIBCoeffs.minCoeff();
+		int gslibNumberOfNodes = (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1);
 		for (int n = 0; n < nond; n++)
 		{
 			double xNode = MESH.Nodes[n].Coordinates.x;
 			double yNode = MESH.Nodes[n].Coordinates.y;
 			double gslibCoeff;
 			double distanceP = INFINITY;
-			for (int i = 0; i < (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1); i++)
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				double ar = PROPS.GSLIB.AnisotropyRatio;
-				double xGrid = GSLIBGrid(i, 0);
-				double yGrid = GSLIBGrid(i, 1) / ar;
-				double distance = sqrt((xNode - xGrid) * (xNode - xGrid) + (yNode - yGrid) * (yNode - yGrid));
-				if (distance < distanceP)
+				double maxGslibCoeff = GSLIBCoeffs.col(iReal).maxCoeff();
+				double minGslibCoeff = GSLIBCoeffs.col(iReal).minCoeff();
+				for (int i = 0; i < gslibNumberOfNodes; i++)
 				{
-					distanceP = distance;
-					gslibCoeff = GSLIBCoeffs(i);
+					double ar = PROPS.GSLIB.AnisotropyRatio;
+					double xGrid = GSLIBGrid(i, 0);
+					double yGrid = GSLIBGrid(i, 1) / ar;
+					double distance = sqrt((xNode - xGrid) * (xNode - xGrid) + (yNode - yGrid) * (yNode - yGrid));
+					if (distance < distanceP)
+					{
+						distanceP = distance;
+						gslibCoeff = GSLIBCoeffs(i, iReal);
 
-					if (gslibCoeff > 0)
-					{
-						NodalGSLIBCoeffs(n) = 1 + gslibCoeff / maxGslibCoeff;
-					}
-					else
-					{
-						NodalGSLIBCoeffs(n) = 1 + gslibCoeff / abs(minGslibCoeff);
+						if (gslibCoeff > 0)
+						{
+							NodalGSLIBCoeffs(n, iReal) = 1 + gslibCoeff / maxGslibCoeff;
+						}
+						else
+						{
+							NodalGSLIBCoeffs(n, iReal) = 1 + gslibCoeff / abs(minGslibCoeff);
+						}
 					}
 				}
 			}
+		}
+
+		//creating properties for each realization
+		for (int e = 0; e < noel; e++)
+		{
+			MESH.Elements[e].SoilHydraulicConductivity.resize(PROPS.GSLIB.NumberOfRealizations);
+			MESH.Elements[e].SoilHeatCapacity.resize(PROPS.GSLIB.NumberOfRealizations);
+			MESH.Elements[e].SoilThermalConductivity.resize(PROPS.GSLIB.NumberOfRealizations);
+			MESH.Elements[e].SoilDensity.resize(PROPS.GSLIB.NumberOfRealizations);
+			MESH.Elements[e].SoilFreezingPoint.resize(PROPS.GSLIB.NumberOfRealizations);
 		}
 
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
 		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
+		for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+		{
+			for (int e = 0; e < noel; e++)
+			{
+				elementDofs = MESH.GetElementDofs(e, ndoe);
+				GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs.col(iReal), elementDofs);
+				GSLIBCoeffE = 0;
+				for (int ig = 0; ig < 4; ig++)
+				{
+					GSLIBCoeffE += abs(GSLIBCoeffsNode(ig));
+				}
+
+				GSLIBCoeffE = GSLIBCoeffE * 0.25;
+				if (PROPS.GSLIB.isHeterLambda) // Check if soil hydraulic conductivity is heterogeneous
+				{
+					MESH.Elements[e].SoilHydraulicConductivity(iReal) = PROPS.Soil.HydraulicConductivity * GSLIBCoeffE;
+				}
+				else
+				{
+					MESH.Elements[e].SoilHydraulicConductivity(iReal) = PROPS.Soil.HydraulicConductivity;
+				}
+
+				if (PROPS.GSLIB.isHeterC) // Check if soil heat capacity is heterogeneous
+				{
+					MESH.Elements[e].SoilHeatCapacity(iReal) = PROPS.Soil.HeatCapacity * GSLIBCoeffE;
+				}
+				else
+				{
+					MESH.Elements[e].SoilHeatCapacity(iReal) = PROPS.Soil.HeatCapacity;
+				}
+
+				if (PROPS.GSLIB.isHeterK) // Check if soil thermal conductivity is heterogeneous
+				{
+					MESH.Elements[e].SoilThermalConductivity(iReal) = PROPS.Soil.ThermalConductivity * GSLIBCoeffE;
+				}
+				else
+				{
+					MESH.Elements[e].SoilThermalConductivity(iReal) = PROPS.Soil.ThermalConductivity;
+				}
+
+				if (PROPS.GSLIB.isHeterD) // Check if soil density is heterogeneous
+				{
+					MESH.Elements[e].SoilDensity(iReal) = PROPS.Soil.Density * GSLIBCoeffE;
+				}
+				else
+				{
+					MESH.Elements[e].SoilDensity(iReal) = PROPS.Soil.Density;
+				}
+
+				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
+				{
+					MESH.Elements[e].SoilFreezingPoint(iReal) = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * GSLIBCoeffE;
+				}
+				else
+				{
+					MESH.Elements[e].SoilFreezingPoint(iReal) = PROPS.Nonisothermal.TempSolid;
+				}
+			}
+		}
+		
 		for (int e = 0; e < noel; e++)
 		{
-			elementDofs = MESH.GetElementDofs(e, ndoe);
-			GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs, elementDofs);
-			GSLIBCoeffE = 0;
-			for (int ig = 0; ig < 4; ig++)
+			fprintf(plotSoilProperties, "variables =\"X\" \"Y\"");
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				GSLIBCoeffE += abs(GSLIBCoeffsNode(ig));
+				fprintf(plotSoilProperties, " Realization %i \"<greek>l</greek><sub>soil</sub>\"", iReal);
 			}
 
-			GSLIBCoeffE = GSLIBCoeffE * 0.25;
-			if (PROPS.GSLIB.isHeterLambda) // Check if soil hydraulic conductivity is heterogeneous
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil.HydraulicConductivity * GSLIBCoeffE;
-			}
-			else
-			{
-				MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil.HydraulicConductivity;
+				fprintf(plotSoilProperties, " Realization %i \"<i>c</i><sub>soil</sub>\"", iReal);
 			}
 
-			if (PROPS.GSLIB.isHeterC) // Check if soil heat capacity is heterogeneous
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity * GSLIBCoeffE;
-			}
-			else
-			{
-				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
+				fprintf(plotSoilProperties, " Realization %i \"<i>K</i><sub>soil</sub>\"", iReal);
 			}
 
-			if (PROPS.GSLIB.isHeterK) // Check if soil thermal conductivity is heterogeneous
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity * GSLIBCoeffE;
-			}
-			else
-			{
-				MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
+				fprintf(plotSoilProperties, " Realization %i \"<i>D</i><sub>soil</sub>\"", iReal);
 			}
 
-			if (PROPS.GSLIB.isHeterD) // Check if soil density is heterogeneous
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				MESH.Elements[e].SoilDensity = PROPS.Soil.Density * GSLIBCoeffE;
-			}
-			else
-			{
-				MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
+				fprintf(plotSoilProperties, " Realization %i \"Freezing Point\"", iReal);
 			}
 
-			if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
+			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 			{
-				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * GSLIBCoeffE;
-			}
-			else
-			{
-				MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
+				fprintf(plotSoilProperties, " Realization %i \"Coeff_GSLIB\"", iReal);
 			}
 
-			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Coeff_GSLIB\"\n");
-			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
+			fprintf(plotSoilProperties, "\nZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
+			
 			for (int inod = 0; inod < ndoe; inod++)
 			{
+				fprintf(plotSoilProperties, "%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
+													    MESH.Elements[e].Nodes[inod].Coordinates.y);
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHydraulicConductivity, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint, NodalGSLIBCoeffs(nodeIndex));
-			}
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHydraulicConductivity(iReal));
+				}
 
-			fprintf(plotSoilProperties, "1 2 3 4\n");
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHeatCapacity(iReal));
+				}
+
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilThermalConductivity(iReal));
+				}
+
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilDensity(iReal));
+				}
+
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilFreezingPoint(iReal));
+				}
+
+				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				{
+					fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, iReal));
+				}
+			}
+			
+			fprintf(plotSoilProperties, "\n1 2 3 4\n");
 			fflush(plotSoilProperties);
 		}
 	}
@@ -433,17 +517,29 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
-			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
-			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
-			MESH.Elements[e].SoilDensity = PROPS.Soil.Density;
-			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
+			MESH.Elements[e].SoilHydraulicConductivity.resize(1);
+			MESH.Elements[e].SoilHeatCapacity.resize(1);
+			MESH.Elements[e].SoilThermalConductivity.resize(1);
+			MESH.Elements[e].SoilDensity.resize(1);
+			MESH.Elements[e].SoilFreezingPoint.resize(1);
+
+			MESH.Elements[e].SoilHeatCapacity(0) = PROPS.Soil.HeatCapacity;
+			MESH.Elements[e].SoilThermalConductivity(0) = PROPS.Soil.ThermalConductivity;
+			MESH.Elements[e].SoilDensity(0) = PROPS.Soil.Density;
+			MESH.Elements[e].SoilFreezingPoint(0) = PROPS.Nonisothermal.TempSolid;
 
 			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\"\n");
 			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x, MESH.Elements[e].Nodes[inod].Coordinates.y, MESH.Elements[e].SoilHydraulicConductivity, MESH.Elements[e].SoilHeatCapacity, MESH.Elements[e].SoilThermalConductivity, MESH.Elements[e].SoilDensity, MESH.Elements[e].SoilFreezingPoint);
+				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
+					MESH.Elements[e].Nodes[inod].Coordinates.y, 
+					MESH.Elements[e].SoilHydraulicConductivity(0),
+					MESH.Elements[e].SoilHeatCapacity(0),
+					MESH.Elements[e].SoilThermalConductivity(0),
+					MESH.Elements[e].SoilDensity(0),
+					MESH.Elements[e].SoilFreezingPoint(0));
 			}
 
 			fprintf(plotSoilProperties, "1 2 3 4\n");

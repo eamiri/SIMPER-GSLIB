@@ -9,7 +9,7 @@ FILE *OutputFile, *NodePlotFile, *AreaAnalysisFile, *TalikAreaFile, *PermafrostA
 ofstream outputFile;
 
 bool Inputs(string propsInputFile, string meshInputFile);
-void Simulate();
+void Simulate(int iReal);
 
 VectorXd Temp_0;
 VectorXd TempDot_0;
@@ -85,7 +85,11 @@ int main(int argc, char* argv[])
 	fprintf(TalikAreaFile, "Year,TalikArea\n");
 	fprintf(PermafrostAreaFile, "Year,PermafrostArea\n");
 	//SOLUTION
-	Simulate();
+	for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+	{
+		Simulate(iReal);
+	}
+	
 
 	fclose(OutputFile);
 	fclose(NodePlotFile);

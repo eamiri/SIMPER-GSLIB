@@ -15,9 +15,9 @@ int iPermafrostYear = 0;
 double *TolResidual = &PROPS.Solution.TolPsi;
 
 void InitializeSolution();
-void ComputePotentialStar();
+void ComputePotentialStar(int iRealization);
 void UpdateTopBC(int iTimestep);
-void Simulate();
+void Simulate(int iRealization);
 
 VectorXd delTempStar, TempStar, TempHat, TempDotStar;
 VectorXd dResidual;
@@ -78,13 +78,13 @@ void InitializeSolution()
 	maxTempTalikAna = Temp;
 }
  
-void ComputePotentialStar()
+void ComputePotentialStar(int iRealization)
 {
 	PotentialStar = 0.0;
 	TempDotStar = (TempStar - TempHat) / (*gammaNewmark * *deltaTime);
 	for (int e = 0; e < noel; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint;
+		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 		//
 		dMmat = dMmat.Zero(ndoe, ndoe);
 		Mmat = Mmat.Zero(ndoe, 1);
@@ -107,9 +107,9 @@ void ComputePotentialStar()
 		TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 		TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 		// GSLIB
-		Csol = MESH.Elements[e].SoilHeatCapacity;
-		Dsol = MESH.Elements[e].SoilDensity;
-		Ksol = MESH.Elements[e].SoilThermalConductivity;
+		Csol = MESH.Elements[e].SoilHeatCapacity(iRealization);
+		Dsol = MESH.Elements[e].SoilDensity(iRealization);
+		Ksol = MESH.Elements[e].SoilThermalConductivity(iRealization);
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -184,7 +184,7 @@ void UpdateTopBC(int iTimestep)
 	}
 }
 
-void Simulate()
+void Simulate(int iRealization)
 {
 	Postprocess POSTPROCESS(MESH, PROPS, OutputFile, NodePlotFile, AreaAnalysisFile, TalikAreaFile, PermafrostAreaFile, NodalGSLIBCoeffs);
 	IsSaturated = PROPS.Soil.IsSaturated;
@@ -263,7 +263,7 @@ void Simulate()
 
 				for (int e = 0; e < noel; e++)
 				{
-					Tsol = MESH.Elements[e].SoilFreezingPoint;
+					Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
 					//
 					dMmat = dMmat.Zero(ndoe, ndoe);
 					Mmat = Mmat.Zero(ndoe, 1);
@@ -287,10 +287,10 @@ void Simulate()
 					TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 					TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 					// GSLIB
-					Csol = MESH.Elements[e].SoilHeatCapacity;
-					Dsol = MESH.Elements[e].SoilDensity;
-					Ksol = MESH.Elements[e].SoilThermalConductivity;
-					HydCon = MESH.Elements[e].SoilHydraulicConductivity;
+					Csol = MESH.Elements[e].SoilHeatCapacity(iRealization);
+					Dsol = MESH.Elements[e].SoilDensity(iRealization);
+					Ksol = MESH.Elements[e].SoilThermalConductivity(iRealization);
+					HydCon = MESH.Elements[e].SoilHydraulicConductivity(iRealization);
 
 					for (int i = 0; i < nGP; i++)
 					{
@@ -450,7 +450,7 @@ void Simulate()
 			delTempStar = TR.deltaTempTest;
 			TempStar = Temp + delTempStar;
 
-			ComputePotentialStar();
+			ComputePotentialStar(iRealization);
 
 			m_Temp = Potential;
 			m_TempStar = Potential + (Residual.transpose() * delTempStar) + 0.5 * (delTempStar.transpose()) * StiffSparse * delTempStar;
@@ -501,7 +501,7 @@ void Simulate()
 		if (Year == iTalikYear)
 		{
 			iTalikYear++;
-			POSTPROCESS.GetTalikArea(minTempTalikAna, maxTempTalikAna, Year);
+			POSTPROCESS.GetTalikArea(minTempTalikAna, maxTempTalikAna, Year, iRealization);
 			// Reseting the min and max temperatures for the next year round
 			minTempTalikAna = Temp;
 			maxTempTalikAna = Temp;
@@ -510,7 +510,7 @@ void Simulate()
 		if(Year == iPermafrostYear)
 		{
 			iPermafrostYear += 2;
-			POSTPROCESS.GetPermafrostArea(minTempPermAna, maxTempPermAna, Year);
+			POSTPROCESS.GetPermafrostArea(minTempPermAna, maxTempPermAna, Year, iRealization);
 			// Reseting the min and max temperatures for the next 2 years round
 			minTempPermAna = Temp;
 			maxTempPermAna = Temp;
@@ -542,8 +542,8 @@ void Simulate()
 		if (iTimestep == iPlot * *plotInterval)
 		{
 			iPlot++;
-			POSTPROCESS.Plot(Temp, solutionTime);
-			POSTPROCESS.AreaAnalysis(Temp, solutionTime);
+			POSTPROCESS.Plot(Temp, solutionTime, iRealization);
+			POSTPROCESS.AreaAnalysis(Temp, solutionTime, iRealization);
 		}
 	}
 }

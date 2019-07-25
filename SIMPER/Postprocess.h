@@ -34,11 +34,11 @@ public:
 	            FILE *areaFile, 
 				FILE *talikAreaFile,
 				FILE *permafrostAreaFile,
-				VectorXd nodalGSLIBCoeffs);
-	void Plot(VectorXd Temp, double SolutionTime);
-	void AreaAnalysis(VectorXd Temp, double solutionTime);
-	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year);
-	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year);
+				MatrixXd nodalGSLIBCoeffs);
+	void Plot(VectorXd Temp, double SolutionTime, int iRealization);
+	void AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization);
+	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
+	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
 
 private:
 	VectorXd NodalGSLIBCoeffs;
