@@ -13,8 +13,9 @@ Mesh InputMesh(string filePath);
 void SgsimParameterFile();
 void GSLIBRunSGSIM();
 void UpscaleGSLIBtoSIMPER(string filePath);
-void AddcoorParameterFile(int realizationNumber);
+void AddcoorParameterFile(int nRealization);
 
+int nRealization;
 int noel;
 int nond;
 int ndoe;
@@ -30,6 +31,7 @@ bool Inputs(string propsInputFile, string meshInputFile)
 {
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
+	nRealization = PROPS.GSLIB.NumberOfRealizations;
 	if (PROPS.Soil.IsGSLIB)
 	{
 		SgsimParameterFile();
@@ -223,7 +225,7 @@ void SgsimParameterFile()
 	fprintf(inputFileGSLIB, "0                                       -debug level (0-3)\n");
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_nodata.dbg\n");
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
-	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", PROPS.GSLIB.NumberOfRealizations);
+	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", nRealization);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
 	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
@@ -253,7 +255,7 @@ void SgsimParameterFile()
 	fflush(inputFileGSLIB);
 }
 
-void AddcoorParameterFile(int realizationNumber)
+void AddcoorParameterFile(int nRealization)
 {
 	FILE *inputFileGSLIB = fopen("GSLIB/AddcoorInput.par", "w");
 
@@ -261,7 +263,7 @@ void AddcoorParameterFile(int realizationNumber)
 	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
 	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
 	fprintf(inputFileGSLIB, "GSLIB/ADDCOOR_output.out\n");
-	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", realizationNumber);
+	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", nRealization);
 	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
 	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
 	fprintf(inputFileGSLIB, "1 0 1                               -nz, zmin, zsize\n");
@@ -280,13 +282,13 @@ void GSLIBRunSGSIM()
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 	int ExecuteGSLIB = system(sgsimArg); // simulation
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-	for (int iRealization = 0; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
+	for (int iRealization = 0; iRealization < nRealization; iRealization++)
 	{
 		AddcoorParameterFile(iRealization);
 		ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
 
 		FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
-		GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), PROPS.GSLIB.NumberOfRealizations);
+		GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), nRealization);
 		GSLIBCoeffs.setZero();
 		GSLIBGrid.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), 2);
 		GSLIBGrid.setZero();
@@ -326,7 +328,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
-		NodalGSLIBCoeffs.resize(nond, PROPS.GSLIB.NumberOfRealizations);
+		NodalGSLIBCoeffs.resize(nond, nRealization);
 		NodalGSLIBCoeffs.setZero();
 		int gslibNumberOfNodes = (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1);
 		for (int n = 0; n < nond; n++)
@@ -335,7 +337,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 			double yNode = MESH.Nodes[n].Coordinates.y;
 			double gslibCoeff;
 			double distanceP = INFINITY;
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
 				double maxGslibCoeff = GSLIBCoeffs.col(iReal).maxCoeff();
 				double minGslibCoeff = GSLIBCoeffs.col(iReal).minCoeff();
@@ -366,18 +368,18 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		//creating properties for each realization
 		for (int e = 0; e < noel; e++)
 		{
-			MESH.Elements[e].SoilHydraulicConductivity.resize(PROPS.GSLIB.NumberOfRealizations);
-			MESH.Elements[e].SoilHeatCapacity.resize(PROPS.GSLIB.NumberOfRealizations);
-			MESH.Elements[e].SoilThermalConductivity.resize(PROPS.GSLIB.NumberOfRealizations);
-			MESH.Elements[e].SoilDensity.resize(PROPS.GSLIB.NumberOfRealizations);
-			MESH.Elements[e].SoilFreezingPoint.resize(PROPS.GSLIB.NumberOfRealizations);
+			MESH.Elements[e].SoilHydraulicConductivity.resize(nRealization);
+			MESH.Elements[e].SoilHeatCapacity.resize(nRealization);
+			MESH.Elements[e].SoilThermalConductivity.resize(nRealization);
+			MESH.Elements[e].SoilDensity.resize(nRealization);
+			MESH.Elements[e].SoilFreezingPoint.resize(nRealization);
 		}
 
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
 		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
-		for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+		for (int iReal = 0; iReal < nRealization; iReal++)
 		{
 			for (int e = 0; e < noel; e++)
 			{
@@ -440,75 +442,75 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		for (int e = 0; e < noel; e++)
 		{
 			fprintf(plotSoilProperties, "variables =\"X\" \"Y\"");
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"<greek>l</greek><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <greek>l</greek><sub>soil</sub>\"", iReal);
 			}
 
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"<i>c</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>c</i><sub>soil</sub>\"", iReal);
 			}
 
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"<i>K</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>K</i><sub>soil</sub>\"", iReal);
 			}
 
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"<i>D</i><sub>soil</sub>\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i <i>D</i><sub>soil</sub>\"", iReal);
 			}
 
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"Freezing Point\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i Freezing Point\"", iReal);
 			}
 
-			for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+			for (int iReal = 0; iReal < nRealization; iReal++)
 			{
-				fprintf(plotSoilProperties, " Realization %i \"Coeff_GSLIB\"", iReal);
+				fprintf(plotSoilProperties, " \"Realization %i Coeff_GSLIB\"", iReal);
 			}
 
 			fprintf(plotSoilProperties, "\nZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			
 			for (int inod = 0; inod < ndoe; inod++)
 			{
-				fprintf(plotSoilProperties, "%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
+				fprintf(plotSoilProperties, "\n%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
 													    MESH.Elements[e].Nodes[inod].Coordinates.y);
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHydraulicConductivity(iReal));
 				}
 
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHeatCapacity(iReal));
 				}
 
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilThermalConductivity(iReal));
 				}
 
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilDensity(iReal));
 				}
 
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilFreezingPoint(iReal));
 				}
 
-				for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
+				for (int iReal = 0; iReal < nRealization; iReal++)
 				{
 					fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, iReal));
 				}
 			}
 			
-			fprintf(plotSoilProperties, "\n1 2 3 4\n");
+			fprintf(plotSoilProperties, "\n1 2 3 4");
 			fflush(plotSoilProperties);
 		}
 	}
