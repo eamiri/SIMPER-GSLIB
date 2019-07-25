@@ -11,7 +11,7 @@ bool Inputs(string propsInputFile, string meshInputFile);
 Properties InputProperties(string filePath);
 Mesh InputMesh(string filePath);
 void SgsimParameterFile();
-void GSLIBRunSGSIM(int iRealization);
+void GSLIBRunSGSIM();
 void UpscaleGSLIBtoSIMPER(string filePath);
 void AddcoorParameterFile(int realizationNumber);
 
@@ -33,10 +33,7 @@ bool Inputs(string propsInputFile, string meshInputFile)
 	if (PROPS.Soil.IsGSLIB)
 	{
 		SgsimParameterFile();
-		for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
-		{
-			GSLIBRunSGSIM(iReal);
-		}
+		GSLIBRunSGSIM();
 	}
 
 	UpscaleGSLIBtoSIMPER("GSLIB/GSLIB_DATA.out");
@@ -271,16 +268,24 @@ void AddcoorParameterFile(int realizationNumber)
 	fflush(inputFileGSLIB);
 }
 
-void GSLIBRunSGSIM(int iRealization)
+void GSLIBRunSGSIM()
 {
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 #ifdef _windows_
 	int ExecuteGSLIB = system("GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\""); // simulation
-	AddcoorParameterFile(iRealization);
+	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
+	{
+		AddcoorParameterFile(iRealization);
+	}
+
 	ExecuteGSLIB = system("GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\""); // adding coordinates
 #else
 	int ExecuteGSLIB = system("GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\""); // simulation
-	AddcoorParameterFile(iRealization);
+	for (int iRealization; iRealization < PROPS.GSLIB.NumberOfRealizations; iRealization++)
+	{
+		AddcoorParameterFile(iRealization);
+	}
+
 	ExecuteGSLIB = system("GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\""); // adding coordinates
 #endif  
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
