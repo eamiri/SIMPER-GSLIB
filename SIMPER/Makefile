@@ -34,7 +34,7 @@ clean:
 dist-clean: clean
 	rm -f *~ .depend
 	
-all: clean $(binaries)
+# all: clean $(binaries)
 
 include .depend
 

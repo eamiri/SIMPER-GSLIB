@@ -52,6 +52,7 @@ extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 extern OutputFileStruc OutputFiles;
+extern int iParallelRlzn;
 
 struct GlobalOptions
 {

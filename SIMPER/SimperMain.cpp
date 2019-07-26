@@ -8,7 +8,7 @@ GlobalOptions Options;
 
 bool Inputs(string propsInputFile, string meshInputFile, int iParallelRealization);
 void Simulate(int iReal);
-const char* GetOutputFilePath(string outputName, int iRealization);
+string GetOutputFilePath(string outputName, int iRealization);
 
 VectorXd Temp_0;
 VectorXd TempDot_0;
@@ -20,18 +20,16 @@ vector<int> TopBoundary;
 vector<int> BottomBoundary;
 
 MatrixXd BCInputData;
-int iParallel;
+int iParallelRlzn;
 
-const char * GetOutputFilePath(string outputName, int iRealization)
+string GetOutputFilePath(string outputName, int iRealization)
 {
-	const char* ch1 = "../Results/R";
-	string ch2 = to_string(iRealization);
-	string path = ch1;
-	path += ch2;
+	string rlnNo = to_string(iRealization);
+	string path = "../Results/R";
+	path += rlnNo;
 	path += "_";
 	path += outputName;
-	
-	return path.c_str();
+	return path;
 }
 
 int main(int argc, char* argv[])
@@ -57,16 +55,15 @@ int main(int argc, char* argv[])
 	//PARALLEL REALIZATIONS
 	if (argc > 1)
 	{
-
-		iParallel = atoi(argv[1]);
+		iParallelRlzn = atoi(argv[1]);
 	}
 	else
 	{
-		iParallel = 1;
+		iParallelRlzn = 1;
 	}
 
 	//INPUT AND OUTPUT
-	if (!Inputs(PropertiesInputFile, MeshInputFile, iParallel))
+	if (!Inputs(PropertiesInputFile, MeshInputFile, iParallelRlzn))
 	{
 		cout << "Input File Error!" << endl;
 	}
@@ -92,7 +89,7 @@ int main(int argc, char* argv[])
 	BCInputData = Conditions.BCInputData;
 
 	//PLOT FILES
-	OutputFiles.NodePlotFile = fopen(GetOutputFilePath("NodePlot.plt", iParallel), "w");
+	OutputFiles.NodePlotFile = fopen(GetOutputFilePath("NodePlot.plt", iParallelRlzn).c_str(), "w");
 	fprintf(OutputFiles.NodePlotFile, "TITLE = \"Temperature profile of the nodes\"\n");
 	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"<i>t</i>(sec)\"");
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
@@ -100,14 +97,14 @@ int main(int argc, char* argv[])
 		fprintf(OutputFiles.NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", n + 1);
 	}
 
-	OutputFiles.OutputFile = fopen(GetOutputFilePath("Output.plt", iParallel), "w");
-	OutputFiles.AreaAnalysisFile = fopen(GetOutputFilePath("AreaAnalysisTimeSeries.csv", iParallel), "w");
-	OutputFiles.TalikAreaFile = fopen(GetOutputFilePath("TalikArea.csv", iParallel), "w");
-	OutputFiles.AnnualMinTemperatures = fopen(GetOutputFilePath("AnnualMinTemperatures.csv", iParallel), "w");
-	OutputFiles.AnnualMaxTemperatures = fopen(GetOutputFilePath("AnnualMaxTemperatures.csv", iParallel), "w");
-	OutputFiles.PermafrostAreaFile = fopen(GetOutputFilePath("PermafrostAreaFile.csv", iParallel), "w");
-	OutputFiles.BiannualMinTemperatures = fopen(GetOutputFilePath("BiannualMinTemperatures.csv", iParallel), "w");
-	OutputFiles.BiannualMaxTemperatures = fopen(GetOutputFilePath("BiannualMaxTemperatures.csv", iParallel), "w");
+	OutputFiles.OutputFile = fopen(GetOutputFilePath("Output.plt", iParallelRlzn).c_str(), "w");
+	OutputFiles.AreaAnalysisFile = fopen(GetOutputFilePath("AreaAnalysisTimeSeries.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.TalikAreaFile = fopen(GetOutputFilePath("TalikArea.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.AnnualMinTemperatures = fopen(GetOutputFilePath("AnnualMinTemperatures.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.AnnualMaxTemperatures = fopen(GetOutputFilePath("AnnualMaxTemperatures.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.PermafrostAreaFile = fopen(GetOutputFilePath("PermafrostAreaFile.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.BiannualMinTemperatures = fopen(GetOutputFilePath("BiannualMinTemperatures.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.BiannualMaxTemperatures = fopen(GetOutputFilePath("BiannualMaxTemperatures.csv", iParallelRlzn).c_str(), "w");
 
 	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
 	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");
@@ -128,6 +125,10 @@ int main(int argc, char* argv[])
 	fclose(OutputFiles.AreaAnalysisFile);
 	fclose(OutputFiles.TalikAreaFile);
 	fclose(OutputFiles.PermafrostAreaFile);
+	fclose(OutputFiles.AnnualMinTemperatures);
+	fclose(OutputFiles.AnnualMaxTemperatures);
+	fclose(OutputFiles.BiannualMinTemperatures);
+	fclose(OutputFiles.BiannualMaxTemperatures);
 	cin.get();
 	
 	return 0;

@@ -6,17 +6,18 @@
 
 #include "SimperInclude.h"
 #include <regex>
+#include <experimental/filesystem>
 
 bool Inputs(string propsInputFile, string meshInputFile, int iPReal);
-const char* GetOutputFilePath(string outputName, int iRealization);
+string GetOutputFilePath(string outputName, int iRealization);
+string GetGSLIBOutputFilePath(string outputName, int iRealization);
 Properties InputProperties(string filePath);
 Mesh InputMesh(string filePath);
 void SgsimParameterFile();
 void GSLIBRunSGSIM();
-void UpscaleGSLIBtoSIMPER(string filePath);
+void UpscaleGSLIBtoSIMPER();
 void AddcoorParameterFile(int nRealization);
 
-int iParallelRealization;
 int nRealization;
 int noel;
 int nond;
@@ -31,7 +32,7 @@ GaussPoints GP;
 
 bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 {
-	iParallelRealization = iPReal;
+	iParallelRlzn = iPReal;
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
@@ -41,9 +42,19 @@ bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 		GSLIBRunSGSIM();
 	}
 
-	UpscaleGSLIBtoSIMPER("GSLIB/GSLIB_DATA.out");
+	UpscaleGSLIBtoSIMPER();
 
 	return true;
+}
+
+string GetGSLIBOutputFilePath(string outputName, int iRealization)
+{
+	string rlnNo = to_string(iRealization);
+	string path = "GSLIB/outputs/R";
+	path += rlnNo;
+	path += "_";
+	path += outputName;
+	return path;
 }
 
 Properties InputProperties(string filePath)
@@ -210,7 +221,7 @@ void SgsimParameterFile()
 		seedGSLIB = abs(seedGSLIB << 15) | (rand() & 0x7FFF);
 	}*/
 
-	FILE *inputFileGSLIB = fopen("GSLIB/SgsimInput.par", "w");
+	FILE *inputFileGSLIB = fopen(GetGSLIBOutputFilePath("SgsimInput.par", iParallelRlzn).c_str(), "w");
 
 	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
 	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
@@ -226,8 +237,8 @@ void SgsimParameterFile()
 	fprintf(inputFileGSLIB, "1 0                                     -lower tail option\n");
 	fprintf(inputFileGSLIB, "1 15                                    -upper tail option\n");
 	fprintf(inputFileGSLIB, "0                                       -debug level (0-3)\n");
-	fprintf(inputFileGSLIB, "GSLIB/SGSIM_nodata.dbg\n");
-	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_SGSIM_nodata.dbg\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_SGSIM_output.out\n", iParallelRlzn);
 	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", nRealization);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
 	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
@@ -260,12 +271,12 @@ void SgsimParameterFile()
 
 void AddcoorParameterFile(int nRealization)
 {
-	FILE *inputFileGSLIB = fopen("GSLIB/AddcoorInput.par", "w");
+	FILE *inputFileGSLIB = fopen(GetGSLIBOutputFilePath("AddcoorInput.par", iParallelRlzn).c_str(), "w");
 
 	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
 	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
-	fprintf(inputFileGSLIB, "GSLIB/SGSIM_output.out\n");
-	fprintf(inputFileGSLIB, "GSLIB/ADDCOOR_output.out\n");
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_SGSIM_output.out\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_ADDCOOR_output.out\n", iParallelRlzn);
 	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", nRealization);
 	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.NumberOfCellsX + 1, PROPS.GSLIB.GridSizeX);
 	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", PROPS.GSLIB.NumberOfCellsY + 1, PROPS.GSLIB.GridSizeY);
@@ -276,27 +287,35 @@ void AddcoorParameterFile(int nRealization)
 void GSLIBRunSGSIM()
 {
 	#ifdef _windows_
-		const char * sgsimArg = "GSLIB\\GSLIBSimulation.exe \"GSLIB/SgsimInput.par\"";
-		const char * addCoorArg = "GSLIB\\GSLIBAddCoordinates.exe \"GSLIB/AddcoorInput.par\"";
-		if (remove("GSLIB\\ADDCOOR_output.out") != 0 || 
-			remove("GSLIB\\GSLIB_DATA.out") != 0 ||
-			remove("GSLIB\\SGSIM_output.out") != 0)
-		{
-			cout << "Error deleting GSLIB \".out\" files" << endl;
-		}
-
+	string sgsimPath = "GSLIB\\bin\\GSLIBSimulation.exe";
+	string sgsimInputPath = "\"GSLIB/outputs/R"+ to_string(iParallelRlzn) +"_SgsimInput.par\"";
+	string sgsimArgStr = sgsimPath + " " + sgsimInputPath;
+	const char* sgsimArg = sgsimArgStr.c_str();
+	string addcoorPath = "GSLIB\\bin\\GSLIBAddCoordinates.exe";
+	string addcoorInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_AddcoorInput.par\"";
+	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
+	const char* addCoorArg = addcoorArgStr.c_str();
 	#else
-		const char * sgsimArg = "GSLIB/GSLIBSimulation \"GSLIB/SgsimInput.par\"";
-		const char * addCoorArg = "GSLIB/GSLIBAddCoordinates \"GSLIB/AddcoorInput.par\"";
-		if (remove("GSLIB/ADDCOOR_output.out") != 0 ||
-			remove("GSLIB/GSLIB_DATA.out") != 0 ||
-			remove("GSLIB/SGSIM_output.out") != 0)
-		{
-			cout << "Error deleting GSLIB \".out\" files" << endl;
-}
+	string sgsimPath = "GSLIB/bin/GSLIBSimulation.exe";
+	string sgsimInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_SgsimInput.par\"";
+	string sgsimArgStr = sgsimPath + " " + sgsimInputPath;
+	const char* sgsimArg = sgsimArgStr.c_str();
+	string addcoorPath = "GSLIB/bin/GSLIBAddCoordinates.exe";
+	string addcoorInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_AddcoorInput.par\"";
+	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
+	const char* addCoorArg = addcoorArgStr.c_str();
 	#endif  
 	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
-	int ExecuteGSLIB = system(sgsimArg); // simulation
+	int ExecuteGSLIB;
+	try
+	{
+		ExecuteGSLIB = system(sgsimArg); // sequential gaussian simulation
+	}
+	catch (int e)
+	{
+		cout << "GSLIB FAILED RUNNING SEQUENTIAL GAUSSIAN SIMULATION! EXCEPTION NO: "<< e << endl;
+	}
+	
 	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
 	GSLIBCoeffs.resize((PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1), nRealization);
 	GSLIBCoeffs.setZero();
@@ -305,12 +324,21 @@ void GSLIBRunSGSIM()
 	for (int iRealization = 0; iRealization < nRealization; iRealization++)
 	{
 		AddcoorParameterFile(iRealization + 1);
-		ExecuteGSLIB = system(addCoorArg); // adding coordinates
+		try
+		{
+			ExecuteGSLIB = system(addCoorArg); // adding coordinates
+		}
+		catch (int e)
+		{
+			cout << "GSLIB FAILED ADDING COORDINATES! EXCEPTION NO: " << e << endl;
+		}
 
-		FILE *inputFileGSLIB = fopen(GetOutputFilePath("GSLIB_Simulation.plt", iParallelRealization), "w");
-		string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
+		FILE *inputFileGSLIB = fopen(GetOutputFilePath("GSLIB_Simulation.plt", iParallelRlzn).c_str(), "w");
+		string AddcoorOutputFilePathStr = GetGSLIBOutputFilePath("ADDCOOR_output.out", iParallelRlzn);
+		const char* AddcoorOutputFilePath = AddcoorOutputFilePathStr.c_str();
+		//system("chmod 755 GSLIB/ADDCOOR_output.out");
 		ifstream gslibFile;
-		gslibFile.open(AddcoorOutputFilePath.c_str());
+		gslibFile.open(AddcoorOutputFilePath);
 		string line;
 		getline(gslibFile, line);
 		getline(gslibFile, line);
@@ -328,7 +356,6 @@ void GSLIBRunSGSIM()
 			{
 				break;
 			}
-
 			GSLIBGrid(index, 0) = xGrid;
 			GSLIBGrid(index, 1) = yGrid;
 			GSLIBCoeffs(index, iRealization) = gslibCoeff;
@@ -340,7 +367,7 @@ void GSLIBRunSGSIM()
 	}
 }
 
-void UpscaleGSLIBtoSIMPER(string filePath)
+void UpscaleGSLIBtoSIMPER()
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
@@ -395,7 +422,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
-		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRealization), "w");
+		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");
 		for (int iReal = 0; iReal < nRealization; iReal++)
 		{
 			for (int e = 0; e < noel; e++)
@@ -536,7 +563,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 	else
 	{
 		cout << "Homogeneous Media" << endl;
-		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRealization), "w");;
+		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");;
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			MESH.Elements[e].SoilHydraulicConductivity.resize(1);

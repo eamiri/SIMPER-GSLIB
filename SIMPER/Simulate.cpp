@@ -255,7 +255,7 @@ void Simulate(int iRealization)
 		while (true)
 		{
 			iIteration++;
-			printf("\nRLZN= %3i \tSTEP= %6i \tITRN= %3i", iTimestep + 1, iIteration, iRealization);
+			printf("\nRLZN= %3i \tSTEP= %6i \tITRN= %3i", iParallelRlzn, iTimestep + 1, iIteration);
 			if (isDelTempStarApproved)
 			{
 				Residual = Residual.Zero(MESH.NumberOfNodes);
