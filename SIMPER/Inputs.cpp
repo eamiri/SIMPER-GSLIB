@@ -7,7 +7,8 @@
 #include "SimperInclude.h"
 #include <regex>
 
-bool Inputs(string propsInputFile, string meshInputFile);
+bool Inputs(string propsInputFile, string meshInputFile, int iPReal);
+const char* GetOutputFilePath(string outputName, int iRealization);
 Properties InputProperties(string filePath);
 Mesh InputMesh(string filePath);
 void SgsimParameterFile();
@@ -15,6 +16,7 @@ void GSLIBRunSGSIM();
 void UpscaleGSLIBtoSIMPER(string filePath);
 void AddcoorParameterFile(int nRealization);
 
+int iParallelRealization;
 int nRealization;
 int noel;
 int nond;
@@ -27,8 +29,9 @@ MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
 
-bool Inputs(string propsInputFile, string meshInputFile)
+bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 {
+	iParallelRealization = iPReal;
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
@@ -304,7 +307,7 @@ void GSLIBRunSGSIM()
 		AddcoorParameterFile(iRealization + 1);
 		ExecuteGSLIB = system(addCoorArg); // adding coordinates
 
-		FILE *inputFileGSLIB = fopen("../Results/GSLIB_SIMULATION.plt", "w");
+		FILE *inputFileGSLIB = fopen(GetOutputFilePath("GSLIB_Simulation.plt", iParallelRealization), "w");
 		string AddcoorOutputFilePath = "GSLIB/ADDCOOR_output.out";
 		ifstream gslibFile;
 		gslibFile.open(AddcoorOutputFilePath.c_str());
@@ -392,7 +395,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
 		VectorXd GSLIBCoeffsNode;
-		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
+		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRealization), "w");
 		for (int iReal = 0; iReal < nRealization; iReal++)
 		{
 			for (int e = 0; e < noel; e++)
@@ -533,7 +536,7 @@ void UpscaleGSLIBtoSIMPER(string filePath)
 	else
 	{
 		cout << "Homogeneous Media" << endl;
-		FILE *plotSoilProperties = fopen("../Results/SoilProperties.plt", "w");
+		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRealization), "w");;
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			MESH.Elements[e].SoilHydraulicConductivity.resize(1);

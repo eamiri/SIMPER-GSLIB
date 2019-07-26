@@ -6,8 +6,9 @@ const string PropertiesInputFile = "../Inputs/input_properties.dat";
 const string MeshInputFile = "../Inputs/input_mesh.msh";
 GlobalOptions Options;
 
-bool Inputs(string propsInputFile, string meshInputFile);
+bool Inputs(string propsInputFile, string meshInputFile, int iParallelRealization);
 void Simulate(int iReal);
+const char* GetOutputFilePath(string outputName, int iRealization);
 
 VectorXd Temp_0;
 VectorXd TempDot_0;
@@ -19,6 +20,19 @@ vector<int> TopBoundary;
 vector<int> BottomBoundary;
 
 MatrixXd BCInputData;
+int iParallel;
+
+const char * GetOutputFilePath(string outputName, int iRealization)
+{
+	const char* ch1 = "../Results/R";
+	string ch2 = to_string(iRealization);
+	string path = ch1;
+	path += ch2;
+	path += "_";
+	path += outputName;
+	
+	return path.c_str();
+}
 
 int main(int argc, char* argv[])
 {
@@ -40,8 +54,19 @@ int main(int argc, char* argv[])
 		cout << "============================================================= "  << endl;
 	}
 
+	//PARALLEL REALIZATIONS
+	if (argc > 1)
+	{
+
+		iParallel = atoi(argv[1]);
+	}
+	else
+	{
+		iParallel = 1;
+	}
+
 	//INPUT AND OUTPUT
-	if (!Inputs(PropertiesInputFile, MeshInputFile))
+	if (!Inputs(PropertiesInputFile, MeshInputFile, iParallel))
 	{
 		cout << "Input File Error!" << endl;
 	}
@@ -67,22 +92,22 @@ int main(int argc, char* argv[])
 	BCInputData = Conditions.BCInputData;
 
 	//PLOT FILES
-	OutputFiles.NodePlotFile = fopen("../Results/NodePlot.plt", "w");
+	OutputFiles.NodePlotFile = fopen(GetOutputFilePath("NodePlot.plt", iParallel), "w");
 	fprintf(OutputFiles.NodePlotFile, "TITLE = \"Temperature profile of the nodes\"\n");
 	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"<i>t</i>(sec)\"");
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 	{
 		fprintf(OutputFiles.NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", n + 1);
 	}
-	
-	OutputFiles.OutputFile = fopen("../Results/OutPut.plt", "w");
-	OutputFiles.AreaAnalysisFile = fopen("../Results/AreaAnalysisTimeSeries.csv", "w");
-	OutputFiles.TalikAreaFile = fopen("../Results/TalikArea.csv", "w");
-	OutputFiles.AnnualMinTemperatures = fopen("../Results/AnnualMinTemperatures.csv", "w");
-	OutputFiles.AnnualMaxTemperatures = fopen("../Results/AnnualMaxTemperatures.csv", "w");
-	OutputFiles.PermafrostAreaFile = fopen("../Results/PermafrostArea.csv", "w");
-	OutputFiles.BiannualMinTemperatures = fopen("../Results/BiannualMinTemperatures.csv", "w");
-	OutputFiles.BiannualMaxTemperatures = fopen("../Results/BiannualMaxTemperatures.csv", "w");
+
+	OutputFiles.OutputFile = fopen(GetOutputFilePath("Output.plt", iParallel), "w");
+	OutputFiles.AreaAnalysisFile = fopen(GetOutputFilePath("AreaAnalysisTimeSeries.csv", iParallel), "w");
+	OutputFiles.TalikAreaFile = fopen(GetOutputFilePath("TalikArea.csv", iParallel), "w");
+	OutputFiles.AnnualMinTemperatures = fopen(GetOutputFilePath("AnnualMinTemperatures.csv", iParallel), "w");
+	OutputFiles.AnnualMaxTemperatures = fopen(GetOutputFilePath("AnnualMaxTemperatures.csv", iParallel), "w");
+	OutputFiles.PermafrostAreaFile = fopen(GetOutputFilePath("PermafrostAreaFile.csv", iParallel), "w");
+	OutputFiles.BiannualMinTemperatures = fopen(GetOutputFilePath("BiannualMinTemperatures.csv", iParallel), "w");
+	OutputFiles.BiannualMaxTemperatures = fopen(GetOutputFilePath("BiannualMaxTemperatures.csv", iParallel), "w");
 
 	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
 	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");
@@ -96,8 +121,7 @@ int main(int argc, char* argv[])
 	for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
 	{
 		Simulate(iReal);
-	}
-	
+	}	
 
 	fclose(OutputFiles.OutputFile);
 	fclose(OutputFiles.NodePlotFile);

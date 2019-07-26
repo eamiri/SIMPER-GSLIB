@@ -1,3 +1,5 @@
+#include <thread>
+#include <mutex>
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/Sparse>
@@ -50,11 +52,6 @@ extern vector<int> BottomBoundary;
 extern MatrixXd BCInputData;
 const double  PI = 3.1415926535898; ///< Double approximation of pi
 extern OutputFileStruc OutputFiles;
-//extern FILE* OutputFile, * NodePlotFile, * AreaAnalysisFile, * TalikAreaFile,
-//		   * PermafrostAreaFile, * TalikMinTemperatures, * TalikMaxTemperatures,
-//		   * PermafrostMinTemperatures, * PermafrostMaxTemperautre;
-//extern ofstream outputFile;
-
 
 struct GlobalOptions
 {
