@@ -1,0 +1,25 @@
+#Account: your group NOT SURE IF THAT IS CALLED LIKE THIS
+def-jcraig1                  				
+
+#Memory per CPU: memory; default unit is megabytes
+1024M
+
+#Email address: email address for notifications
+erfan.amiri@uwaterloo.ca
+
+#Email case: email send only in case of failure
+FAIL
+
+#Maximum runtime: time (DD-HH:MM);  here 15min
+DH		HH		MM
+02		00		00
+
+#Name of job: name of job in queque
+SIMPER_REALIZATION
+
+#Program name:
+SIMPER.exe
+
+#Number of realizations
+2
+

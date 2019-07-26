@@ -296,11 +296,11 @@ void GSLIBRunSGSIM()
 	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
 	const char* addCoorArg = addcoorArgStr.c_str();
 	#else
-	string sgsimPath = "GSLIB/bin/GSLIBSimulation.exe";
+	string sgsimPath = "GSLIB/bin/GSLIBSimulation";
 	string sgsimInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_SgsimInput.par\"";
 	string sgsimArgStr = sgsimPath + " " + sgsimInputPath;
 	const char* sgsimArg = sgsimArgStr.c_str();
-	string addcoorPath = "GSLIB/bin/GSLIBAddCoordinates.exe";
+	string addcoorPath = "GSLIB/bin/GSLIBAddCoordinates";
 	string addcoorInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_AddcoorInput.par\"";
 	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
 	const char* addCoorArg = addcoorArgStr.c_str();
