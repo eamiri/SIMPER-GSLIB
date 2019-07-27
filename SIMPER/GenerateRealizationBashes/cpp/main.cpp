@@ -19,14 +19,14 @@
 
 using namespace std;
 
-struct inputs{
-    string account;
-    string memory;
-    string email;
-    string email_case;
-    string runtime;
-    string job_name;
-    string program;
+struct inputs {
+	string account;
+	string memory;
+	string email;
+	string email_case;
+	string runtime;
+	string job_name;
+	string program;
 	int nRealization;
 };
 
@@ -42,16 +42,36 @@ string GetOutputFilePath(string outputName, int iRealization)
 
 int main(int argc, char* argv[])
 {
-    inputs input;
-    ifstream inputFile;
-    inputFile.open("inputBash.dat");
-    string line;
-    getline(inputFile, line);
-    inputFile >> input.account;
-    getline(inputFile, line);
-    getline(inputFile, line);
+#ifdef linux
+	str = "chmod 755 bashFiles";
+	system(str.c_str());
+#endif
+
+	FILE* submitFile;
+	FILE* bashFile;
+	string str;
+	int permissionChange;
+
+#ifdef _windows_
+
+#else
+	str = "rm -R bashFiles/*";
+	permissionChange = system(str.c_str());
+#endif
+
+	submitFile = fopen("bashFiles/submit-to-cluster.sh", "w");
+	fprintf(submitFile, "#!/bin/bash\n");
+
+	inputs input;
+	ifstream inputFile;
+	inputFile.open("inputBash.dat");
+	string line;
 	getline(inputFile, line);
-    inputFile >> input.memory;
+	inputFile >> input.account;
+	getline(inputFile, line);
+	getline(inputFile, line);
+	getline(inputFile, line);
+	inputFile >> input.memory;
 	getline(inputFile, line);
 	getline(inputFile, line);
 	getline(inputFile, line);
@@ -80,55 +100,35 @@ int main(int argc, char* argv[])
 	getline(inputFile, line);
 	inputFile >> input.nRealization;
 
-	#ifdef linux
-	str = "chmod 755 bashFiles";
-	system(str.c_str());
-	#endif
-
-	FILE* submitFile;
-	submitFile = fopen("bashFiles/submit-to-cluster.sh", "w");
-	fprintf(submitFile, "#!/bin/bash\n");
-	FILE* bashFile;
-	string str;
-	int permissionChange;
 	for (int iReal = 1; iReal <= input.nRealization; iReal++)
 	{
 		bashFile = fopen(GetOutputFilePath("BashFile.sh", iReal).c_str(), "w");
 		fprintf(bashFile, "#!/bin/bash\n");
-		str = "SBATCH --account=" + input.account + "\n";
+		str = "#SBATCH --account=" + input.account + "\n";
 		fprintf(bashFile, str.c_str());
-		str = "SBATCH --mem-per-cpu=" + input.memory + "\n";
+		str = "#SBATCH --mem-per-cpu=" + input.memory + "\n";
 		fprintf(bashFile, str.c_str());
-		str = "SBATCH --mail-user=" + input.email + "\n";
+		str = "#SBATCH --mail-user=" + input.email + "\n";
 		fprintf(bashFile, str.c_str());
-		str = "SBATCH --mail-type=" + input.email_case + "\n";
+		str = "#SBATCH --mail-type=" + input.email_case + "\n";
 		fprintf(bashFile, str.c_str());
-		str = "SBATCH --time=" + input.runtime + "\n";
+		str = "#SBATCH --time=" + input.runtime + "\n";
 		fprintf(bashFile, str.c_str());
-		str = "SBATCH --job-name=" + input.job_name + "_" + to_string(iReal) + "\n\n";
+		str = "#SBATCH --job-name=" + input.job_name + "_" + to_string(iReal) + "\n\n";
 		fprintf(bashFile, str.c_str());
 		str = "./" + input.program + " " + to_string(iReal);
 		fprintf(bashFile, str.c_str());
 		fclose(bashFile);
-		str = "chmod 755 " + GetOutputFilePath("BashFile.sh", iReal);
-
-#		ifdef _windows_
-		
-		#else
-		str = "chmod 755 " + GetOutputFilePath("BashFile.sh", iReal);
-		permissionChange = system(str.c_str());
-		#endif
-		
 		str = "sbatch R" + to_string(iReal) + "_BashFile.sh\n";
 		fprintf(submitFile, str.c_str());
 	}
 
-	#ifdef _windows_
+#ifdef _windows_
 
-	#else
-	str = "chmod 755 bashFiles/submit-to-cluster.sh";
+#else
+	str = "chmod -R 755 bashFiles";
 	permissionChange = system(str.c_str());
-	#endif
+#endif
 
-    return 0;
+	return 0;
 }

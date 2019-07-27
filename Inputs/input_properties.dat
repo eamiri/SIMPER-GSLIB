@@ -21,7 +21,7 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	MESH (0: GID, 1: GMSH)	InputBC
-432000			7200			1E-3			25						0.6							8760		1						1
+216000			7200			1E-3			25						0.6							876		1						1
 GSLIB input data
 Correlation Length		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random) AnisotropyRatio(X/Y)
 12.8					200						0.25			 100					    0.25		   1						0						5
@@ -38,3 +38,8 @@ Temperature Plot Nodes
 3694 
 3707 
 3716
+
+17723336
+17723336
+17723365
+17723365
