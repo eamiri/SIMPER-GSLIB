@@ -86,7 +86,7 @@ void ComputePotentialStar(int iRealization)
 	TempDotStar = (TempStar - TempHat) / (*gammaNewmark * *deltaTime);
 	for (int e = 0; e < noel; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		dMmat = dMmat.Zero(ndoe, ndoe);
 		Mmat = Mmat.Zero(ndoe, 1);
@@ -109,9 +109,9 @@ void ComputePotentialStar(int iRealization)
 		TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 		TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 		// GSLIB
-		Csol = MESH.Elements[e].SoilHeatCapacity(iRealization);
-		Dsol = MESH.Elements[e].SoilDensity(iRealization);
-		Ksol = MESH.Elements[e].SoilThermalConductivity(iRealization);
+		Csol = MESH.Elements[e].SoilHeatCapacity;
+		Dsol = MESH.Elements[e].SoilDensity;
+		Ksol = MESH.Elements[e].SoilThermalConductivity;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -209,7 +209,6 @@ void Simulate(int iRealization)
 	npor = PROPS.Soil.Porosity;
 	Csol = PROPS.Soil.HeatCapacity;
 	Ksol = PROPS.Soil.ThermalConductivity;
-	Dsol = PROPS.Soil.Density;
 	//
 	rSFC = PROPS.Soil.rSFC;
 	Tliq = PROPS.Nonisothermal.TempLiquid;
@@ -265,7 +264,7 @@ void Simulate(int iRealization)
 
 				for (int e = 0; e < noel; e++)
 				{
-					Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+					Tsol = MESH.Elements[e].SoilFreezingPoint;
 					//
 					dMmat = dMmat.Zero(ndoe, ndoe);
 					Mmat = Mmat.Zero(ndoe, 1);
@@ -289,10 +288,10 @@ void Simulate(int iRealization)
 					TempNodeHat = MESH.GetNodalValues(TempHat, elementDofs);
 					TempNode_0 = MESH.GetNodalValues(Temp_0, elementDofs);
 					// GSLIB
-					Csol = MESH.Elements[e].SoilHeatCapacity(iRealization);
-					Dsol = MESH.Elements[e].SoilDensity(iRealization);
-					Ksol = MESH.Elements[e].SoilThermalConductivity(iRealization);
-					HydCon = MESH.Elements[e].SoilHydraulicConductivity(iRealization);
+					Csol = MESH.Elements[e].SoilHeatCapacity;
+					Dsol = MESH.Elements[e].SoilDensity;
+					Ksol = MESH.Elements[e].SoilThermalConductivity;
+					HydCon = MESH.Elements[e].SoilHydraulicConductivity;
 
 					for (int i = 0; i < nGP; i++)
 					{

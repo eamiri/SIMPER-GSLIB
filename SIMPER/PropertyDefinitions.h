@@ -2,7 +2,8 @@ using namespace std;
 
 struct SoilProperties
 {
-	double Density;
+	double DensityMin;
+	double DensityMax;
 	double Porosity;
 	double ResidualWaterSaturation;
 	double HeatCapacity;
@@ -63,9 +64,7 @@ struct GaussQuadrature
 struct GSLIBProps
 {
 	bool isHeterLambda;
-	bool isHeterC;
 	bool isHeterK;
-	bool isHeterD;
 	bool isHeterBC;
 	bool isHeterFP;
 	double CorrelationLength;

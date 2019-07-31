@@ -7,7 +7,7 @@ const string MeshInputFile = "../Inputs/input_mesh.msh";
 GlobalOptions Options;
 
 bool Inputs(string propsInputFile, string meshInputFile, int iParallelRealization);
-void Simulate(int iReal);
+void Simulate(int iRealization);
 string GetOutputFilePath(string outputName, int iRealization);
 
 VectorXd Temp_0;
@@ -115,10 +115,7 @@ int main(int argc, char* argv[])
 	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
 
 	//SOLUTION
-	for (int iReal = 0; iReal < PROPS.GSLIB.NumberOfRealizations; iReal++)
-	{
-		Simulate(iReal);
-	}	
+	Simulate(iParallelRlzn);
 
 	fclose(OutputFiles.OutputFile);
 	fclose(OutputFiles.NodePlotFile);

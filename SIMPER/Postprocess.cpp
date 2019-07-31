@@ -24,7 +24,7 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int
 	talikArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
-		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -76,7 +76,7 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -131,7 +131,7 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 	slushyArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
-		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -184,7 +184,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
-		Tsol = MESH.Elements[e].SoilFreezingPoint(iRealization);
+		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
 		yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
@@ -256,7 +256,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 		fprintf(Files.OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);
 		for (int n = 0; n < nond; n++)
 		{
-			fprintf(Files.OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n, iRealization));
+			fprintf(Files.OutputFile, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Nodes[n].Coordinates.x, MESH.Nodes[n].Coordinates.y, Temp(n), derTemp(n, 0), derTemp(n, 1), waterSat(n), iceSat(n), NodalGSLIBCoeffs(n, 0));
 		}
 	}
 	else

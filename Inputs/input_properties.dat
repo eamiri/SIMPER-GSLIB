@@ -1,12 +1,12 @@
 Solid Grains Material Properties
-LambdaSol     	Csol	Ksol	Dsol	npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
-6.0E-6			630		0.05	250		0.8 		0.1     2							 	0.2		2.0		1							1
+LambdaSol     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
+6.0E-6			630		0.05	10			760			0.8 		0.1     2							 	0.2		2.0		1							1
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		
 2108			2.14			1000		4182			0.6				1000			334000	  	1.0		0.024	1.3
 (Non)isothermal condition
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq	SolidSatIndex	LiquidSatIndex
-0			2618150			0.0			2.823	  		-1.0		0.0		0.2				0.8
+0			2618150			0.0			2.823	  		-1.0		0.0		0.0				1.0
 Fen Properties
 FenExists		FensTemperature		HydraulicConductivityRatio
 1				0.2					100
@@ -21,13 +21,13 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	MESH (0: GID, 1: GMSH)	InputBC
-216000			7200			1E-3			25						0.6							876		1						1
+216000			3600			1E-3			25						0.6							876		1						1
 GSLIB input data
 Correlation Length		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random) AnisotropyRatio(X/Y)
-12.8					200						0.25			 100					    0.25		   1						0						5
+12.8					200						0.25			 100					    0.25		   1						843561						5
 Apply Heterogeneity on
-Lambda	C		K		BC		D		FP
-1		1		1		0		0		0	
+Lambda	K		BC		FP
+1		1		0		0	
 Temperature Plot Nodes
 3526 
 3565 
@@ -38,8 +38,3 @@ Temperature Plot Nodes
 3694 
 3707 
 3716
-
-17723336
-17723336
-17723365
-17723365

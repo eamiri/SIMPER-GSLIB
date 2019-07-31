@@ -131,6 +131,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SaturationFunctions.h" />
     <ClInclude Include="SimperInclude.h" />
+    <ClInclude Include="SoilImpericalRelations.h" />
     <ClInclude Include="TrustRegion.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClCompile Include="SaturationFunctions.cpp" />
     <ClCompile Include="SimperMain.cpp" />
     <ClCompile Include="Simulate.cpp" />
+    <ClCompile Include="SoilImpericalRelations.cpp" />
     <ClCompile Include="TrustRegion.cpp" />
     <ClCompile Include="TrustRegionIteration.cpp" />
   </ItemGroup>
