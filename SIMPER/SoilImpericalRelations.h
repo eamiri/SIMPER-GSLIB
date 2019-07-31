@@ -2,6 +2,7 @@
 #define __SIR__
 
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -16,7 +17,5 @@ private:
 	double satThermCon;
 
 };
-
-
 
 #endif
