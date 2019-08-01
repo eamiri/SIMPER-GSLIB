@@ -3,10 +3,10 @@ LambdaSol     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0
 6.0E-6			630		0.05	10			760			0.8 		0.1     2							 	0.2		2.0		1							1
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		
-2108			2.14			1000		4182			0.6				1000			334000	  	1.0		0.024	1.3
+2108			1.0			1000		4182			1.0				1000			334000	  	1.0		0.024	1.3
 (Non)isothermal condition
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq	SolidSatIndex	LiquidSatIndex
-0			2618150			0.0			2.823	  		-1.0		0.0		0.0				1.0
+0			2618150			0.0			2.823	  		-1.0		0.0		0.2				0.8
 Fen Properties
 FenExists		FensTemperature		HydraulicConductivityRatio
 1				0.2					100

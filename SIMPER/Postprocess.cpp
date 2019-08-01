@@ -73,6 +73,11 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	Wpar = PROPS.Soil.Wpar;
 	Mpar = PROPS.Soil.Mpar;
 	SwSol = PROPS.Nonisothermal.SolidSatIndex;
+	if (SwSol < Sres)
+	{
+		SwSol = Sres;
+	}
+
 	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
@@ -124,6 +129,11 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 	Wpar = PROPS.Soil.Wpar;
 	Mpar = PROPS.Soil.Mpar;
 	SwSol = PROPS.Nonisothermal.SolidSatIndex;
+	if (SwSol < Sres)
+	{
+		SwSol = Sres;
+	}
+
 	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	//
 	frozenArea = 0.0;
