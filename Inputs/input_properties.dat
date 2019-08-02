@@ -1,6 +1,6 @@
 Solid Grains Material Properties
 LambdaSol     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
-6.0E-6			630		0.05	10			760			0.8 		0.1     2							 	0.2		2.0		1							1
+6.0E-6			630		0.05	10			760			0.8 		0.1     2							 	0.2		2.0		0							1
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		
 2108			1.0				1000		4182			1.0				1000			334000	  	1.0		0.024	1.3

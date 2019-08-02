@@ -9,7 +9,11 @@ Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs,
 	noel = MESH.NumberOfElements;
 	nond = MESH.NumberOfNodes;
 	ndoe = MESH.ElementNumberOfNodes;
-	NodalGSLIBCoeffs = nodalGSLIBCoeffs;
+	if (PROPS.Soil.IsGSLIB)
+	{
+		NodalGSLIBCoeffs = nodalGSLIBCoeffs;
+	}
+
 	Files = files;
 }
 
