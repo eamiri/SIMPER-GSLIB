@@ -443,34 +443,10 @@ void UpscaleGSLIBtoSIMPER()
 				{
 					MESH.Elements[e].SoilDensity = 0.5 * (PROPS.Soil.DensityMin + PROPS.Soil.DensityMax);
 				}
-				
-				
-				if (PROPS.GSLIB.isHeterLambda) // Check if soil hydraulic conductivity is heterogeneous
-				{
-					MESH.Elements[e].SoilHydraulicConductivity = SIR.HydraulicConductivity(MESH.Elements[e].SoilDensity);
-				}
-				else
-				{
-					MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil.HydraulicConductivity;
-				}
 
-				//if (PROPS.GSLIB.isHeterC) // Check if soil heat capacity is heterogeneous
-				//{
-				//	MESH.Elements[e].SoilHeatCapacity(iReal) = PROPS.Soil.HeatCapacity * GSLIBCoeffE;
-				//}
-				//else
-				//{
 				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
-				//}
-
-				if (PROPS.GSLIB.isHeterK) // Check if soil thermal conductivity is heterogeneous
-				{
-					MESH.Elements[e].SoilThermalConductivity = SIR.ThermalConductivity(MESH.Elements[e].SoilDensity);
-				}
-				else
-				{
-					MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
-				}
+				MESH.Elements[e].SoilThermalConductivity = SIR.ThermalConductivity(MESH.Elements[e].SoilDensity);
+				MESH.Elements[e].SoilHydraulicConductivity = SIR.HydraulicConductivity(MESH.Elements[e].SoilDensity);
 
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{

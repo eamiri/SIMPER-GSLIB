@@ -341,15 +341,15 @@ void Simulate(int iRealization)
 								FenFlux = 0.0;
 								if (Temp(TopBoundary[0]) < 0)
 								{
+									double fenDelTemp = PROPS.Fen.FenDelTemp;
+									double rLambdaFen = PROPS.Fen.FenLambdaRatio;
 									if (MESH.Elements[e].SoilType == "Fen")
 									{
-										double fenDelTemp = PROPS.Fen.FenDelTemp;
-										double rLambdaFen = PROPS.Fen.FenLambdaRatio;
 										FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * rLambdaFen * 0.01);
 									}
 									else
 									{
-										FenFlux = Dwat * Cwat * (0.2) * (-HydCon * FenSATFUNCS.Swat * 0.01);
+										FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * 0.01);
 									}
 								}
 							}							
