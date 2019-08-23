@@ -385,6 +385,16 @@ void UpscaleGSLIBtoSIMPER()
 
 				double maxGslibCoeff = GSLIBCoeffs.col(iReal).maxCoeff();
 				double minGslibCoeff = GSLIBCoeffs.col(iReal).minCoeff();
+				double normFac = 1.0;
+				if (maxGslibCoeff >= abs(minGslibCoeff))
+				{
+					normFac = maxGslibCoeff;
+				}
+				else
+				{
+					normFac = abs(minGslibCoeff);
+				}
+
 				for (int i = 0; i < gslibNumberOfNodes; i++)
 				{
 					double ar = PROPS.GSLIB.AnisotropyRatio;
@@ -395,15 +405,15 @@ void UpscaleGSLIBtoSIMPER()
 					{
 						distanceP = distance;
 						gslibCoeff = GSLIBCoeffs(i, iReal);
-
-						if (gslibCoeff > 0)
+						NodalGSLIBCoeffs(n, iReal) = gslibCoeff / normFac;
+						/*if (gslibCoeff > 0)
 						{
 							NodalGSLIBCoeffs(n, iReal) = gslibCoeff / maxGslibCoeff;
 						}
 						else
 						{
 							NodalGSLIBCoeffs(n, iReal) = gslibCoeff / abs(minGslibCoeff);
-						}
+						}*/
 					}
 				}
 
@@ -450,7 +460,15 @@ void UpscaleGSLIBtoSIMPER()
 
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{
-					MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * (1.0 + GSLIBCoeffE);
+					//MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * (1.0 + GSLIBCoeffE);
+					if (GSLIBCoeffE <= 0)
+					{
+						MESH.Elements[e].SoilFreezingPoint = -0.5 + 1.5 * (GSLIBCoeffE);
+					}
+					else
+					{
+						MESH.Elements[e].SoilFreezingPoint = -2.0 + 1.5 * (GSLIBCoeffE);
+					}
 				}
 				else
 				{
