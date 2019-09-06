@@ -6,7 +6,7 @@ IBConditions::IBConditions (Mesh *m, Properties *p)
 	PROPS = &(*p);
 	SetInitialCondition();
 	SetBoundaryConditions();
-	InputBC("../Inputs/" + PROPS->BCs.InputFile);
+	InputBC("../Inputs/" + PROPS->BCs.BCInputFile);
 }
 
 void IBConditions::SetBoundaryNodes(vector<int> boundaryNodes)
@@ -191,11 +191,51 @@ void IBConditions::InputBC(string filePath)
 
 void IBConditions::SetInitialCondition()
 {
-	Temp_0 = -3.0 * Temp_0.Ones(MESH->NumberOfNodes);
-	TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
-	Residual = Residual.Zero(MESH->NumberOfNodes);
-	Temp = Temp_0;
-	TempDot = TempDot_0;
+	if (PROPS->BCs.isICInput)
+	{
+		InputIC("../Inputs/" + PROPS->BCs.ICInputFile);
+	}
+	else
+	{
+		Temp_0 = -3.0 * Temp_0.Ones(MESH->NumberOfNodes);
+		TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
+		Residual = Residual.Zero(MESH->NumberOfNodes);
+		Temp = Temp_0;
+		TempDot = TempDot_0;
+	}
+}
+
+void IBConditions::InputIC(string filePath)
+{
+	ifstream bcInputFile;
+	bcInputFile.open(filePath.c_str());
+	if (bcInputFile.fail())
+	{
+		cout << "Cannot find file " << filePath << endl;
+	}
+	else
+	{
+		cout << "IC input file: " << filePath << endl;
+		string line;
+		istringstream isDataLine(line);
+		getline(bcInputFile, line);
+		int iNode;
+		double icTemperature;
+		Temp_0.resize(MESH->NumberOfNodes);
+		int lastIBC = 0;
+		for (int iic = 0; iic < MESH->NumberOfNodes; iic++)
+		{
+			getline(bcInputFile, line);
+			isDataLine.clear();
+			isDataLine.str(line);
+			isDataLine >> iNode >> icTemperature;
+			Temp_0(iNode-1) = icTemperature;
+			TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
+			Residual = Residual.Zero(MESH->NumberOfNodes);
+			Temp = Temp_0;
+			TempDot = TempDot_0;
+		}
+	}
 }
 
 void IBConditions::SetBoundaryConditions()

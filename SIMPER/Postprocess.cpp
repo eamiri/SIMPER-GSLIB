@@ -182,6 +182,17 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 	fflush(Files.AreaAnalysisFile);
 }
 
+void Postprocess::PlotNodes(VectorXd Temp, double solutionTime, int iRealization)
+{
+	fprintf(Files.NodePlotFile, "\n%i\t%e\t", iRealization, solutionTime);
+	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
+	{
+		fprintf(Files.NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));
+	}
+
+	fflush(Files.NodePlotFile);
+}
+
 void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 {
 	//
@@ -252,17 +263,6 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 		waterSat(n) /= distance(n);
 		iceSat(n) /= distance(n);
 	}
-
-	if (PROPS.PlotNodes.size())
-	{
-		fprintf(Files.NodePlotFile, "\n%e\t", solutionTime);
-		for (int n = 0; n < PROPS.PlotNodes.size(); n++)
-		{
-			fprintf(Files.NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));
-		}
-
-		fflush(Files.NodePlotFile);
-	}	
 
 	if (PROPS.Soil.IsGSLIB)
 	{

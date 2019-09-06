@@ -33,6 +33,7 @@ public:
 	void AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization);
 	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
 	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
+	void PlotNodes(VectorXd Temp, double solutionTime, int iRealization);
 
 private:
 	VectorXd NodalGSLIBCoeffs;

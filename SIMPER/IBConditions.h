@@ -48,6 +48,7 @@ private:
 	vector<int> DiskProblem();
 	void SetDirichletBC(vector<int> boundaryNodes, double value);
 	void InputBC(string filePath);
+	void InputIC(string filePath);
 	Mesh *MESH;
 	Properties *PROPS;
 };

@@ -51,7 +51,9 @@ struct FenProperties
 
 struct BoundaryConditions
 {
-	string InputFile;
+	string BCInputFile;
+	bool isICInput;
+	string ICInputFile;
 	vector<int> Node;
 	vector<double> Value;
 };

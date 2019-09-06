@@ -132,7 +132,15 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
-		isDataLine >> props.BCs.InputFile;
+		isDataLine 
+			>> props.BCs.isICInput  
+			>> props.BCs.ICInputFile;
+		getline(propsFile, line);
+		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
+		isDataLine >> props.BCs.BCInputFile;
 		getline(propsFile, line);
 		while (getline(propsFile, line))
 		{

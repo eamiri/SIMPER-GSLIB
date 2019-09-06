@@ -501,7 +501,7 @@ void Simulate(int iRealization)
 		 // and talik: every year - based on the official definition)
 		if (Year == iTalikYear)
 		{
-			iTalikYear++;
+			iTalikYear += 2;
 			POSTPROCESS.GetTalikArea(minTempTalikAna, maxTempTalikAna, Year, iRealization);
 			// Reseting the min and max temperatures for the next year round
 			minTempTalikAna = Temp;
@@ -516,6 +516,7 @@ void Simulate(int iRealization)
 			minTempPermAna = Temp;
 			maxTempPermAna = Temp;
 		}
+
 		// Updating min and max temperatures
 		for (int n = 0; n < nond; n++)
 		{
@@ -540,6 +541,11 @@ void Simulate(int iRealization)
 			}
 		}
 		// Plots
+		if (PROPS.PlotNodes.size())
+		{
+			POSTPROCESS.PlotNodes(Temp, solutionTime, iRealization);
+		}
+
 		if (iTimestep == iPlot * *plotInterval)
 		{
 			iPlot++;
