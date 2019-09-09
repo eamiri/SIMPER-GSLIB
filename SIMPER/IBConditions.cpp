@@ -126,10 +126,20 @@ void IBConditions::SetPlotNodes()
 	{
 		double xNode = MESH->Nodes[n].Coordinates.x;
 		double yNode = MESH->Nodes[n].Coordinates.y;
-		if (xNode == 0.0)
+		if (xNode == 0.005)
 		{
-			PlotNodes.push_back(MESH->Nodes[n].n);
-		}
+			if (yNode == 0.0 || yNode == 0.05 || yNode == 0.1 || yNode == 0.15 
+				|| yNode == 0.2 
+				|| yNode == 0.25 
+				|| yNode == 0.30 
+				|| yNode == 0.35 
+				|| yNode == 0.45 
+				|| yNode == 0.55 
+				|| yNode == 0.65)
+			{
+				PlotNodes.push_back(MESH->Nodes[n].n);
+			}
+		}	
 	}
 }
 

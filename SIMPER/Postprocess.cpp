@@ -184,7 +184,7 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 
 void Postprocess::PlotNodes(VectorXd Temp, double solutionTime, int iRealization)
 {
-	fprintf(Files.NodePlotFile, "\n%i\t%e\t", iRealization, solutionTime);
+	fprintf(Files.NodePlotFile, "\n%e\t", solutionTime);
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 	{
 		fprintf(Files.NodePlotFile, "%e\t", Temp(PROPS.PlotNodes[n] - 1));

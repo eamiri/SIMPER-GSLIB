@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	//PLOT FILES
 	OutputFiles.NodePlotFile = fopen(GetOutputFilePath("NodePlot.plt", iParallelRlzn).c_str(), "w");
 	fprintf(OutputFiles.NodePlotFile, "TITLE = \"Temperature profile of the nodes\"\n");
-	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"Realization\" \"<i>t </i>(sec)\"");
+	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"<i>t </i>(sec)\"");
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 	{
 		fprintf(OutputFiles.NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", PROPS.PlotNodes[n]);
