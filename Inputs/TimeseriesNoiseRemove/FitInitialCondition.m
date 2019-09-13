@@ -1513,5 +1513,5 @@ NDATA=[0
 1];
 fitIC=zeros(size(NDATA,1),1);
 for i=1:size(NDATA,1)
-    fitIC(i,1)=fitresult(NDATA(i,1));
+    fitIC(i,1)=fitresult(1-NDATA(i,1));
 end
