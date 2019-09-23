@@ -69,7 +69,8 @@ struct GSLIBProps
 	bool isHeterK;
 	bool isHeterBC;
 	bool isHeterFP;
-	double CorrelationLength;
+	double HorCorrelationLength;
+	double VerCorrelationLength;
 	int NumberOfCellsX;
 	int NumberOfCellsY;
 	double GridSizeX;

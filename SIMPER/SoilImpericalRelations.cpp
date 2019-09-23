@@ -11,7 +11,7 @@ double SoilImpericalRelations::HydraulicConductivity(double bd)
 
 double SoilImpericalRelations::ThermalConductivity(double bd)
 {
-	satThermCon = (0.135 * bd + 64.7) / (2700 - 0.947 * bd); //[W/m/K]
+	satThermCon = (0.135 * bd + 64.7) / (2700 - 0.947 * bd); //[W/m/K] //CLM manual eqn. 6.62
 
 	return satThermCon;
 }

@@ -183,7 +183,8 @@ Properties InputProperties(string filePath)
 		isDataLine.clear();
 		isDataLine.str(line);
 		isDataLine
-			>> props.GSLIB.CorrelationLength
+			>> props.GSLIB.HorCorrelationLength
+			>> props.GSLIB.VerCorrelationLength
 			>> props.GSLIB.NumberOfCellsX
 			>> props.GSLIB.GridSizeX
 			>> props.GSLIB.NumberOfCellsY
@@ -273,7 +274,7 @@ void SgsimParameterFile()
 	fprintf(inputFileGSLIB, "4                                       -column\n");
 	fprintf(inputFileGSLIB, "1 0                                     -nst, nugget NOFILE\n");
 	fprintf(inputFileGSLIB, "2 1 0 0 0                               -it, cc, ang1, ang2, ang3\n");
-	fprintf(inputFileGSLIB, "%e %e 1.6                           -a_hmax, a_hmin, a_vert\n", PROPS.GSLIB.CorrelationLength, PROPS.GSLIB.CorrelationLength);
+	fprintf(inputFileGSLIB, "%e %e 0                           -a_hmax, a_hmin, a_vert\n", PROPS.GSLIB.VerCorrelationLength, PROPS.GSLIB.HorCorrelationLength);
 	fflush(inputFileGSLIB);
 }
 

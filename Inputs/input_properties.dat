@@ -1,5 +1,5 @@
 Solid Grains Material Properties
-LambdaSol     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
+HydConduc     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	isGSLIB (ON: 1, OFF: 0)		IsSaturated
 6.0E-6			630		0.05	10			760			0.8 		0.1     2							 	0.2		2.0		0							0
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		
@@ -17,17 +17,17 @@ Boundary Conditions
 Dirichlet BC Input File
 PlateauBC_Corrected.dat
 Nodes
-1	1.0
-3	1.0
-6	1.0				
+646	1.0
+647	1.0
+648	1.0				
 nGAUSS								
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	MESH (0: GID, 1: GMSH)	InputBC
 262800			1800			1E-3			25						0.6							876		0						1
 GSLIB input data
-Correlation Length		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random) AnisotropyRatio(X/Y)
-12.8					200						0.25			 100					    0.25		   1						843561						5
+Correlation Length (Hor  Ver)		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random) AnisotropyRatio(X/Y) (Leave it as 1 - can also be done Hor to Ver Correlation length)
+12.0		2.0						200						0.25			 200					    0.25		   1						843561				   1
 Apply Heterogeneity on
 Lambda	K		BC		FP
 1		1		0		1	

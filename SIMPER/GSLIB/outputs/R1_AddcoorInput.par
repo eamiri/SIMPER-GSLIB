@@ -1,9 +1,9 @@
 Parameters for SGSIM
 
 START OF PARAMETERS
-GSLIB/outputs/R143_SGSIM_output.out
-GSLIB/outputs/R143_ADDCOOR_output.out
+GSLIB/outputs/R1_SGSIM_output.out
+GSLIB/outputs/R1_ADDCOOR_output.out
 1                                   -realization number to add coordinate
 201 0 2.500000e-01                  -nx, xmin, xsize
-101 0 2.500000e-01                  -ny, ymin, ysize
+201 0 2.500000e-01                  -ny, ymin, ysize
 1 0 1                               -nz, zmin, zsize
