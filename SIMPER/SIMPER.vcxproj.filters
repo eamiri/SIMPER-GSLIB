@@ -51,10 +51,10 @@
     <ClInclude Include="OutputFileStruc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SoilImpericalRelations.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="SoilEmpiricalRelations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -92,7 +92,7 @@
     <ClCompile Include="TrustRegionIteration.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
-    <ClCompile Include="SoilImpericalRelations.cpp">
+    <ClCompile Include="SoilEmpiricalRelations.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -27,6 +27,7 @@ int nGP;
 Mesh MESH;
 MatrixXd GSLIBCoeffs;
 MatrixXd NodalGSLIBCoeffs;
+MatrixXd ElementalGSLIBCoeffs;
 MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
@@ -190,8 +191,7 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.NumberOfCellsY
 			>> props.GSLIB.GridSizeY
 			>> props.GSLIB.NumberOfRealizations
-			>> props.GSLIB.Seed
-			>> props.GSLIB.AnisotropyRatio;
+			>> props.GSLIB.Seed;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -380,7 +380,13 @@ void UpscaleGSLIBtoSIMPER()
 {
 	if (PROPS.Soil.IsGSLIB)
 	{
+		double GSLIBCoeffE;
+		VectorXi elementDofs;
+		VectorXd GSLIBCoeffsNode;
+		FILE* plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");
+		SoilEmpiricalRelations SER;
 		NodalGSLIBCoeffs.resize(nond, nRealization);
+		ElementalGSLIBCoeffs.resize(noel, nRealization);
 		NodalGSLIBCoeffs.setZero();
 		int gslibNumberOfNodes = (PROPS.GSLIB.NumberOfCellsX + 1) * (PROPS.GSLIB.NumberOfCellsY + 1);
 		for (int iReal = 0; iReal < nRealization; iReal++)
@@ -406,47 +412,52 @@ void UpscaleGSLIBtoSIMPER()
 
 				for (int i = 0; i < gslibNumberOfNodes; i++)
 				{
-					double ar = PROPS.GSLIB.AnisotropyRatio;
 					double xGrid = GSLIBGrid(i, 0);
-					double yGrid = GSLIBGrid(i, 1) / ar;
+					double yGrid = GSLIBGrid(i, 1);
 					double distance = sqrt((xNode - xGrid) * (xNode - xGrid) + (yNode - yGrid) * (yNode - yGrid));
 					if (distance < distanceP)
 					{
 						distanceP = distance;
 						gslibCoeff = GSLIBCoeffs(i, iReal);
 						NodalGSLIBCoeffs(n, iReal) = gslibCoeff / normFac;
-						/*if (gslibCoeff > 0)
-						{
-							NodalGSLIBCoeffs(n, iReal) = gslibCoeff / maxGslibCoeff;
-						}
-						else
-						{
-							NodalGSLIBCoeffs(n, iReal) = gslibCoeff / abs(minGslibCoeff);
-						}*/
 					}
 				}
+			}
 
+			for (int e = 0;e < noel;e++)
+			{
+				elementDofs = MESH.GetElementDofs(e, ndoe);
+				GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs.col(iReal), elementDofs);
+				ElementalGSLIBCoeffs(e, iReal) = 0;
+				for (int ig = 0; ig < 4; ig++)
+				{
+					ElementalGSLIBCoeffs(e, iReal) += abs(GSLIBCoeffsNode(ig));
+				}
+
+				ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) * 0.25;
+			}
+
+			double maxGslibCoeff = ElementalGSLIBCoeffs.col(iReal).maxCoeff();
+			double minGslibCoeff = ElementalGSLIBCoeffs.col(iReal).minCoeff();
+
+			for (int e = 0; e < noel; e++)
+			{
+				if (ElementalGSLIBCoeffs(e, iReal) >= 0)
+				{
+					ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) / maxGslibCoeff;
+				}
+				else
+				{
+					ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) / minGslibCoeff;
+				}
 			}
 		}
 
-		double GSLIBCoeffE;
-		VectorXi elementDofs;
-		VectorXd GSLIBCoeffsNode;
-		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");
-		SoilImpericalRelations SIR;
 		for (int iReal = 0; iReal < nRealization; iReal++)
 		{
 			for (int e = 0; e < noel; e++)
 			{
-				elementDofs = MESH.GetElementDofs(e, ndoe);
-				GSLIBCoeffsNode = MESH.GetNodalValues(NodalGSLIBCoeffs.col(iReal), elementDofs);
-				GSLIBCoeffE = 0;
-				for (int ig = 0; ig < 4; ig++)
-				{
-					GSLIBCoeffE += abs(GSLIBCoeffsNode(ig));
-				}
-
-				GSLIBCoeffE = GSLIBCoeffE * 0.25;
+				GSLIBCoeffE = ElementalGSLIBCoeffs(e, iReal);
 				if (PROPS.GSLIB.isHeterBC || PROPS.GSLIB.isHeterFP || PROPS.GSLIB.isHeterK || PROPS.GSLIB.isHeterLambda)
 				{ 
 					if (GSLIBCoeffE <= 0)
@@ -464,8 +475,8 @@ void UpscaleGSLIBtoSIMPER()
 				}
 
 				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
-				MESH.Elements[e].SoilThermalConductivity = SIR.ThermalConductivity(MESH.Elements[e].SoilDensity);
-				MESH.Elements[e].SoilHydraulicConductivity = SIR.HydraulicConductivity(MESH.Elements[e].SoilDensity);
+				MESH.Elements[e].SoilThermalConductivity = SER.ThermalConductivity(MESH.Elements[e].SoilDensity);
+				MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
 
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{

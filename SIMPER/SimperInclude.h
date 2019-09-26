@@ -29,7 +29,7 @@
 #include "SaturationFunctions.h"
 #include "Postprocess.h"
 #include "OutputFileStruc.h"
-#include "SoilImpericalRelations.h"
+#include "SoilEmpiricalRelations.h"
 
 using namespace std;
 using namespace Eigen;

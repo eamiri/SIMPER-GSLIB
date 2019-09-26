@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 	fprintf(OutputFiles.NodePlotFile, "VARIABLES = \"<i>t </i>(sec)\"");
 	for (int n = 0; n < PROPS.PlotNodes.size(); n++)
 	{
-		fprintf(OutputFiles.NodePlotFile, ", \"Node %i(<sup>o</sup>C)\"", PROPS.PlotNodes[n]);
+		fprintf(OutputFiles.NodePlotFile, ", \"Node %i - <i>y</i> = %f (<sup>o</sup>C)\"", PROPS.PlotNodes[n], MESH.Nodes[PROPS.PlotNodes[n]].Coordinates.y);
 	}
 
 	OutputFiles.OutputFile = fopen(GetOutputFilePath("Output.plt", iParallelRlzn).c_str(), "w");

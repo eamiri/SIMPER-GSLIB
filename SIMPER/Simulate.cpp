@@ -333,7 +333,15 @@ void Simulate(int iRealization)
 							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice + ISairxT * Dair * Cair) + (1 - npor) * Dsol * Csol * (TempG * TempG / 2.0 - Tsol * Tsol / 2.0) + npor * Dice * Lhea * (-IdSicexT);
 							//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
 							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice + ISair * Dair * Cair) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(-IdSice);
-							Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
+							if (!PROPS.Soil.IsSaturated)
+							{
+								Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor)) * pow(Kair, (Sair * npor)) * pow(Ksol, (1.0 - npor));
+							}
+							else
+							{
+								Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor))* pow(Ksol, (1.0 - npor));
+							}
+							
 							//
 							if (PROPS.Fen.IsFen)
 							{
