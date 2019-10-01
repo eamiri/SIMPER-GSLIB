@@ -112,6 +112,14 @@ void ComputePotentialStar(int iRealization)
 		Csol = MESH.Elements[e].SoilHeatCapacity;
 		Dsol = MESH.Elements[e].SoilDensity;
 		Ksol = MESH.Elements[e].SoilThermalConductivity;
+		if (MESH.Elements[e].SoilType != "Soil")
+		{
+			npor = 1.0;
+		}
+		else
+		{
+			npor = PROPS.Soil.Porosity;
+		}
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -292,6 +300,14 @@ void Simulate(int iRealization)
 					Dsol = MESH.Elements[e].SoilDensity;
 					Ksol = MESH.Elements[e].SoilThermalConductivity;
 					HydCon = MESH.Elements[e].SoilHydraulicConductivity;
+					if (MESH.Elements[e].SoilType != "Soil")
+					{
+						npor = 1.0;
+					}
+					else
+					{
+						npor = PROPS.Soil.Porosity;
+					}
 
 					for (int i = 0; i < nGP; i++)
 					{
