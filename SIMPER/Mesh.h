@@ -24,6 +24,7 @@ struct Element
 	int e;
 	vector<Node> Nodes;
 	double Area;
+	int iSoilType;
 	string SoilType;
 	double SoilHydraulicConductivity;
 	double SoilHeatCapacity;

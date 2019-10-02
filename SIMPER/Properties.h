@@ -6,10 +6,10 @@
 
 struct Properties
 {
-	SoilProperties Soil;
+	int nSoilType;
+	vector<SoilProperties> Soil;
 	FluidProperties Fluid;
 	NonisothermalProperties Nonisothermal;
-	FenProperties Fen;
 	BoundaryConditions BCs;
 	GaussQuadrature GQ;
 	SolutionVariables Solution;

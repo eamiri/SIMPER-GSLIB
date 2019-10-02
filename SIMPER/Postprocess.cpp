@@ -9,7 +9,7 @@ Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs,
 	noel = MESH.NumberOfElements;
 	nond = MESH.NumberOfNodes;
 	ndoe = MESH.ElementNumberOfNodes;
-	if (PROPS.Soil.IsGSLIB)
+	if (PROPS.GSLIB.isGSLIB)
 	{
 		NodalGSLIBCoeffs = nodalGSLIBCoeffs;
 	}
@@ -19,15 +19,17 @@ Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs,
 
 void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
 {
-	rSFC = PROPS.Soil.rSFC;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
 	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	talikArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
+		int iSoilType = MESH.Elements[e].iSoilType;
+		//
+		rSFC = PROPS.Soil[iSoilType].rSFC;
+		Tliq = PROPS.Nonisothermal.TempLiquid;
+		Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+		Wpar = PROPS.Soil[iSoilType].Wpar;
+		Mpar = PROPS.Soil[iSoilType].Mpar;
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -42,7 +44,7 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int
 		iThawed = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			SaturationFunctions SATFUNCS(minTempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			SaturationFunctions SATFUNCS(minTempNode(n), Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
 			if (SATFUNCS.Swat >= SwLiq)
 			{
 				iThawed++;
@@ -71,11 +73,7 @@ void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int
 
 void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
 {
-	rSFC = PROPS.Soil.rSFC;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
+	
 	SwSol = PROPS.Nonisothermal.SolidSatIndex;
 	if (SwSol < Sres)
 	{
@@ -85,6 +83,13 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 	permafrostArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
+		int iSoilType = MESH.Elements[e].iSoilType;
+		//
+		rSFC = PROPS.Soil[iSoilType].rSFC;
+		Tliq = PROPS.Nonisothermal.TempLiquid;
+		Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+		Wpar = PROPS.Soil[iSoilType].Wpar;
+		Mpar = PROPS.Soil[iSoilType].Mpar;
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -99,7 +104,7 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 		iFrozen = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			SaturationFunctions SATFUNCS(maxTempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			SaturationFunctions SATFUNCS(maxTempNode(n), Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
 			if (SATFUNCS.Swat <= SwSol)
 			{
 				iFrozen++;
@@ -127,11 +132,6 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization)
 {
-	rSFC = PROPS.Soil.rSFC;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
 	SwSol = PROPS.Nonisothermal.SolidSatIndex;
 	if (SwSol < Sres)
 	{
@@ -145,6 +145,14 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 	slushyArea = 0.0;
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{	
+		int iSoilType = MESH.Elements[e].iSoilType;
+		//
+		rSFC = PROPS.Soil[iSoilType].rSFC;
+		Tliq = PROPS.Nonisothermal.TempLiquid;
+		Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+		Wpar = PROPS.Soil[iSoilType].Wpar;
+		Mpar = PROPS.Soil[iSoilType].Mpar;
+		//
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -158,7 +166,7 @@ void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealizat
 		iFrozen = 0; iThawed = 0; iSlushy = 0;
 		for (int n = 0; n < ndoe; n++)
 		{
-			SaturationFunctions SATFUNCS(TempNode(n), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+			SaturationFunctions SATFUNCS(TempNode(n), Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
 			if (SATFUNCS.Swat <= SwSol)
 			{
 				iFrozen++;
@@ -195,13 +203,7 @@ void Postprocess::PlotNodes(VectorXd Temp, double solutionTime, int iRealization
 
 void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 {
-	//
-	rSFC = PROPS.Soil.rSFC;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
-	//
+	
 	derTemp = derTemp.Zero(nond, 2);
 	waterSat = waterSat.Zero(nond);
 	iceSat = iceSat.Zero(nond);
@@ -209,6 +211,14 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 
 	for (int e = 0; e < MESH.NumberOfElements; e++)
 	{
+		int iSoilType = MESH.Elements[e].iSoilType;
+		//
+		rSFC = PROPS.Soil[iSoilType].rSFC;
+		Tliq = PROPS.Nonisothermal.TempLiquid;
+		Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+		Wpar = PROPS.Soil[iSoilType].Wpar;
+		Mpar = PROPS.Soil[iSoilType].Mpar;
+		//
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
@@ -243,7 +253,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 					yNode = MESH.Elements[e].Nodes[n].Coordinates.y;
 					dNodeGP = sqrt((globalGPx - xNode)*(globalGPx - xNode) + (globalGPy - yNode)*(globalGPy - yNode));
 
-					SaturationFunctions SATFUNCS(Temp(elementDofs(n)), Tsol, Tliq, Sres, PROPS.Soil.IsSaturated);
+					SaturationFunctions SATFUNCS(Temp(elementDofs(n)), Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
 					waterSat(elementDofs(n)) += dNodeGP * SATFUNCS.Swat;
 					iceSat(elementDofs(n)) += dNodeGP * SATFUNCS.Sice;
 
@@ -264,7 +274,7 @@ void Postprocess::Plot(VectorXd Temp, double solutionTime, int iRealization)
 		iceSat(n) /= distance(n);
 	}
 
-	if (PROPS.Soil.IsGSLIB)
+	if (PROPS.GSLIB.isGSLIB)
 	{
 		fprintf(Files.OutputFile, "variables =\"X\" \"Y\" \"T\" \"Tx\" \"Ty\" \"Sw\" \"Si\" \"GSLIB Coeff\"\n");
 		fprintf(Files.OutputFile, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", nond, noel);

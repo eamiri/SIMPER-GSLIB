@@ -8,6 +8,7 @@
 #include <regex>
 #include <experimental/filesystem>
 
+bool GlobalFenIndex = false;
 bool Inputs(string propsInputFile, string meshInputFile, int iPReal);
 string GetOutputFilePath(string outputName, int iRealization);
 string GetGSLIBOutputFilePath(string outputName, int iRealization);
@@ -38,7 +39,7 @@ bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
-	if (PROPS.Soil.IsGSLIB)
+	if (PROPS.GSLIB.isGSLIB)
 	{
 		SgsimParameterFile();
 		GSLIBRunSGSIM();
@@ -71,24 +72,40 @@ Properties InputProperties(string filePath)
 	else
 	{
 		string line;
-
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
 		istringstream isDataLine(line);
 		isDataLine
-			>> props.Soil.HydraulicConductivity
-			>> props.Soil.HeatCapacity
-			>> props.Soil.ThermalConductivity
-			>> props.Soil.DensityMin
-			>> props.Soil.DensityMax
-			>> props.Soil.Porosity
-			>> props.Soil.ResidualWaterSaturation
-			>> props.Soil.rSFC
-			>> props.Soil.Wpar
-			>> props.Soil.Mpar
-			>> props.Soil.IsGSLIB
-			>> props.Soil.IsSaturated;
+			>> props.nSoilType
+			>> props.GSLIB.isGSLIB;
+		props.Soil.resize(props.nSoilType);
+		getline(propsFile, line);
+		for (int iSoilType = 0; iSoilType < props.nSoilType; iSoilType++)
+		{
+			getline(propsFile, line);
+			istringstream isDataLine(line);
+			isDataLine
+				>> props.Soil[iSoilType].iType
+				>> props.Soil[iSoilType].SoilType
+				>> props.Soil[iSoilType].HydraulicConductivity
+				>> props.Soil[iSoilType].HeatCapacity
+				>> props.Soil[iSoilType].ThermalConductivity
+				>> props.Soil[iSoilType].DensityMin
+				>> props.Soil[iSoilType].DensityMax
+				>> props.Soil[iSoilType].Porosity
+				>> props.Soil[iSoilType].ResidualWaterSaturation
+				>> props.Soil[iSoilType].rSFC
+				>> props.Soil[iSoilType].Wpar
+				>> props.Soil[iSoilType].Mpar
+				>> props.Soil[iSoilType].IsSaturated;
+			
+			if (props.Soil[iSoilType].SoilType == "Fen")
+			{
+				GlobalFenIndex = true;
+			}
+		}
+
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -124,15 +141,6 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
-		isDataLine
-			>> props.Fen.IsFen
-			>> props.Fen.FenDelTemp
-			>> props.Fen.FenLambdaRatio;
-		getline(propsFile, line);
-		getline(propsFile, line);
-		getline(propsFile, line);
-		isDataLine.clear();
-		isDataLine.str(line);
 		isDataLine 
 			>> props.BCs.isICInput  
 			>> props.BCs.ICInputFile;
@@ -141,23 +149,10 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
-		isDataLine >> props.BCs.BCInputFile;
+		isDataLine
+			>> props.BCs.isBCInput
+			>> props.BCs.BCInputFile;
 		getline(propsFile, line);
-		while (getline(propsFile, line))
-		{
-			isDataLine.clear();
-			isDataLine.str(line);
-			int bcNode;
-			double bcValue;
-			if (!(isDataLine >> bcNode >> bcValue))
-			{
-				break;
-			}
-
-			props.BCs.Node.push_back(bcNode);
-			props.BCs.Value.push_back(bcValue);
-		}
-
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
@@ -176,8 +171,7 @@ Properties InputProperties(string filePath)
 			>> props.Solution.MaxIterations
 			>> props.Solution.NewmarkGamma
 			>> props.Solution.PlotInterval
-			>> props.Solution.IsGMSH
-			>> props.Solution.IsInputBC;
+			>> props.Solution.IsGMSH;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -202,20 +196,6 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.isHeterK
 			>> props.GSLIB.isHeterBC
 			>> props.GSLIB.isHeterFP;
-
-		/*getline(propsFile, line);
-		while (getline(propsFile, line))
-		{
-			isDataLine.clear();
-			isDataLine.str(line);
-			int plotNode;
-			if (!(isDataLine >> plotNode))
-			{
-				break;
-			}
-
-			props.PlotNodes.push_back(plotNode);
-		}*/
 	}
 
 	return props;
@@ -378,7 +358,7 @@ void GSLIBRunSGSIM()
 
 void UpscaleGSLIBtoSIMPER()
 {
-	if (PROPS.Soil.IsGSLIB)
+	if (PROPS.GSLIB.isGSLIB)
 	{
 		double GSLIBCoeffE;
 		VectorXi elementDofs;
@@ -457,24 +437,25 @@ void UpscaleGSLIBtoSIMPER()
 		{
 			for (int e = 0; e < noel; e++)
 			{
+				int iSoilType = MESH.Elements[e].iSoilType;
 				GSLIBCoeffE = ElementalGSLIBCoeffs(e, iReal);
 				if (PROPS.GSLIB.isHeterBC || PROPS.GSLIB.isHeterFP || PROPS.GSLIB.isHeterK || PROPS.GSLIB.isHeterLambda)
 				{ 
 					if (GSLIBCoeffE <= 0)
 					{
-						MESH.Elements[e].SoilDensity = PROPS.Soil.DensityMax + (PROPS.Soil.DensityMax - PROPS.Soil.DensityMin) * GSLIBCoeffE;
+						MESH.Elements[e].SoilDensity = PROPS.Soil[iSoilType].DensityMax + (PROPS.Soil[iSoilType].DensityMax - PROPS.Soil[iSoilType].DensityMin) * GSLIBCoeffE;
 					}
 					else
 					{
-						MESH.Elements[e].SoilDensity = PROPS.Soil.DensityMin + (PROPS.Soil.DensityMax - PROPS.Soil.DensityMin) * GSLIBCoeffE;
+						MESH.Elements[e].SoilDensity = PROPS.Soil[iSoilType].DensityMin + (PROPS.Soil[iSoilType].DensityMax - PROPS.Soil[iSoilType].DensityMin) * GSLIBCoeffE;
 					}
 				}
 				else
 				{
-					MESH.Elements[e].SoilDensity = 0.5 * (PROPS.Soil.DensityMin + PROPS.Soil.DensityMax);
+					MESH.Elements[e].SoilDensity = 0.5 * (PROPS.Soil[iSoilType].DensityMin + PROPS.Soil[iSoilType].DensityMax);
 				}
 
-				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
+				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil[iSoilType].HeatCapacity;
 				MESH.Elements[e].SoilThermalConductivity = SER.ThermalConductivity(MESH.Elements[e].SoilDensity);
 				MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
 
@@ -506,6 +487,7 @@ void UpscaleGSLIBtoSIMPER()
 			fprintf(plotSoilProperties, " \"Realization %i <i>D</i><sub>soil</sub>\"", iParallelRlzn);
 			fprintf(plotSoilProperties, " \"Realization %i Freezing Point\"", iParallelRlzn);
 			fprintf(plotSoilProperties, " \"Realization %i Coeff_GSLIB\"", iParallelRlzn);
+			fprintf(plotSoilProperties, " \"Realization %i Soil type\"", iParallelRlzn);
 			
 
 			fprintf(plotSoilProperties, "\nZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
@@ -521,6 +503,7 @@ void UpscaleGSLIBtoSIMPER()
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilDensity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilFreezingPoint);
 				fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, 0));
+				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].iSoilType);
 				fprintf(plotSoilProperties, "\n");
 			}
 			
@@ -534,23 +517,25 @@ void UpscaleGSLIBtoSIMPER()
 		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");;
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
-			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil.HeatCapacity;
-			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil.ThermalConductivity;
-			MESH.Elements[e].SoilDensity = 0.5*(PROPS.Soil.DensityMax + PROPS.Soil.DensityMin);
+			int iSoilType = MESH.Elements[e].iSoilType;
+			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil[iSoilType].HeatCapacity;
+			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil[iSoilType].ThermalConductivity;
+			MESH.Elements[e].SoilDensity = 0.5*(PROPS.Soil[iSoilType].DensityMax + PROPS.Soil[iSoilType].DensityMin);
 			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
 
-			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\"\n");
+			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Soil type\"\n");
 			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
+				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
 					MESH.Elements[e].Nodes[inod].Coordinates.y, 
 					MESH.Elements[e].SoilHydraulicConductivity,
 					MESH.Elements[e].SoilHeatCapacity,
 					MESH.Elements[e].SoilThermalConductivity,
 					MESH.Elements[e].SoilDensity,
-					MESH.Elements[e].SoilFreezingPoint);
+					MESH.Elements[e].SoilFreezingPoint,
+					MESH.Elements[e].iSoilType);
 			}
 
 			fprintf(plotSoilProperties, "1 2 3 4\n");
@@ -659,15 +644,16 @@ Mesh InputMesh(string filePath)
 			while (getline(meshFile, line))
 			{
 				istringstream isElementData(line);
-				int e, X1, X2, X3, X4, n1, n2, n3, n4;
+				int e, X1, X2, isoiltype, X4, n1, n2, n3, n4;
 
-				if (!(isElementData >> e >> X1 >> X2 >> X3 >> X4 >> n1 >> n2 >> n3 >> n4))
+				if (!(isElementData >> e >> X1 >> X2 >> isoiltype >> X4 >> n1 >> n2 >> n3 >> n4))
 				{
 					break;
 				}
 
 				element.Nodes.clear();
-				element.SoilType = SoilType[X3 - 1];
+				element.iSoilType = isoiltype - 1;
+				element.SoilType = SoilType[isoiltype - 1];
 				element.e = e;
 				node.n = n1;
 				node.Coordinates = mesh.Nodes[n1 - 1].Coordinates;

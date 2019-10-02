@@ -158,7 +158,7 @@ void IBConditions::InputBC(string filePath)
 {
 	BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
 	BCInputData.setZero();
-	if (PROPS->Solution.IsInputBC)
+	if (PROPS->BCs.isBCInput)
 	{
 		ifstream bcInputFile;
 		bcInputFile.open(filePath.c_str());

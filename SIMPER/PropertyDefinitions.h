@@ -2,6 +2,8 @@ using namespace std;
 
 struct SoilProperties
 {
+	int iType;
+	string SoilType;
 	double DensityMin;
 	double DensityMax;
 	double Porosity;
@@ -12,7 +14,6 @@ struct SoilProperties
 	double Wpar;
 	double Mpar;
 	int rSFC;
-	bool IsGSLIB;
 	bool IsSaturated;
 };
 
@@ -42,15 +43,9 @@ struct NonisothermalProperties
 	double LiquidSatIndex;
 };
 
-struct FenProperties
-{
-	bool IsFen;
-	double FenDelTemp;
-	double FenLambdaRatio;
-};
-
 struct BoundaryConditions
 {
+	bool isBCInput;
 	string BCInputFile;
 	bool isICInput;
 	string ICInputFile;
@@ -65,6 +60,7 @@ struct GaussQuadrature
 
 struct GSLIBProps
 {
+	bool isGSLIB;
 	bool isHeterLambda;
 	bool isHeterK;
 	bool isHeterBC;
@@ -89,5 +85,4 @@ struct SolutionVariables
 	double NewmarkGamma;
 	int PlotInterval;
 	bool IsGMSH;
-	bool IsInputBC;
 };

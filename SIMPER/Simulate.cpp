@@ -62,7 +62,7 @@ double FenFlux;
 
 bool IsSaturated;
 
-int rSFC;
+int rSFC, iSoilType;
 double Cair, Kair, Dair, Cwat, Kwat, Dwat, Cice, Kice, Dice, Lhea, npor, HydCon, Csol, Ksol, Dsol, Sres, Tsol, Tliq, Wpar, Mpar;
 
 void InitializeSolution()
@@ -86,6 +86,7 @@ void ComputePotentialStar(int iRealization)
 	TempDotStar = (TempStar - TempHat) / (*gammaNewmark * *deltaTime);
 	for (int e = 0; e < noel; e++)
 	{
+		iSoilType = MESH.Elements[e].iSoilType;
 		Tsol = MESH.Elements[e].SoilFreezingPoint;
 		//
 		dMmat = dMmat.Zero(ndoe, ndoe);
@@ -112,14 +113,7 @@ void ComputePotentialStar(int iRealization)
 		Csol = MESH.Elements[e].SoilHeatCapacity;
 		Dsol = MESH.Elements[e].SoilDensity;
 		Ksol = MESH.Elements[e].SoilThermalConductivity;
-		if (MESH.Elements[e].SoilType != "Soil")
-		{
-			npor = 1.0;
-		}
-		else
-		{
-			npor = PROPS.Soil.Porosity;
-		}
+		npor = PROPS.Soil[iSoilType].Porosity;
 
 		for (int i = 0; i < nGP; i++)
 		{
@@ -183,7 +177,7 @@ void UpdateTopBC(int iTimestep)
 {
 	for (int i = 0; i < TopBoundary.size(); i++)
 	{
-		if (PROPS.GSLIB.isHeterBC && PROPS.Soil.IsGSLIB)
+		if (PROPS.GSLIB.isHeterBC && PROPS.GSLIB.isGSLIB)
 		{
 			Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * BCInputData(iTimestep, 1);
 		}
@@ -197,7 +191,6 @@ void UpdateTopBC(int iTimestep)
 void Simulate(int iRealization)
 {
 	Postprocess POSTPROCESS(MESH, PROPS, NodalGSLIBCoeffs, OutputFiles);
-	IsSaturated = PROPS.Soil.IsSaturated;
 
 	double trRatioParameter = abs(PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid);
 	maxTrustRegionRadius = 5.0E+3 * trRatioParameter;
@@ -214,16 +207,7 @@ void Simulate(int iRealization)
 	Kice = PROPS.Fluid.SThermalConductivity;
 	Dice = PROPS.Fluid.SDensity;
 	Lhea = PROPS.Fluid.LatentHeat;
-	npor = PROPS.Soil.Porosity;
-	Csol = PROPS.Soil.HeatCapacity;
-	Ksol = PROPS.Soil.ThermalConductivity;
-	//
-	rSFC = PROPS.Soil.rSFC;
-	Tliq = PROPS.Nonisothermal.TempLiquid;
-	Sres = PROPS.Soil.ResidualWaterSaturation;
-	Wpar = PROPS.Soil.Wpar;
-	Mpar = PROPS.Soil.Mpar;
-	//
+
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
 	{
@@ -236,15 +220,15 @@ void Simulate(int iRealization)
 		//
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
-		if (PROPS.Solution.IsInputBC)
+		if (PROPS.BCs.isBCInput)
 		{
 			UpdateTopBC(iTimestep);
 		}
-		else if (!PROPS.Solution.IsInputBC && iTimestep == 0)
+		else if (!PROPS.BCs.isBCInput && iTimestep == 0)
 		{
 			for (int i = 0; i < TopBoundary.size(); i++)
 			{
-				if (PROPS.GSLIB.isHeterBC && PROPS.Soil.IsGSLIB)
+				if (PROPS.GSLIB.isHeterBC && PROPS.GSLIB.isGSLIB)
 				{
 					Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * PROPS.BCs.Value[0];
 				}
@@ -272,6 +256,7 @@ void Simulate(int iRealization)
 
 				for (int e = 0; e < noel; e++)
 				{
+					iSoilType = MESH.Elements[e].iSoilType;
 					Tsol = MESH.Elements[e].SoilFreezingPoint;
 					//
 					dMmat = dMmat.Zero(ndoe, ndoe);
@@ -300,14 +285,16 @@ void Simulate(int iRealization)
 					Dsol = MESH.Elements[e].SoilDensity;
 					Ksol = MESH.Elements[e].SoilThermalConductivity;
 					HydCon = MESH.Elements[e].SoilHydraulicConductivity;
-					if (MESH.Elements[e].SoilType != "Soil")
-					{
-						npor = 1.0;
-					}
-					else
-					{
-						npor = PROPS.Soil.Porosity;
-					}
+					npor = PROPS.Soil[iSoilType].Porosity;
+					//
+					rSFC = PROPS.Soil[iSoilType].rSFC;
+					Tliq = PROPS.Nonisothermal.TempLiquid;
+					Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+					Wpar = PROPS.Soil[iSoilType].Wpar;
+					Mpar = PROPS.Soil[iSoilType].Mpar;
+					npor = PROPS.Soil[iSoilType].Porosity;
+					IsSaturated = PROPS.Soil[iSoilType].IsSaturated;
+					//
 
 					for (int i = 0; i < nGP; i++)
 					{
@@ -349,7 +336,7 @@ void Simulate(int iRealization)
 							ICparxT = npor * (ISwatxT * Dwat * Cwat + ISicexT * Dice * Cice + ISairxT * Dair * Cair) + (1 - npor) * Dsol * Csol * (TempG * TempG / 2.0 - Tsol * Tsol / 2.0) + npor * Dice * Lhea * (-IdSicexT);
 							//ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice) + (1.0 - npor) * Dsol * Csol * TempG + npor * Dice * Lhea*(Swat - Sres);
 							ICpar = npor * (ISwat * Dwat * Cwat + ISice * Dice * Cice + ISair * Dair * Cair) + (1.0 - npor) * Dsol * Csol * (TempG - Tsol) + npor * Dice * Lhea*(-IdSice);
-							if (!PROPS.Soil.IsSaturated)
+							if (!PROPS.Soil[iSoilType].IsSaturated)
 							{
 								Kpar = pow(Kwat, (Swat * npor)) * pow(Kice, (Sice * npor)) * pow(Kair, (Sair * npor)) * pow(Ksol, (1.0 - npor));
 							}
@@ -359,24 +346,16 @@ void Simulate(int iRealization)
 							}
 							
 							//
-							if (PROPS.Fen.IsFen)
+							if (GlobalFenIndex)
 							{
 								SaturationFunctions FenSATFUNCS(TempG, -0.1, 0, 0, IsSaturated);
 								FenFlux = 0.0;
 								if (Temp(TopBoundary[0]) < 0)
 								{
-									double fenDelTemp = PROPS.Fen.FenDelTemp;
-									double rLambdaFen = PROPS.Fen.FenLambdaRatio;
-									if (MESH.Elements[e].SoilType == "Fen")
-									{
-										FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * rLambdaFen * 0.01);
-									}
-									else
-									{
-										FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * 0.01);
-									}
+									double fenDelTemp = 0.2; //Hard coded: difference between water and soil temperature
+									FenFlux = Dwat * Cwat * fenDelTemp * (-HydCon * FenSATFUNCS.Swat * 0.01);
 								}
-							}							
+							}
 							//
 							detJacob = Jacob.determinant();
 							Jmat = Jmat + Wi * Wj*Bmat.transpose()*Kpar*Bmat*detJacob;
