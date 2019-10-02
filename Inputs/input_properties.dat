@@ -2,9 +2,9 @@ Solid Grains Material Properties
 Number of soil layers		isGSLIB
 4							1
 #	SoilType 	HydConduc     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	IsSaturated
-1	Peat		6.0E-6			630		0.1		10			760			0.8 		0.2     2							 	0.2		2.0		1
-2	Bog			6.0E-6			630		0.1		10			760			0.8 		0.2     2							 	0.2		2.0		1
-3	Fen			6.0E-6			630		0.1		10			760			0.8 		0.2     2							 	0.2		2.0		1
+1	Fen			6.0E-4			630		0.1		10			760			0.99 		0.2     2							 	0.2		2.0		1
+2	Bog			6.0E-6			630		0.1		10			760			0.99 		0.2     2							 	0.2		2.0		1
+3	Peat		6.0E-6			630		0.1		10			760			0.8 		0.2     2							 	0.2		2.0		1
 4	SiltyClay	6.0E-6			630		0.1		10			760			0.8 		0.2     2							 	0.2		2.0		1
 Fluid Material Properties								
 Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair		

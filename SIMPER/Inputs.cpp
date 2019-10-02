@@ -503,7 +503,7 @@ void UpscaleGSLIBtoSIMPER()
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilDensity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilFreezingPoint);
 				fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, 0));
-				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].iSoilType);
+				fprintf(plotSoilProperties, "%i\t", MESH.Elements[e].iSoilType);
 				fprintf(plotSoilProperties, "\n");
 			}
 			
