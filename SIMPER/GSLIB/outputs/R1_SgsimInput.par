@@ -17,7 +17,7 @@ GSLIB/outputs/R1_SGSIM_nodata.dbg
 GSLIB/outputs/R1_SGSIM_output.out
 1                                       -number of realizations to generate
 201 0 2.500000e-01                              -nx, xmin, xsize
-21 0 2.500000e-01                              -ny, ymin, ysize
+41 0 2.500000e-01                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize
 843562                               -random number seed
 0 8                                     -Min and max original data for sim

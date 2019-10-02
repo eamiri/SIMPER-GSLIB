@@ -528,7 +528,7 @@ void UpscaleGSLIBtoSIMPER()
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
-				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
+				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%i\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
 					MESH.Elements[e].Nodes[inod].Coordinates.y, 
 					MESH.Elements[e].SoilHydraulicConductivity,
 					MESH.Elements[e].SoilHeatCapacity,
