@@ -15,6 +15,8 @@ struct SoilProperties
 	double Mpar;
 	int rSFC;
 	bool IsSaturated;
+	double FPmin;
+	double FPmax;
 };
 
 struct FluidProperties

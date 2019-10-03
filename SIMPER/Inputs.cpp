@@ -98,8 +98,10 @@ Properties InputProperties(string filePath)
 				>> props.Soil[iSoilType].rSFC
 				>> props.Soil[iSoilType].Wpar
 				>> props.Soil[iSoilType].Mpar
-				>> props.Soil[iSoilType].IsSaturated;
-			
+				>> props.Soil[iSoilType].IsSaturated
+				>> props.Soil[iSoilType].FPmin
+				>> props.Soil[iSoilType].FPmax;
+
 			if (props.Soil[iSoilType].SoilType == "Fen")
 			{
 				GlobalFenIndex = true;
@@ -462,13 +464,15 @@ void UpscaleGSLIBtoSIMPER()
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{
 					//MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * (1.0 + GSLIBCoeffE);
+					double delFP = abs(PROPS.Soil[iSoilType].FPmax - PROPS.Soil[iSoilType].FPmin);
 					if (GSLIBCoeffE <= 0)
 					{
-						MESH.Elements[e].SoilFreezingPoint = -0.5 + 1.5 * (GSLIBCoeffE);
+						
+						MESH.Elements[e].SoilFreezingPoint = PROPS.Soil[iSoilType].FPmin + delFP * (GSLIBCoeffE);
 					}
 					else
 					{
-						MESH.Elements[e].SoilFreezingPoint = -2.0 + 1.5 * (GSLIBCoeffE);
+						MESH.Elements[e].SoilFreezingPoint = PROPS.Soil[iSoilType].FPmax + delFP * (GSLIBCoeffE);
 					}
 				}
 				else
