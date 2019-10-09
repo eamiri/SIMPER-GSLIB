@@ -7,6 +7,7 @@
 struct Properties
 {
 	int nSoilType;
+	bool IsLateralFlow;
 	vector<SoilProperties> Soil;
 	FluidProperties Fluid;
 	NonisothermalProperties Nonisothermal;

@@ -78,7 +78,8 @@ Properties InputProperties(string filePath)
 		istringstream isDataLine(line);
 		isDataLine
 			>> props.nSoilType
-			>> props.GSLIB.isGSLIB;
+			>> props.GSLIB.isGSLIB
+			>> props.IsLateralFlow;
 		props.Soil.resize(props.nSoilType);
 		getline(propsFile, line);
 		for (int iSoilType = 0; iSoilType < props.nSoilType; iSoilType++)
@@ -138,9 +139,10 @@ Properties InputProperties(string filePath)
 		getline(propsFile, line);
 		isDataLine.clear();
 		isDataLine.str(line);
-		isDataLine 
-			>> props.BCs.isICInput  
-			>> props.BCs.ICInputFile;
+		isDataLine
+			>> props.BCs.isICInput
+			>> props.BCs.ICInputFile
+			>> props.BCs.UniformIC;
 		getline(propsFile, line);
 		getline(propsFile, line);
 		getline(propsFile, line);
@@ -454,8 +456,19 @@ void UpscaleGSLIBtoSIMPER()
 
 				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil[iSoilType].HeatCapacity;
 				MESH.Elements[e].SoilThermalConductivity = SER.ThermalConductivity(MESH.Elements[e].SoilDensity);
-				MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
-
+				if (e == 1615)
+				{
+					bool flag = true;
+				}
+				if (MESH.Elements[e].SoilType == "Fen" || MESH.Elements[e].SoilType == "Bog")
+				{
+					MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil[iSoilType].HydraulicConductivity;
+				}
+				else
+				{
+					MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
+				}
+				
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{
 					//MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * (1.0 + GSLIBCoeffE);
@@ -503,7 +516,7 @@ void UpscaleGSLIBtoSIMPER()
 				fprintf(plotSoilProperties, "\n");
 			}
 			
-			fprintf(plotSoilProperties, "\n1 2 3 4");
+			fprintf(plotSoilProperties, "1 2 3 4\n");
 			fflush(plotSoilProperties);
 		}
 	}
@@ -518,6 +531,8 @@ void UpscaleGSLIBtoSIMPER()
 			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil[iSoilType].ThermalConductivity;
 			MESH.Elements[e].SoilDensity = 0.5*(PROPS.Soil[iSoilType].DensityMax + PROPS.Soil[iSoilType].DensityMin);
 			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
+			MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil[iSoilType].HydraulicConductivity;
+
 
 			fprintf(plotSoilProperties, "variables =\"X\" \"Y\" \"<greek>l</greek><sub>soil</sub>\" \"<i>c</i><sub>soil</sub>\" \"<i>K</i><sub>soil</sub>\" \"<i>D</i><sub>soil</sub>\" \"Freezing Point\" \"Soil type\"\n");
 			fprintf(plotSoilProperties, "ZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);

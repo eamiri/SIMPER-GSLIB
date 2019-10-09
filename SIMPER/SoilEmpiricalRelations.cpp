@@ -3,6 +3,11 @@
 double SoilEmpiricalRelations::HydraulicConductivity(double bd)
 {
 	//saturated hydraulic conductivity based on bulk density \cite Liu, H., and Lennartz, B. (2018). https://doi.org/10.1002/hyp.13314
+	if (bd > 700.0) // **** this empirical realtion doesn't work for densities greater than 700 since it's just for peat soil ****
+	{
+		bd = 700.0; 
+	}
+
 	bd = bd / 1000.0;
 	satHydCon = pow(10.0, (1.935 - 15.802 * bd + 19.552 * bd * bd)) / (3600.0 * 100.0); //[m/s]
 

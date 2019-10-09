@@ -15,11 +15,11 @@ vmodel.var
 0                                       -debug level (0-3)
 GSLIB/outputs/R1_SGSIM_nodata.dbg
 GSLIB/outputs/R1_SGSIM_output.out
-1023073398                                       -number of realizations to generate
-1023349265 0 0.000000e+00                              -nx, xmin, xsize
-32760 0 0.000000e+00                              -ny, ymin, ysize
+1                                       -number of realizations to generate
+201 0 2.500000e-01                              -nx, xmin, xsize
+41 0 2.500000e-01                              -ny, ymin, ysize
 1 0 1                                   -nz, zmin, zsize
-32760                               -random number seed
+843562                               -random number seed
 0 8                                     -Min and max original data for sim
 12                                      -number of simulated nodes to use
 1                                       -assign data to nodes (0=no, 1=yes)
@@ -33,4 +33,4 @@ nodata
 4                                       -column
 1 0                                     -nst, nugget NOFILE
 2 1 0 0 0                               -it, cc, ang1, ang2, ang3
-1.581010e-322 0.000000e+00 0                           -a_hmax, a_hmin, a_vert
+2.000000e+00 1.200000e+01 0                           -a_hmax, a_hmin, a_vert

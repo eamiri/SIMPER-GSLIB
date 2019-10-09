@@ -51,6 +51,7 @@ struct BoundaryConditions
 	string BCInputFile;
 	bool isICInput;
 	string ICInputFile;
+	double UniformIC;
 	vector<int> Node;
 	vector<double> Value;
 };

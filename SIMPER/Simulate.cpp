@@ -346,7 +346,7 @@ void Simulate(int iRealization)
 							}
 							
 							//
-							if (GlobalFenIndex)
+							if (GlobalFenIndex || PROPS.IsLateralFlow)
 							{
 								SaturationFunctions FenSATFUNCS(TempG, -0.1, 0, 0, IsSaturated);
 								FenFlux = 0.0;

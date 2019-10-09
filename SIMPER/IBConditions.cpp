@@ -210,7 +210,7 @@ void IBConditions::SetInitialCondition()
 	}
 	else
 	{
-		Temp_0 = -4.0 * Temp_0.Ones(MESH->NumberOfNodes);
+		Temp_0 = PROPS->BCs.UniformIC * Temp_0.Ones(MESH->NumberOfNodes);
 		TempDot_0 = TempDot_0.Zero(MESH->NumberOfNodes);
 		Residual = Residual.Zero(MESH->NumberOfNodes);
 		Temp = Temp_0;

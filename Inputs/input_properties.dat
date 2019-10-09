@@ -1,6 +1,6 @@
 Solid Grains Material Properties
-Number of soil layers		isGSLIB
-4							1
+Number of soil layers		isGSLIB		LateralFlow
+4							1			1
 #	SoilType 	HydConduc     	Csol	Ksol	MinDsol		MaxDsol		npor		Sres    Rsat (2: Sin, 1: Exp, 0: Lin) 	Wpar	Mpar 	IsSaturated		FPmin	FPmax
 1	Fen			1.0E-2			630		0.25	10			760			0.6 		0.18    2							 	0.2		2.0		1				-0.1	-0.1
 2	Bog			1.0E-2			630		0.25	10			760			0.6 		0.18    2							 	0.2		2.0		1				-0.1	-0.1
@@ -13,8 +13,8 @@ Cice			Kice			Dice		Cwat			Kwat			Dwat			Lheat		Cair	Kair	Dair
 Rmus		Cmush			Ttra		Kmush			Tsol		Tliq	SolidSatIndex	LiquidSatIndex
 0			2618150			0.0			2.823	  		-0.5		0.0		0.2				0.8
 Initial Conditions
-isInput(0:no inputfile, 1:input file)	Input File
-0										InitialCondition.dat
+isInput(0:no inputfile, 1:input file)	Input File					ifNotInput(uniform)
+0										InitialCondition.dat		-2.1
 Boundary Conditions
 isInput(0:no inputfile, 1:input file)	Dirichlet BC Input File
 1										PlateauBC_Corrected.dat			
@@ -28,4 +28,4 @@ Correlation Length (Hor  Ver)		Number of Cells X		Grid Size X	 	 Number of Cells
 12.0		2.0						200						0.25			 40					 	0.25		   	   1						843561				  
 Apply Heterogeneity on
 Lambda	K		BC		FP
-0		0		0		1	
+1		1		0		0	
