@@ -29,3 +29,6 @@ Correlation Length (Hor  Ver)		Number of Cells X		Grid Size X	 	 Number of Cells
 Apply Heterogeneity on
 Lambda	K		BC		FP
 1		1		0		0	
+Integrate Saturation in depth
+isIntegrate			X resolution		nGP
+1					100					20

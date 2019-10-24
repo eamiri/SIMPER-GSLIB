@@ -89,3 +89,29 @@ struct SolutionVariables
 	int PlotInterval;
 	bool IsGMSH;
 };
+
+struct VIntLocalInfo
+{
+	int iElement;
+	double GPWeight;
+	double xLocal;
+	double yLocal;
+};
+
+struct VIntGlobalInfo
+{
+	double xGlob;
+	double Integral;
+	vector<VIntLocalInfo> LocalInfo;
+};
+
+struct VerticalIntegration
+{
+	bool isIntegrate;
+	int xResolution;
+	int nGP;
+	vector<VIntGlobalInfo> GlobalInfo;
+};
+
+
+

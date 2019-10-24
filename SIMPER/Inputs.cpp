@@ -19,6 +19,7 @@ void SgsimParameterFile();
 void GSLIBRunSGSIM();
 void UpscaleGSLIBtoSIMPER();
 void AddcoorParameterFile(int nRealization);
+void VerticalIntegrationInfo();
 
 int nRealization;
 int noel;
@@ -32,12 +33,83 @@ MatrixXd ElementalGSLIBCoeffs;
 MatrixXd GSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
+GaussPoints VIntGP;
+
+// Check if a point is inside polygon - SOURCE: https://www.tutorialspoint.com/Check-if-a-given-point-lies-inside-a-Polygon
+struct Point {
+	double x, y;
+};
+
+struct line {
+	Point p1, p2;
+};
+
+bool onLine(line l1, Point p) {        //check whether p is on the line or not
+	if (p.x <= max(l1.p1.x, l1.p2.x) && p.x <= min(l1.p1.x, l1.p2.x) &&
+		(p.y <= max(l1.p1.y, l1.p2.y) && p.y <= min(l1.p1.y, l1.p2.y)))
+		return true;
+
+	return false;
+}
+
+int direction(Point a, Point b, Point c) {
+	double val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+	if (val == 0)
+		return 0;           //colinear
+	else if (val < 0)
+		return 2;          //anti-clockwise direction
+	return 1;          //clockwise direction
+}
+
+bool isIntersect(line l1, line l2) {
+	//four direction for two lines and points of other line
+	int dir1 = direction(l1.p1, l1.p2, l2.p1);
+	int dir2 = direction(l1.p1, l1.p2, l2.p2);
+	int dir3 = direction(l2.p1, l2.p2, l1.p1);
+	int dir4 = direction(l2.p1, l2.p2, l1.p2);
+
+	if (dir1 != dir2 && dir3 != dir4)
+		return true;           //they are intersecting
+	if (dir1 == 0 && onLine(l1, l2.p1))        //when p2 of line2 are on the line1
+		return true;
+	if (dir2 == 0 && onLine(l1, l2.p2))         //when p1 of line2 are on the line1
+		return true;
+	if (dir3 == 0 && onLine(l2, l1.p1))       //when p2 of line1 are on the line2
+		return true;
+	if (dir4 == 0 && onLine(l2, l1.p2)) //when p1 of line1 are on the line2
+		return true;
+	return false;
+}
+
+bool checkInside(Point poly[], int n, Point p) {
+	if (n < 3)
+		return false;                  //when polygon has less than 3 edge, it is not polygon
+	line exline = { p, {9999, p.y} };   //create a point at infinity, y is same as point p
+	int count = 0;
+	int i = 0;
+	do {
+		line side = { poly[i], poly[(i + 1) % n] };     //forming a line from two consecutive points of poly
+		if (isIntersect(side, exline)) {          //if side is intersects exline
+			if (direction(side.p1, p, side.p2) == 0)
+				return onLine(side, p);
+			count++;
+		}
+		i = (i + 1) % n;
+	} while (i != 0);
+	return count & 1;             //when count is odd
+}
+
+/////////////////////////////////////////////////////////////////////////////////
 
 bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 {
 	iParallelRlzn = iPReal;
 	PROPS = InputProperties(propsInputFile);
 	MESH = InputMesh(meshInputFile);
+	if (PROPS.VInteg.isIntegrate)
+	{
+		VerticalIntegrationInfo();
+	}
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
 	if (PROPS.GSLIB.isGSLIB)
 	{
@@ -195,6 +267,15 @@ Properties InputProperties(string filePath)
 			>> props.GSLIB.isHeterK
 			>> props.GSLIB.isHeterBC
 			>> props.GSLIB.isHeterFP;
+		getline(propsFile, line);
+		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
+		isDataLine
+			>> props.VInteg.isIntegrate
+			>> props.VInteg.xResolution
+			>> props.VInteg.nGP;
 	}
 
 	return props;
@@ -785,3 +866,74 @@ Mesh InputMesh(string filePath)
 
 	return mesh;
 }
+
+Point ParentCoordinates(vector<Node> nodes, Point p)
+{
+	double xBar = 0.0;
+	double yBar = 0.0;
+	for (int i = 0; i < 4; i++)
+	{
+		xBar += nodes[i].Coordinates.x;
+		yBar += nodes[i].Coordinates.y;
+	}
+
+	xBar = 0.25 * xBar;
+	yBar = 0.25 * yBar;
+
+	double l = sqrt((nodes[1].Coordinates.x - nodes[0].Coordinates.x) * (nodes[1].Coordinates.x - nodes[0].Coordinates.x) +
+		            (nodes[1].Coordinates.y - nodes[0].Coordinates.y) * (nodes[1].Coordinates.y - nodes[0].Coordinates.y));
+
+	double w = sqrt((nodes[2].Coordinates.x - nodes[1].Coordinates.x) * (nodes[2].Coordinates.x - nodes[1].Coordinates.x) +
+		            (nodes[2].Coordinates.y - nodes[1].Coordinates.y) * (nodes[2].Coordinates.y - nodes[1].Coordinates.y));
+	Point point;
+	point.x = 2.0 * (p.x - xBar) / l;
+	point.y = 2.0 * (p.y - yBar) / w;
+
+	return point;
+}
+
+void VerticalIntegrationInfo()
+{
+	double domainWidth = abs(MESH.MaxX - MESH.MinX);
+	double domainDepth = abs(MESH.MaxY - MESH.MinY);
+	double deltaX = domainWidth / (double)PROPS.VInteg.xResolution;
+	
+	for (int i = 0; i < PROPS.VInteg.xResolution; i++)
+	{
+		VIntGlobalInfo GI;
+		VIntLocalInfo LI;
+		double xGlob = MESH.MinX + (double)i * domainWidth;
+		GI.xGlob = xGlob;
+		GI.Integral = 0.0;
+		VIntGP.GP(PROPS.VInteg.nGP);
+		for (int iGP = 0; iGP < PROPS.VInteg.nGP; iGP++)
+		{
+			LI.GPWeight = VIntGP.Weights[iGP];
+			double GPi = VIntGP.Points[iGP];
+			double yGlob = 0.5 * domainDepth * GPi + 0.5 * domainDepth;
+			Point p = {xGlob, yGlob};
+			for (int e = 0; e < noel; e++)
+			{
+				Point polygon []= {
+				{MESH.Elements[e].Nodes[0].Coordinates.x, MESH.Elements[e].Nodes[0].Coordinates.y},
+				{MESH.Elements[e].Nodes[1].Coordinates.x, MESH.Elements[e].Nodes[1].Coordinates.y},
+				{MESH.Elements[e].Nodes[2].Coordinates.x, MESH.Elements[e].Nodes[2].Coordinates.y},
+				{MESH.Elements[e].Nodes[3].Coordinates.x, MESH.Elements[e].Nodes[3].Coordinates.y}
+				};
+
+				if (checkInside(polygon, 4, p))
+				{
+					LI.iElement = e;
+					Point localP = ParentCoordinates(MESH.Elements[e].Nodes, p);
+					LI.xLocal = localP.x;
+					LI.yLocal = localP.y;
+					GI.LocalInfo.push_back(LI);
+					break;
+				}
+			}
+		}
+
+		PROPS.VInteg.GlobalInfo.push_back(GI);
+	}
+}
+

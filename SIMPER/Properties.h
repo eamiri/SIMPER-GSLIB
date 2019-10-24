@@ -16,6 +16,7 @@ struct Properties
 	SolutionVariables Solution;
 	vector<int> PlotNodes;
 	GSLIBProps GSLIB;
+	VerticalIntegration VInteg;
 };
 
 #endif 
