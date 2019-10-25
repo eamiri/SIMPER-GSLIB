@@ -16,6 +16,7 @@ struct OutputFileStruc
 	FILE* AnnualMaxTemperatures;
 	FILE* BiannualMinTemperatures;
 	FILE* BiannualMaxTemperatures;
+	FILE* VerticalIntegralFile;
 };
 
 #endif 

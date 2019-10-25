@@ -93,9 +93,9 @@ struct SolutionVariables
 struct VIntLocalInfo
 {
 	int iElement;
+	double iGP;
+	double jGP;
 	double GPWeight;
-	double xLocal;
-	double yLocal;
 };
 
 struct VIntGlobalInfo
@@ -110,6 +110,7 @@ struct VerticalIntegration
 	bool isIntegrate;
 	int xResolution;
 	int nGP;
+	double DomainDepth;
 	vector<VIntGlobalInfo> GlobalInfo;
 };
 

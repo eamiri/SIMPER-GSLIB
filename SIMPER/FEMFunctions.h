@@ -23,6 +23,21 @@ public:
 		Bmat = BMatrixFourNoded(Xnode, Ynode, s, r);
 	}
 
+	VectorXd CalculateGlobalCoordinates(VectorXd SF, VectorXd Xnode, VectorXd Ynode)
+	{
+		VectorXd XYGlob;
+		XYGlob.resize(2);
+		XYGlob.setZero();
+
+		for (int i = 0; i < SF.size(); i++)
+		{
+			XYGlob(0) += SF(i) * Xnode(i);
+			XYGlob(1) += SF(i) * Ynode(i);
+		}
+
+		return XYGlob;
+	}
+
 private:
 	RowVectorXd FourNodedSF (double s, double r)
 	{

@@ -17,7 +17,41 @@ Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs,
 	Files = files;
 }
 
-void Postprocess::GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
+void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
+{
+	fprintf(Files.VerticalIntegralFile, "TITLE = \"Vertical Integral - year = %i\"\n", year);
+	fprintf(Files.VerticalIntegralFile, "VARIABLES = \"<i>x </i>(m)\" \"Vertical Integral\"\n");
+	for (int i = 0; i < PROPS.VInteg.xResolution; i++)
+	{
+		PROPS.VInteg.GlobalInfo[i].Integral = 0.0;
+		for (int j = 0; j < PROPS.VInteg.nGP; j++)
+		{
+			int e = PROPS.VInteg.GlobalInfo[i].LocalInfo[j].iElement;
+			int iSoilType = MESH.Elements[e].iSoilType;
+			//
+			rSFC = PROPS.Soil[iSoilType].rSFC;
+			Tliq = PROPS.Nonisothermal.TempLiquid;
+			Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+			Wpar = PROPS.Soil[iSoilType].Wpar;
+			Mpar = PROPS.Soil[iSoilType].Mpar;
+			Tsol = MESH.Elements[e].SoilFreezingPoint;
+			//
+			elementDofs = MESH.GetElementDofs(e, ndoe);
+			minTempNode = MESH.GetNodalValues(Temp, elementDofs);
+			double TempG = TempG = SF * TempNode;
+			//
+			
+			SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
+			PROPS.VInteg.GlobalInfo[i].Integral += SATFUNCS.Swat * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5); //domaindepth * 0.5 : jacobian for the integral
+		}
+
+		fprintf(Files.VerticalIntegralFile, "%e\t%e\n", PROPS.VInteg.GlobalInfo[i].xGlob, PROPS.VInteg.GlobalInfo[i].Integral);
+	}
+
+	fflush(Files.VerticalIntegralFile);
+}
+
+void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
 {
 	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	talikArea = 0.0;

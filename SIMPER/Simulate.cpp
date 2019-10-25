@@ -505,7 +505,8 @@ void Simulate(int iRealization)
 		if (Year == iTalikYear)
 		{
 			iTalikYear += 2;
-			POSTPROCESS.GetTalikArea(minTempTalikAna, maxTempTalikAna, Year, iRealization);
+			POSTPROCESS.GetTalikArea(Temp, minTempTalikAna, maxTempTalikAna, Year, iRealization);
+			POSTPROCESS.GetVerticalIntergal(Temp, Year);
 			// Reseting the min and max temperatures for the next year round
 			minTempTalikAna = Temp;
 			maxTempTalikAna = Temp;

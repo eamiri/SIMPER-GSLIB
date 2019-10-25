@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 	OutputFiles.PermafrostAreaFile = fopen(GetOutputFilePath("PermafrostAreaFile.csv", iParallelRlzn).c_str(), "w");
 	OutputFiles.BiannualMinTemperatures = fopen(GetOutputFilePath("BiannualMinTemperatures.csv", iParallelRlzn).c_str(), "w");
 	OutputFiles.BiannualMaxTemperatures = fopen(GetOutputFilePath("BiannualMaxTemperatures.csv", iParallelRlzn).c_str(), "w");
+	OutputFiles.VerticalIntegralFile = fopen(GetOutputFilePath("VerticalIntegral.plt", iParallelRlzn).c_str(), "w");
 
 	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
 	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");

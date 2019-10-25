@@ -31,9 +31,10 @@ public:
 	Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs, OutputFileStruc files);
 	void Plot(VectorXd Temp, double SolutionTime, int iRealization);
 	void AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization);
-	void GetTalikArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
+	void GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
 	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
 	void PlotNodes(VectorXd Temp, double solutionTime, int iRealization);
+	void GetVerticalIntergal(VectorXd Temp, int year);
 
 private:
 	VectorXd NodalGSLIBCoeffs;
