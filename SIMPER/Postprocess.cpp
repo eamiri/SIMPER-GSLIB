@@ -21,6 +21,7 @@ void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 {
 	fprintf(Files.VerticalIntegralFile, "TITLE = \"Vertical Integral - year = %i\"\n", year);
 	fprintf(Files.VerticalIntegralFile, "VARIABLES = \"<i>x </i>(m)\" \"Vertical Integral\"\n");
+	double TempG;
 	for (int i = 0; i < PROPS.VInteg.xResolution; i++)
 	{
 		PROPS.VInteg.GlobalInfo[i].Integral = 0.0;
@@ -36,13 +37,16 @@ void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 			Mpar = PROPS.Soil[iSoilType].Mpar;
 			Tsol = MESH.Elements[e].SoilFreezingPoint;
 			//
+			femFunctions.Calculate(xNodes, yNodes, GPi, GPj);
+			SF = femFunctions.SF;
+			//
 			elementDofs = MESH.GetElementDofs(e, ndoe);
-			minTempNode = MESH.GetNodalValues(Temp, elementDofs);
-			double TempG = TempG = SF * TempNode;
+			TempNode = MESH.GetNodalValues(Temp, elementDofs);
+			TempG = SF * TempNode;
 			//
 			
-			SaturationFunctions SATFUNCS(TempG, Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
-			PROPS.VInteg.GlobalInfo[i].Integral += SATFUNCS.Swat * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5); //domaindepth * 0.5 : jacobian for the integral
+			SaturationFunctions SATS(TempG, Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
+			PROPS.VInteg.GlobalInfo[i].Integral += SATS.Swat * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5); //domaindepth * 0.5 : jacobian for the integral
 		}
 
 		fprintf(Files.VerticalIntegralFile, "%e\t%e\n", PROPS.VInteg.GlobalInfo[i].xGlob, PROPS.VInteg.GlobalInfo[i].Integral);
