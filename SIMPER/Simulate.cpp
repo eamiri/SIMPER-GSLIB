@@ -11,6 +11,7 @@ int *maxIterations = &PROPS.Solution.MaxIterations;
 int *plotInterval = &PROPS.Solution.PlotInterval;
 int iTalikYear = 0;
 int iPermafrostYear = 0;
+int iVerticalInt = 0;
 
 double *TolResidual = &PROPS.Solution.TolPsi;
 
@@ -506,7 +507,6 @@ void Simulate(int iRealization)
 		{
 			iTalikYear += 2;
 			POSTPROCESS.GetTalikArea(Temp, minTempTalikAna, maxTempTalikAna, Year, iRealization);
-			POSTPROCESS.GetVerticalIntergal(Temp, Year);
 			// Reseting the min and max temperatures for the next year round
 			minTempTalikAna = Temp;
 			maxTempTalikAna = Temp;
@@ -519,6 +519,12 @@ void Simulate(int iRealization)
 			// Reseting the min and max temperatures for the next 2 years round
 			minTempPermAna = Temp;
 			maxTempPermAna = Temp;
+		}
+
+		if (Year == iVerticalInt)
+		{
+			iVerticalInt++;
+			POSTPROCESS.GetVerticalIntergal(Temp, Year);
 		}
 
 		// Updating min and max temperatures

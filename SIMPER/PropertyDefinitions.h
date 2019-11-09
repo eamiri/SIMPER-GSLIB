@@ -101,7 +101,8 @@ struct VIntLocalInfo
 struct VIntGlobalInfo
 {
 	double xGlob;
-	double Integral;
+	double IntSwat;
+	double IntSice;
 	vector<VIntLocalInfo> LocalInfo;
 };
 

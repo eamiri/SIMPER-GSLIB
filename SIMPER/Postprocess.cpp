@@ -19,12 +19,17 @@ Postprocess::Postprocess(Mesh mesh, Properties props, MatrixXd nodalGSLIBCoeffs,
 
 void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 {
-	fprintf(Files.VerticalIntegralFile, "TITLE = \"Vertical Integral - year = %i\"\n", year);
-	fprintf(Files.VerticalIntegralFile, "VARIABLES = \"<i>x </i>(m)\" \"Vertical Integral\"\n");
+	fprintf(Files.SwatVerticalInt, "TITLE = \"Water Saturation Vertical Integral - year %i\"\n", year);
+	fprintf(Files.SwatVerticalInt, "VARIABLES = \"<i>x </i>(m)\" \"IntSwat\"\n");
+	fprintf(Files.SwatVerticalInt, "Zone T = \"Year %i\"\n", year);
+	fprintf(Files.SiceVerticalInt, "TITLE = \"Ice Saturation Vertical Integral - year %i\"\n", year);
+	fprintf(Files.SiceVerticalInt, "VARIABLES = \"<i>x </i>(m)\" \"IntSice\"\n");
+	fprintf(Files.SiceVerticalInt, "Zone T = \"Year %i\"\n", year);
 	double TempG;
-	for (int i = 0; i < PROPS.VInteg.xResolution; i++)
+	for (int i = 0; i <= PROPS.VInteg.xResolution; i++)
 	{
-		PROPS.VInteg.GlobalInfo[i].Integral = 0.0;
+		PROPS.VInteg.GlobalInfo[i].IntSwat = 0.0;
+		PROPS.VInteg.GlobalInfo[i].IntSice = 0.0;
 		for (int j = 0; j < PROPS.VInteg.nGP; j++)
 		{
 			int e = PROPS.VInteg.GlobalInfo[i].LocalInfo[j].iElement;
@@ -44,15 +49,17 @@ void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 			TempNode = MESH.GetNodalValues(Temp, elementDofs);
 			TempG = SF * TempNode;
 			//
-			
 			SaturationFunctions SATS(TempG, Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
-			PROPS.VInteg.GlobalInfo[i].Integral += SATS.Swat * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5); //domaindepth * 0.5 : jacobian for the integral
+			PROPS.VInteg.GlobalInfo[i].IntSwat += SATS.Swat * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5) / PROPS.VInteg.DomainDepth; //domaindepth * 0.5 : jacobian for the integral, divided by domain depth for normalizing
+			PROPS.VInteg.GlobalInfo[i].IntSice += SATS.Sice * PROPS.VInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.VInteg.DomainDepth * 0.5) / PROPS.VInteg.DomainDepth;
 		}
 
-		fprintf(Files.VerticalIntegralFile, "%e\t%e\n", PROPS.VInteg.GlobalInfo[i].xGlob, PROPS.VInteg.GlobalInfo[i].Integral);
+		fprintf(Files.SwatVerticalInt, "%e\t%e\n", PROPS.VInteg.GlobalInfo[i].xGlob, PROPS.VInteg.GlobalInfo[i].IntSwat);
+		fprintf(Files.SiceVerticalInt, "%e\t%e\n", PROPS.VInteg.GlobalInfo[i].xGlob, PROPS.VInteg.GlobalInfo[i].IntSice);
 	}
 
-	fflush(Files.VerticalIntegralFile);
+	fflush(Files.SwatVerticalInt);
+	fflush(Files.SiceVerticalInt);
 }
 
 void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)

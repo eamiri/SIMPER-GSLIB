@@ -24,7 +24,8 @@ vector<int> IBConditions::FindDirichletBoundaryNodes()
 	{
 		double yNode = MESH->Nodes[n].Coordinates.y;
 		double xNode = MESH->Nodes[n].Coordinates.x;
-		if ((yNode == MESH->MinY) || (yNode == MESH->MaxY))
+		//if ((yNode == MESH->MinY) || (yNode == MESH->MaxY))
+		if (yNode == MESH->MaxY)
 		{
 			dirDOF.push_back(n);
 		}

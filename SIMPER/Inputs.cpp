@@ -836,15 +836,16 @@ void VerticalIntegrationInfo()
 	double deltaX = domainWidth / (double)PROPS.VInteg.xResolution;
 	PROPS.VInteg.DomainDepth = domainDepth;
 	
-	for (int i = 0; i < PROPS.VInteg.xResolution; i++)
+	for (int i = 0; i <= PROPS.VInteg.xResolution; i++)
 	{
 		VIntGlobalInfo GI;
 		VIntLocalInfo LI;
 		VectorXd SF;
 		VectorXd xyGlob;
-		double xGlob = MESH.MinX + (double)(i) * domainWidth;
+		double xGlob = MESH.MinX + (double)(i) * deltaX;
 		GI.xGlob = xGlob;
-		GI.Integral = 0.0;
+		GI.IntSwat = 0.0;
+		GI.IntSice = 0.0;
 		VIntGP.GP(PROPS.VInteg.nGP);
 		GP.GP(nGP);
 		for (int iGP = 0; iGP < PROPS.VInteg.nGP; iGP++)
