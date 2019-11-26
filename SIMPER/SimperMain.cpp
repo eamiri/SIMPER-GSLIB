@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
 	}
 
 	//INITIAL AND BOUNDARY CONDITIONS
+	
 	IBConditions Conditions(&MESH, &PROPS);
 	Temp = Conditions.Temp;
 	TempDot = Conditions.TempDot;

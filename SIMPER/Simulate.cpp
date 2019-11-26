@@ -521,7 +521,7 @@ void Simulate(int iRealization)
 			maxTempPermAna = Temp;
 		}
 
-		if (Year == iVerticalInt)
+		if (Year == iVerticalInt && PROPS.VInteg.isIntegrate)
 		{
 			iVerticalInt++;
 			POSTPROCESS.GetVerticalIntergal(Temp, Year);

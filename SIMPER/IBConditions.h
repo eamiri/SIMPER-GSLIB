@@ -22,7 +22,6 @@ class IBConditions
 {
 public:
 	IBConditions(Mesh *mesh, Properties *props);
-
 	VectorXd Temp_0;
 	VectorXd TempDot_0;
 	VectorXd Residual;

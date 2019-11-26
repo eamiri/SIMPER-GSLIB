@@ -20,3 +20,37 @@ double SoilEmpiricalRelations::ThermalConductivity(double bd)
 
 	return satThermCon;
 }
+
+double SoilEmpiricalRelations::ShiftBCgslib(double bc, double Tf, double Tl, double gslibCoeff, double stanDev, double latentHeat, double density, double heatCapacity)
+{
+	double enthalpy;
+	double shiftedTemp = 0.0;
+	if (bc > Tl)
+	{
+		enthalpy = density * heatCapacity * bc + latentHeat * Tl / abs(Tl - Tf);
+	}
+	else if (bc < Tf)
+	{
+		enthalpy = density * heatCapacity * bc + latentHeat * Tf / abs(Tl - Tf);
+	}
+	else
+	{
+		enthalpy = density * heatCapacity * bc + latentHeat * bc / abs(Tl - Tf);
+	}
+
+	enthalpy += density * heatCapacity * stanDev * gslibCoeff;
+	if (enthalpy > (density * heatCapacity * Tl + latentHeat * Tl / abs(Tl - Tf)))
+	{
+		shiftedTemp = (enthalpy - latentHeat * Tl / abs(Tl - Tf)) / (density * latentHeat);
+	}
+	else if (enthalpy < (density * heatCapacity * Tf + latentHeat * Tf / abs(Tl - Tf)))
+	{
+		shiftedTemp = (enthalpy - latentHeat * Tf / abs(Tl - Tf)) / (density * latentHeat);
+	}
+	else
+	{
+		shiftedTemp = enthalpy / (density * heatCapacity + latentHeat / abs(Tl - Tf));
+	}
+
+	return shiftedTemp;
+}

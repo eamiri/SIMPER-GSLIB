@@ -61,12 +61,21 @@ struct GaussQuadrature
 	int NumberOfPoints;
 };
 
+struct BCHeterogeneity
+{
+	double CorLen;
+	int NumberOfCells;
+	double deltaX;
+	MatrixXd coeffs;
+};
+
 struct GSLIBProps
 {
 	bool isGSLIB;
 	bool isHeterLambda;
 	bool isHeterK;
 	bool isHeterBC;
+	BCHeterogeneity BCHeterogeneityParams;
 	bool isHeterFP;
 	double HorCorrelationLength;
 	double VerCorrelationLength;

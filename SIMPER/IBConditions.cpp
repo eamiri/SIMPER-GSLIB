@@ -157,7 +157,7 @@ void IBConditions::SetDirichletBC(vector<int> boundaryNodes, double value)
 
 void IBConditions::InputBC(string filePath)
 {
-	BCInputData.resize(PROPS->Solution.MaxTimestep, 2);
+	BCInputData.resize(PROPS->Solution.MaxTimestep, 3);
 	BCInputData.setZero();
 	if (PROPS->BCs.isBCInput)
 	{
@@ -173,6 +173,7 @@ void IBConditions::InputBC(string filePath)
 			string line;
 			int bcTimstep;
 			double bcTemperature;
+			double temperatureSD;
 			getline(bcInputFile, line);
 			getline(bcInputFile, line);
 			istringstream isDataLine(line);
@@ -186,16 +187,18 @@ void IBConditions::InputBC(string filePath)
 				getline(bcInputFile, line);
 				isDataLine.clear();
 				isDataLine.str(line);
-				isDataLine >> bcTimstep >> bcTemperature;
+				isDataLine >> bcTimstep >> bcTemperature >> temperatureSD;
 				if (!(ibc < EndTimestepBC))
 				{
 					BCInputData(ibc, 0) = BCInputData(ibc - lastIBC, 0);
 					BCInputData(ibc, 1) = BCInputData(ibc - lastIBC, 1);
+					BCInputData(ibc, 2) = BCInputData(ibc - lastIBC, 2);
 				}
 				else
 				{
 					BCInputData(ibc, 0) = bcTimstep;
 					BCInputData(ibc, 1) = bcTemperature;
+					BCInputData(ibc, 2) = temperatureSD;
 					lastIBC++;
 				}
 			}

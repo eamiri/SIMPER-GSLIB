@@ -11,6 +11,7 @@ class SoilEmpiricalRelations
 public:
 	double HydraulicConductivity(double bd);
 	double ThermalConductivity(double bd);	
+	double ShiftBCgslib(double bc, double Tf, double Tl, double gslibCoeff, double stanDev, double latentHeat, double density, double heatCapacity);
 
 private:
 	double satHydCon;

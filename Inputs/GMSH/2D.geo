@@ -1,13 +1,13 @@
 //Inputs
-width=20;
-depth=5;
-gridsize=0.5;
+width=50.0;
+depth=5.0;
+gridsize=2.0;
 
 
 Point(1)={0,0,0,gridsize};
 Point(2)={width,0,0,gridsize};
-Point(3)={width,0.5*depth,0,gridsize};
-Point(4)={0,0.5*depth,0,gridsize};
+Point(3)={width,0.4*depth,0,0.35*gridsize};
+Point(4)={0,0.4*depth,0,0.35*gridsize};
 Point(5)={0,depth,0,0.35*gridsize};
 Point(6)={width,depth,0,0.35*gridsize};
 
@@ -32,5 +32,4 @@ Plane Surface(2) = {2};
 //Transfinite Surface{1,2};
 Recombine Surface{1,2};
 
-Physical Surface("Peat") = {1};
-Physical Surface("SiltyClay") = {2};
+Physical Surface("Peat") = {1,2};

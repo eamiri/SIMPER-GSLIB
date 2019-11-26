@@ -16,9 +16,12 @@ Properties InputProperties(string filePath);
 
 Mesh InputMesh(string filePath);
 void SgsimParameterFile();
+void BCSgsimParameterFile();
 void GSLIBRunSGSIM();
+void BCGSLIBRunSGSIM();
 void UpscaleGSLIBtoSIMPER();
 void AddcoorParameterFile(int nRealization);
+void BCAddcoorParameterFile(int nRealization);
 void VerticalIntegrationInfo();
 
 int nRealization;
@@ -27,10 +30,10 @@ int nond;
 int ndoe;
 int nGP;
 Mesh MESH;
-MatrixXd GSLIBCoeffs;
+MatrixXd GSLIBCoeffs, BCGSLIBCoeffs;
 MatrixXd NodalGSLIBCoeffs;
 MatrixXd ElementalGSLIBCoeffs;
-MatrixXd GSLIBGrid;
+MatrixXd GSLIBGrid, BCGSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
 GaussPoints VIntGP;
@@ -44,7 +47,14 @@ bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 	{
 		VerticalIntegrationInfo();
 	}
+
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
+	if (PROPS.GSLIB.isHeterBC)
+	{
+		BCSgsimParameterFile();
+		BCGSLIBRunSGSIM();
+	}
+	
 	if (PROPS.GSLIB.isGSLIB)
 	{
 		SgsimParameterFile();
@@ -207,12 +217,215 @@ Properties InputProperties(string filePath)
 		isDataLine.clear();
 		isDataLine.str(line);
 		isDataLine
+			>> props.GSLIB.BCHeterogeneityParams.CorLen
+			>> props.GSLIB.BCHeterogeneityParams.NumberOfCells
+			>> props.GSLIB.BCHeterogeneityParams.deltaX;
+		getline(propsFile, line);
+		getline(propsFile, line);
+		getline(propsFile, line);
+		isDataLine.clear();
+		isDataLine.str(line);
+		isDataLine
 			>> props.VInteg.isIntegrate
 			>> props.VInteg.xResolution
 			>> props.VInteg.nGP;
 	}
 
 	return props;
+}
+
+void BCSgsimParameterFile()
+{
+	srand(static_cast<int>(time(0)));
+	long seedGSLIB = 305 * abs(rand());
+
+	/*for (int i = 0; i < 5; ++i) {
+		seedGSLIB = abs(seedGSLIB << 15) | (rand() & 0x7FFF);
+	}*/
+
+	FILE* inputFileGSLIB = fopen(GetGSLIBOutputFilePath("BCSgsimInput.par", iParallelRlzn).c_str(), "w");
+
+	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
+	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
+	fprintf(inputFileGSLIB, "nodata\n");
+	fprintf(inputFileGSLIB, "1 2 0 3 5 0                             -columns for X,Y,Z,vr,wt,sec.var.\n");
+	fprintf(inputFileGSLIB, "-1E+21 1E+21\n");
+	fprintf(inputFileGSLIB, "0                                       -transform the data (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "sgsim.trn\n");
+	fprintf(inputFileGSLIB, "0                                       -consider ref. dist (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "vmodel.var\n");
+	fprintf(inputFileGSLIB, "1 2                                     -columns for vr and wt\n");
+	fprintf(inputFileGSLIB, "0 15                                    -zmin,zmax (tail extrapolation)\n");
+	fprintf(inputFileGSLIB, "1 0                                     -lower tail option\n");
+	fprintf(inputFileGSLIB, "1 15                                    -upper tail option\n");
+	fprintf(inputFileGSLIB, "0                                       -debug level (0-3)\n");
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_BCSGSIM_nodata.dbg\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_BCSGSIM_output.out\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "%i                                       -number of realizations to generate\n", nRealization);
+	fprintf(inputFileGSLIB, "%i 0 %e                              -nx, xmin, xsize\n", PROPS.GSLIB.BCHeterogeneityParams.NumberOfCells + 1, PROPS.GSLIB.BCHeterogeneityParams.deltaX);
+	fprintf(inputFileGSLIB, "%i 0 %e                              -ny, ymin, ysize\n", 1, 0.0);
+	fprintf(inputFileGSLIB, "1 0 1                                   -nz, zmin, zsize\n");
+	if (!PROPS.GSLIB.Seed)
+	{
+		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", (abs(seedGSLIB) + iParallelRlzn));
+	}
+	else
+	{
+		fprintf(inputFileGSLIB, "%ld                               -random number seed\n", (PROPS.GSLIB.Seed + iParallelRlzn));
+	}
+
+	fprintf(inputFileGSLIB, "0 8                                     -Min and max original data for sim\n");
+	fprintf(inputFileGSLIB, "12                                      -number of simulated nodes to use\n");
+	fprintf(inputFileGSLIB, "1                                       -assign data to nodes (0=no, 1=yes)\n");
+	fprintf(inputFileGSLIB, "1 3                                     -multiple grid search (0=no, 1=yes), num\n");
+	fprintf(inputFileGSLIB, "0                                       -maximum data per octant (0=not used)\n");
+	fprintf(inputFileGSLIB, "10 10 10                                -maximum search radii (hmax, hmin, vert)\n");
+	fprintf(inputFileGSLIB, "0 0 0                                   -angles for search ellipsoid\n");
+	fprintf(inputFileGSLIB, "51 51 11                                -size of covariance lookup table\n");
+	fprintf(inputFileGSLIB, "0 0 1                                   -kType: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC\n");
+	fprintf(inputFileGSLIB, "nodata\n");
+	fprintf(inputFileGSLIB, "4                                       -column\n");
+	fprintf(inputFileGSLIB, "1 0                                     -nst, nugget NOFILE\n");
+	fprintf(inputFileGSLIB, "2 1 0 0 0                               -it, cc, ang1, ang2, ang3\n");
+	fprintf(inputFileGSLIB, "%e %e 0								 -a_hmax, a_hmin, a_vert\n", PROPS.GSLIB.BCHeterogeneityParams.CorLen, PROPS.GSLIB.BCHeterogeneityParams.CorLen);
+	fflush(inputFileGSLIB);
+}
+
+void BCAddcoorParameterFile(int nRealization)
+{
+	FILE* inputFileGSLIB = fopen(GetGSLIBOutputFilePath("BCAddcoorInput.par", iParallelRlzn).c_str(), "w");
+
+	fprintf(inputFileGSLIB, "Parameters for SGSIM\n\n");
+	fprintf(inputFileGSLIB, "START OF PARAMETERS\n");
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_BCSGSIM_output.out\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "GSLIB/outputs/R%i_BCADDCOOR_output.out\n", iParallelRlzn);
+	fprintf(inputFileGSLIB, "%i                                   -realization number to add coordinate\n", nRealization);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -nx, xmin, xsize\n", PROPS.GSLIB.BCHeterogeneityParams.NumberOfCells + 1, PROPS.GSLIB.BCHeterogeneityParams.deltaX);
+	fprintf(inputFileGSLIB, "%i 0 %e                  -ny, ymin, ysize\n", 1, 1.0);
+	fprintf(inputFileGSLIB, "1 0 1                               -nz, zmin, zsize\n");
+	fflush(inputFileGSLIB);
+}
+
+void BCGSLIBRunSGSIM()
+{
+#ifdef _windows_
+	string sgsimPath = "GSLIB\\bin\\GSLIBSimulation.exe";
+	string sgsimInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_BCSgsimInput.par\"";
+	string sgsimArgStr = sgsimPath + " " + sgsimInputPath;
+	const char* sgsimArg = sgsimArgStr.c_str();
+	string addcoorPath = "GSLIB\\bin\\GSLIBAddCoordinates.exe";
+	string addcoorInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_BCAddcoorInput.par\"";
+	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
+	const char* addCoorArg = addcoorArgStr.c_str();
+#else
+	string sgsimPath = "GSLIB/bin/GSLIBSimulation";
+	string sgsimInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_BCSgsimInput.par\"";
+	string sgsimArgStr = sgsimPath + " " + sgsimInputPath;
+	const char* sgsimArg = sgsimArgStr.c_str();
+	string addcoorPath = "GSLIB/bin/GSLIBAddCoordinates";
+	string addcoorInputPath = "\"GSLIB/outputs/R" + to_string(iParallelRlzn) + "_BCAddcoorInput.par\"";
+	string addcoorArgStr = addcoorPath + " " + addcoorInputPath;
+	const char* addCoorArg = addcoorArgStr.c_str();
+#endif  
+	cout << endl << "=== GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+	int ExecuteGSLIB;
+	try
+	{
+		ExecuteGSLIB = system(sgsimArg); // sequential gaussian simulation
+	}
+	catch (int e)
+	{
+		cout << "GSLIB FAILED RUNNING SEQUENTIAL GAUSSIAN SIMULATION! EXCEPTION NO: " << e << endl;
+	}
+
+	cout << "=== END GSLIB UNCONDITIONAL SIMULATION ===" << endl;
+	BCGSLIBCoeffs.resize(PROPS.GSLIB.BCHeterogeneityParams.NumberOfCells + 1, nRealization);
+	BCGSLIBCoeffs.setZero();
+	BCGSLIBGrid.resize(PROPS.GSLIB.BCHeterogeneityParams.NumberOfCells + 1, 2);
+	BCGSLIBGrid.setZero();
+	for (int iRealization = 0; iRealization < nRealization; iRealization++)
+	{
+		BCAddcoorParameterFile(iRealization + 1);
+		try
+		{
+			ExecuteGSLIB = system(addCoorArg); // adding coordinates
+		}
+		catch (int e)
+		{
+			cout << "GSLIB FAILED ADDING COORDINATES! EXCEPTION NO: " << e << endl;
+		}
+
+		FILE* inputFileGSLIB = fopen(GetOutputFilePath("BCGSLIB_Simulation.plt", iParallelRlzn).c_str(), "w");
+		fprintf(inputFileGSLIB, "TITLE = 'Boundary Condition Spatial Variability GSLIB Output' \n");
+		fprintf(inputFileGSLIB, "VARIABLES = \"<i>x </i>(m)\" \"GSLIB Coeff\" \n");
+		fprintf(inputFileGSLIB, "Zone T = \"1\" \n");
+		string AddcoorOutputFilePathStr = GetGSLIBOutputFilePath("BCADDCOOR_output.out", iParallelRlzn);
+		const char* AddcoorOutputFilePath = AddcoorOutputFilePathStr.c_str();
+		//system("chmod 755 GSLIB/ADDCOOR_output.out");
+		ifstream gslibFile;
+		gslibFile.open(AddcoorOutputFilePath);
+		string line;
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		getline(gslibFile, line);
+		int index = 0;
+		double gslibCoeff;
+		double xGrid;
+		double yGrid;
+		double zCoord;
+		while (getline(gslibFile, line))
+		{
+			if (!(gslibFile >> xGrid >> yGrid >> zCoord >> gslibCoeff))
+			{
+				break;
+			}
+			BCGSLIBGrid(index, 0) = xGrid;
+			BCGSLIBGrid(index, 1) = yGrid;
+			BCGSLIBCoeffs(index, iRealization) = gslibCoeff;
+			fprintf(inputFileGSLIB, "%e\t%e\n", xGrid, gslibCoeff);
+			index++;
+		}
+
+		double maxGslibCoeff = BCGSLIBCoeffs.col(iRealization).maxCoeff();
+		double minGslibCoeff = BCGSLIBCoeffs.col(iRealization).minCoeff();
+		double rangeGslibCoeff = maxGslibCoeff - minGslibCoeff;
+		for (int i = 0; i < BCGSLIBCoeffs.size(); i++)
+		{
+			BCGSLIBCoeffs(i, iRealization) -= minGslibCoeff;
+			BCGSLIBCoeffs(i, iRealization) = BCGSLIBCoeffs(i, iRealization) / rangeGslibCoeff;
+			BCGSLIBCoeffs(i, iRealization) = -1.0 + 2 * BCGSLIBCoeffs(i, iRealization);
+		}
+
+		IBConditions BC(&MESH, &PROPS);
+		fprintf(inputFileGSLIB, "TITLE = 'Normalized Nodal Spatial Variability GSLIB Output' \n");
+		fprintf(inputFileGSLIB, "VARIABLES = \"<i>x </i>(m)\" \"GSLIB Coeff\" \n");
+		fprintf(inputFileGSLIB, "Zone T = \"2\" \n");
+		PROPS.GSLIB.BCHeterogeneityParams.coeffs.resize(BC.TopBC.size(), 2);
+		PROPS.GSLIB.BCHeterogeneityParams.coeffs.setZero();
+		for (int n = 0; n < BC.TopBC.size(); n++)
+		{
+			double xNode = MESH.Nodes[BC.TopBC[n]].Coordinates.x;
+			double distanceP = INFINITY;
+			for (int i = 0; i < BCGSLIBCoeffs.size(); i++)
+			{
+				double xGrid = BCGSLIBGrid(i, 0);
+				double distance = abs(xNode - xGrid);
+				if (distance < distanceP)
+				{
+					distanceP = distance;
+					gslibCoeff = BCGSLIBCoeffs(i, iRealization);
+					PROPS.GSLIB.BCHeterogeneityParams.coeffs(n, 0) = BC.TopBC[n];
+					PROPS.GSLIB.BCHeterogeneityParams.coeffs(n, 1) = gslibCoeff;
+				}
+			}
+
+			fprintf(inputFileGSLIB, "%e\t%e\n", xNode, PROPS.GSLIB.BCHeterogeneityParams.coeffs(n));
+		}
+
+		fflush(inputFileGSLIB);
+	}
 }
 
 void SgsimParameterFile()
@@ -392,18 +605,6 @@ void UpscaleGSLIBtoSIMPER()
 				double gslibCoeff;
 				double distanceP = INFINITY;
 
-				double maxGslibCoeff = GSLIBCoeffs.col(iReal).maxCoeff();
-				double minGslibCoeff = GSLIBCoeffs.col(iReal).minCoeff();
-				double normFac = 1.0;
-				if (maxGslibCoeff >= abs(minGslibCoeff))
-				{
-					normFac = maxGslibCoeff;
-				}
-				else
-				{
-					normFac = abs(minGslibCoeff);
-				}
-
 				for (int i = 0; i < gslibNumberOfNodes; i++)
 				{
 					double xGrid = GSLIBGrid(i, 0);
@@ -413,7 +614,7 @@ void UpscaleGSLIBtoSIMPER()
 					{
 						distanceP = distance;
 						gslibCoeff = GSLIBCoeffs(i, iReal);
-						NodalGSLIBCoeffs(n, iReal) = gslibCoeff / normFac;
+						NodalGSLIBCoeffs(n, iReal) = gslibCoeff;
 					}
 				}
 			}
@@ -425,7 +626,7 @@ void UpscaleGSLIBtoSIMPER()
 				ElementalGSLIBCoeffs(e, iReal) = 0;
 				for (int ig = 0; ig < 4; ig++)
 				{
-					ElementalGSLIBCoeffs(e, iReal) += abs(GSLIBCoeffsNode(ig));
+					ElementalGSLIBCoeffs(e, iReal) += GSLIBCoeffsNode(ig);
 				}
 
 				ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) * 0.25;
@@ -433,17 +634,11 @@ void UpscaleGSLIBtoSIMPER()
 
 			double maxGslibCoeff = ElementalGSLIBCoeffs.col(iReal).maxCoeff();
 			double minGslibCoeff = ElementalGSLIBCoeffs.col(iReal).minCoeff();
-
-			for (int e = 0; e < noel; e++)
+			double rangeGslibCoeff = maxGslibCoeff - minGslibCoeff;
+			for (int i = 0; i < noel; i++)
 			{
-				if (ElementalGSLIBCoeffs(e, iReal) >= 0)
-				{
-					ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) / maxGslibCoeff;
-				}
-				else
-				{
-					ElementalGSLIBCoeffs(e, iReal) = ElementalGSLIBCoeffs(e, iReal) / minGslibCoeff;
-				}
+				ElementalGSLIBCoeffs(i, iReal) -= minGslibCoeff;
+				ElementalGSLIBCoeffs(i, iReal) = ElementalGSLIBCoeffs(i, iReal) / rangeGslibCoeff;
 			}
 		}
 
@@ -454,15 +649,8 @@ void UpscaleGSLIBtoSIMPER()
 				int iSoilType = MESH.Elements[e].iSoilType;
 				GSLIBCoeffE = ElementalGSLIBCoeffs(e, iReal);
 				if (PROPS.GSLIB.isHeterBC || PROPS.GSLIB.isHeterFP || PROPS.GSLIB.isHeterK || PROPS.GSLIB.isHeterLambda)
-				{ 
-					if (GSLIBCoeffE <= 0)
-					{
-						MESH.Elements[e].SoilDensity = PROPS.Soil[iSoilType].DensityMax + (PROPS.Soil[iSoilType].DensityMax - PROPS.Soil[iSoilType].DensityMin) * GSLIBCoeffE;
-					}
-					else
-					{
-						MESH.Elements[e].SoilDensity = PROPS.Soil[iSoilType].DensityMin + (PROPS.Soil[iSoilType].DensityMax - PROPS.Soil[iSoilType].DensityMin) * GSLIBCoeffE;
-					}
+				{
+					MESH.Elements[e].SoilDensity = PROPS.Soil[iSoilType].DensityMin + (PROPS.Soil[iSoilType].DensityMax - PROPS.Soil[iSoilType].DensityMin) * GSLIBCoeffE;
 				}
 				else
 				{
@@ -471,10 +659,7 @@ void UpscaleGSLIBtoSIMPER()
 
 				MESH.Elements[e].SoilHeatCapacity = PROPS.Soil[iSoilType].HeatCapacity;
 				MESH.Elements[e].SoilThermalConductivity = SER.ThermalConductivity(MESH.Elements[e].SoilDensity);
-				if (e == 1615)
-				{
-					bool flag = true;
-				}
+
 				if (MESH.Elements[e].SoilType == "Fen" || MESH.Elements[e].SoilType == "Bog")
 				{
 					MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil[iSoilType].HydraulicConductivity;
@@ -483,17 +668,11 @@ void UpscaleGSLIBtoSIMPER()
 				{
 					MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
 				}
-				
+
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous
 				{
 					//MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempLiquid - (PROPS.Nonisothermal.TempLiquid - PROPS.Nonisothermal.TempSolid) * (1.0 + GSLIBCoeffE);
-					double halfDelFP = 0.5 * abs(PROPS.Soil[iSoilType].FPmax - PROPS.Soil[iSoilType].FPmin);
-					double meanFP = 0.5 * (PROPS.Soil[iSoilType].FPmax + PROPS.Soil[iSoilType].FPmin);
-					MESH.Elements[e].SoilFreezingPoint = meanFP + halfDelFP * (GSLIBCoeffE);
-					if (MESH.Elements[e].SoilFreezingPoint > 0.0)
-					{
-						MESH.Elements[e].SoilFreezingPoint = -1.0 * MESH.Elements[e].SoilFreezingPoint;
-					}
+					MESH.Elements[e].SoilFreezingPoint = PROPS.Soil[iSoilType].FPmin - (abs(PROPS.Soil[iSoilType].FPmax - PROPS.Soil[iSoilType].FPmin)) * GSLIBCoeffE;
 				}
 				else
 				{
@@ -501,7 +680,7 @@ void UpscaleGSLIBtoSIMPER()
 				}
 			}
 		}
-		
+
 		for (int e = 0; e < noel; e++)
 		{
 			fprintf(plotSoilProperties, "variables =\"X\" \"Y\"");
@@ -512,25 +691,24 @@ void UpscaleGSLIBtoSIMPER()
 			fprintf(plotSoilProperties, " \"Realization %i Freezing Point\"", iParallelRlzn);
 			fprintf(plotSoilProperties, " \"Realization %i Coeff_GSLIB\"", iParallelRlzn);
 			fprintf(plotSoilProperties, " \"Realization %i Soil type\"", iParallelRlzn);
-			
+
 
 			fprintf(plotSoilProperties, "\nZONE N = %5.0d, E = %5.0d, ZONETYPE = FEQuadrilateral, DATAPACKING = POINT\n", ndoe, 1);
-			
+
 			for (int inod = 0; inod < ndoe; inod++)
 			{
 				fprintf(plotSoilProperties, "%e\t%e\t", MESH.Elements[e].Nodes[inod].Coordinates.x,
-													    MESH.Elements[e].Nodes[inod].Coordinates.y);
-				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
+					MESH.Elements[e].Nodes[inod].Coordinates.y);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHydraulicConductivity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilHeatCapacity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilThermalConductivity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilDensity);
 				fprintf(plotSoilProperties, "%e\t", MESH.Elements[e].SoilFreezingPoint);
-				fprintf(plotSoilProperties, "%e\t", NodalGSLIBCoeffs(nodeIndex, 0));
+				fprintf(plotSoilProperties, "%e\t", ElementalGSLIBCoeffs(e, 0));
 				fprintf(plotSoilProperties, "%i\t", MESH.Elements[e].iSoilType);
 				fprintf(plotSoilProperties, "\n");
 			}
-			
+
 			fprintf(plotSoilProperties, "1 2 3 4\n");
 			fflush(plotSoilProperties);
 		}
@@ -538,13 +716,13 @@ void UpscaleGSLIBtoSIMPER()
 	else
 	{
 		cout << "Homogeneous Media" << endl;
-		FILE *plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");;
+		FILE* plotSoilProperties = fopen(GetOutputFilePath("SoilProperties.plt", iParallelRlzn).c_str(), "w");;
 		for (int e = 0; e < MESH.NumberOfElements; e++)
 		{
 			int iSoilType = MESH.Elements[e].iSoilType;
 			MESH.Elements[e].SoilHeatCapacity = PROPS.Soil[iSoilType].HeatCapacity;
 			MESH.Elements[e].SoilThermalConductivity = PROPS.Soil[iSoilType].ThermalConductivity;
-			MESH.Elements[e].SoilDensity = 0.5*(PROPS.Soil[iSoilType].DensityMax + PROPS.Soil[iSoilType].DensityMin);
+			MESH.Elements[e].SoilDensity = 0.5 * (PROPS.Soil[iSoilType].DensityMax + PROPS.Soil[iSoilType].DensityMin);
 			MESH.Elements[e].SoilFreezingPoint = PROPS.Nonisothermal.TempSolid;
 			MESH.Elements[e].SoilHydraulicConductivity = PROPS.Soil[iSoilType].HydraulicConductivity;
 
@@ -555,7 +733,7 @@ void UpscaleGSLIBtoSIMPER()
 			{
 				int nodeIndex = MESH.Elements[e].Nodes[inod].n - 1;
 				fprintf(plotSoilProperties, "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%i\n", MESH.Elements[e].Nodes[inod].Coordinates.x,
-					MESH.Elements[e].Nodes[inod].Coordinates.y, 
+					MESH.Elements[e].Nodes[inod].Coordinates.y,
 					MESH.Elements[e].SoilHydraulicConductivity,
 					MESH.Elements[e].SoilHeatCapacity,
 					MESH.Elements[e].SoilThermalConductivity,
