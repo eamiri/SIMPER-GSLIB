@@ -5,6 +5,8 @@ using namespace Eigen;
 
 SimplicialLLT<SparseMatrix<double>> Solver;
 
+SoilEmpiricalRelations SIR;
+
 int iTimestep, iIteration, iPlot;
 int *maxTimestep = &PROPS.Solution.MaxTimestep;
 int *maxIterations = &PROPS.Solution.MaxIterations;
@@ -180,7 +182,23 @@ void UpdateTopBC(int iTimestep)
 	{
 		if (PROPS.GSLIB.isHeterBC && PROPS.GSLIB.isGSLIB)
 		{
-			Temp(TopBoundary[i]) = NodalGSLIBCoeffs(TopBoundary[i]) * BCInputData(iTimestep, 1);
+			//double check = SIR.ShiftBCgslib(8.270992130000000,
+			//	-0.5,
+			//	0.5,
+			//	-0.5,
+			//	0.7,
+			//	334000,
+			//	1000,
+			//	2000);
+
+			Temp(TopBoundary[i]) = SIR.ShiftBCgslib(BCInputData(iTimestep, 1), 
+													-0.5, 
+													0.5, 
+													PROPS.GSLIB.BCHeterogeneityParams.coeffs(i, 1), 
+													BCInputData(iTimestep, 2),
+													PROPS.Fluid.LatentHeat, 
+													PROPS.Fluid.SDensity, 
+													PROPS.Fluid.SHeatCapacity);
 		}
 		else
 		{

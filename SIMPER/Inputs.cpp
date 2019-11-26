@@ -421,7 +421,7 @@ void BCGSLIBRunSGSIM()
 				}
 			}
 
-			fprintf(inputFileGSLIB, "%e\t%e\n", xNode, PROPS.GSLIB.BCHeterogeneityParams.coeffs(n));
+			fprintf(inputFileGSLIB, "%e\t%e\n", xNode, PROPS.GSLIB.BCHeterogeneityParams.coeffs(n, 1));
 		}
 
 		fflush(inputFileGSLIB);

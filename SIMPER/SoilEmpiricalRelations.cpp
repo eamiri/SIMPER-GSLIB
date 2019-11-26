@@ -27,29 +27,29 @@ double SoilEmpiricalRelations::ShiftBCgslib(double bc, double Tf, double Tl, dou
 	double shiftedTemp = 0.0;
 	if (bc > Tl)
 	{
-		enthalpy = density * heatCapacity * bc + latentHeat * Tl / abs(Tl - Tf);
+		enthalpy = density * heatCapacity * bc + density * latentHeat * Tl / abs(Tl - Tf);
 	}
 	else if (bc < Tf)
 	{
-		enthalpy = density * heatCapacity * bc + latentHeat * Tf / abs(Tl - Tf);
+		enthalpy = density * heatCapacity * bc + density * latentHeat * Tf / abs(Tl - Tf);
 	}
 	else
 	{
-		enthalpy = density * heatCapacity * bc + latentHeat * bc / abs(Tl - Tf);
+		enthalpy = density * heatCapacity * bc + density * latentHeat * bc / abs(Tl - Tf);
 	}
 
 	enthalpy += density * heatCapacity * stanDev * gslibCoeff;
-	if (enthalpy > (density * heatCapacity * Tl + latentHeat * Tl / abs(Tl - Tf)))
+	if (enthalpy > (density * heatCapacity * Tl + density * latentHeat * Tl / abs(Tl - Tf)))
 	{
-		shiftedTemp = (enthalpy - latentHeat * Tl / abs(Tl - Tf)) / (density * latentHeat);
+		shiftedTemp = (enthalpy - density * latentHeat * Tl / abs(Tl - Tf)) / (density * heatCapacity);
 	}
-	else if (enthalpy < (density * heatCapacity * Tf + latentHeat * Tf / abs(Tl - Tf)))
+	else if (enthalpy < (density * heatCapacity * Tf + density * latentHeat * Tf / abs(Tl - Tf)))
 	{
-		shiftedTemp = (enthalpy - latentHeat * Tf / abs(Tl - Tf)) / (density * latentHeat);
+		shiftedTemp = (enthalpy - density * latentHeat * Tf / abs(Tl - Tf)) / (density * heatCapacity);
 	}
 	else
 	{
-		shiftedTemp = enthalpy / (density * heatCapacity + latentHeat / abs(Tl - Tf));
+		shiftedTemp = enthalpy / (density * heatCapacity + density * latentHeat / abs(Tl - Tf));
 	}
 
 	return shiftedTemp;
