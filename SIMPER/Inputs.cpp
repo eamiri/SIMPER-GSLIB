@@ -666,7 +666,7 @@ void UpscaleGSLIBtoSIMPER()
 				}
 				else
 				{
-					MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity);
+					MESH.Elements[e].SoilHydraulicConductivity = SER.HydraulicConductivity(MESH.Elements[e].SoilDensity, PROPS.Soil[iSoilType].DensityMax, PROPS.Soil[iSoilType].DensityMin);
 				}
 
 				if (PROPS.GSLIB.isHeterFP) // Check if soil freezing point is heterogeneous

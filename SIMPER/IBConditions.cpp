@@ -190,6 +190,11 @@ void IBConditions::InputBC(string filePath)
 				isDataLine >> bcTimstep >> bcTemperature >> temperatureSD;
 				if (!(ibc < EndTimestepBC))
 				{
+					if (!((ibc - lastIBC) < EndTimestepBC))
+					{
+						lastIBC = ibc;
+					}
+
 					BCInputData(ibc, 0) = BCInputData(ibc - lastIBC, 0);
 					BCInputData(ibc, 1) = BCInputData(ibc - lastIBC, 1);
 					BCInputData(ibc, 2) = BCInputData(ibc - lastIBC, 2);

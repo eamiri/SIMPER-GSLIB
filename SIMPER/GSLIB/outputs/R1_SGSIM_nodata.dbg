@@ -9,6 +9,6 @@
  
 
  Realization   1: number   =     4221
-                  mean     =       0.4332 (close to 0.0?)
-                  variance =       0.7308 (close to gammabar(V,V)? approx. 1.0)
+                  mean     =      -0.0523 (close to 0.0?)
+                  variance =       1.0311 (close to gammabar(V,V)? approx. 1.0)
 
