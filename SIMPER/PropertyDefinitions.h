@@ -99,7 +99,7 @@ struct SolutionVariables
 	bool IsGMSH;
 };
 
-struct VIntLocalInfo
+struct IntLocalInfo
 {
 	int iElement;
 	double iGP;
@@ -107,21 +107,24 @@ struct VIntLocalInfo
 	double GPWeight;
 };
 
-struct VIntGlobalInfo
+struct IntGlobalInfo
 {
 	double xGlob;
+	double yGlob;
 	double IntSwat;
 	double IntSice;
-	vector<VIntLocalInfo> LocalInfo;
+	vector<IntLocalInfo> LocalInfo;
 };
 
-struct VerticalIntegration
+struct Integration
 {
 	bool isIntegrate;
 	int xResolution;
+	int yResolution;
 	int nGP;
 	double DomainDepth;
-	vector<VIntGlobalInfo> GlobalInfo;
+	double DomainWidth;
+	vector<IntGlobalInfo> GlobalInfo;
 };
 
 

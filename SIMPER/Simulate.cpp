@@ -543,6 +543,7 @@ void Simulate(int iRealization)
 		{
 			iVerticalInt++;
 			POSTPROCESS.GetVerticalIntergal(Temp, Year);
+			POSTPROCESS.GetHorizontalIntergal(Temp, Year);
 		}
 
 		// Updating min and max temperatures

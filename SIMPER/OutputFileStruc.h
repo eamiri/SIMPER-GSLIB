@@ -18,6 +18,8 @@ struct OutputFileStruc
 	FILE* BiannualMaxTemperatures;
 	FILE* SwatVerticalInt;
 	FILE* SiceVerticalInt;
+	FILE* SwatHorizontalInt;
+	FILE* SiceHorizontalInt;
 };
 
 #endif 

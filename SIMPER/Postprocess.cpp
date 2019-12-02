@@ -42,6 +42,11 @@ void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 			Mpar = PROPS.Soil[iSoilType].Mpar;
 			Tsol = MESH.Elements[e].SoilFreezingPoint;
 			//
+			xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
+			yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+			GPi = PROPS.VInteg.GlobalInfo[i].LocalInfo[j].iGP;
+			GPj = PROPS.VInteg.GlobalInfo[i].LocalInfo[j].jGP;
+			//
 			femFunctions.Calculate(xNodes, yNodes, GPi, GPj);
 			SF = femFunctions.SF;
 			//
@@ -60,6 +65,56 @@ void Postprocess::GetVerticalIntergal(VectorXd Temp, int year)
 
 	fflush(Files.SwatVerticalInt);
 	fflush(Files.SiceVerticalInt);
+}
+
+void Postprocess::GetHorizontalIntergal(VectorXd Temp, int year)
+{
+	fprintf(Files.SwatHorizontalInt, "TITLE = \"Water Saturation Horizontal Integral - year %i\"\n", year);
+	fprintf(Files.SwatHorizontalInt, "VARIABLES = \"IntSwat\" \"<i>z </i>(m)\"\n");
+	fprintf(Files.SwatHorizontalInt, "Zone T = \"Year %i\"\n", year);
+	fprintf(Files.SiceHorizontalInt, "TITLE = \"Ice Saturation Horizontal Integral - year %i\"\n", year);
+	fprintf(Files.SiceHorizontalInt, "VARIABLES = \"IntSwat\" \"<i>z </i>(m)\"\n");
+	fprintf(Files.SiceHorizontalInt, "Zone T = \"Year %i\"\n", year);
+	double TempG;
+	for (int i = 0; i <= PROPS.HInteg.xResolution; i++)
+	{
+		PROPS.HInteg.GlobalInfo[i].IntSwat = 0.0;
+		PROPS.HInteg.GlobalInfo[i].IntSice = 0.0;
+		for (int j = 0; j < PROPS.HInteg.nGP; j++)
+		{
+			int e = PROPS.HInteg.GlobalInfo[i].LocalInfo[j].iElement;
+			int iSoilType = MESH.Elements[e].iSoilType;
+			//
+			rSFC = PROPS.Soil[iSoilType].rSFC;
+			Tliq = PROPS.Nonisothermal.TempLiquid;
+			Sres = PROPS.Soil[iSoilType].ResidualWaterSaturation;
+			Wpar = PROPS.Soil[iSoilType].Wpar;
+			Mpar = PROPS.Soil[iSoilType].Mpar;
+			Tsol = MESH.Elements[e].SoilFreezingPoint;
+			//
+			xNodes = MESH.GetNodesXCoordinates(e, MESH.ElementNumberOfNodes);
+			yNodes = MESH.GetNodesYCoordinates(e, MESH.ElementNumberOfNodes);
+			GPi = PROPS.HInteg.GlobalInfo[i].LocalInfo[j].iGP;
+			GPj = PROPS.HInteg.GlobalInfo[i].LocalInfo[j].jGP;
+			//
+			femFunctions.Calculate(xNodes, yNodes, GPi, GPj);
+			SF = femFunctions.SF;
+			//
+			elementDofs = MESH.GetElementDofs(e, ndoe);
+			TempNode = MESH.GetNodalValues(Temp, elementDofs);
+			TempG = SF * TempNode;
+			//
+			SaturationFunctions SATS(TempG, Tsol, Tliq, Sres, PROPS.Soil[iSoilType].IsSaturated);
+			PROPS.HInteg.GlobalInfo[i].IntSwat += SATS.Swat * PROPS.HInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.HInteg.DomainWidth * 0.5) / PROPS.HInteg.DomainWidth; //domaindepth * 0.5 : jacobian for the integral, divided by domain width for normalizing
+			PROPS.HInteg.GlobalInfo[i].IntSice += SATS.Sice * PROPS.HInteg.GlobalInfo[i].LocalInfo[j].GPWeight * (PROPS.HInteg.DomainWidth * 0.5) / PROPS.HInteg.DomainWidth;
+		}
+
+		fprintf(Files.SwatHorizontalInt, "%e\t%e\n", PROPS.HInteg.GlobalInfo[i].IntSwat, PROPS.HInteg.GlobalInfo[i].yGlob);
+		fprintf(Files.SiceHorizontalInt, "%e\t%e\n", PROPS.HInteg.GlobalInfo[i].IntSice, PROPS.HInteg.GlobalInfo[i].yGlob);
+	}
+
+	fflush(Files.SwatHorizontalInt);
+	fflush(Files.SiceHorizontalInt);
 }
 
 void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)

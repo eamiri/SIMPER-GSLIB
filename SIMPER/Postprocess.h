@@ -35,6 +35,7 @@ public:
 	void GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization);
 	void PlotNodes(VectorXd Temp, double solutionTime, int iRealization);
 	void GetVerticalIntergal(VectorXd Temp, int year);
+	void GetHorizontalIntergal(VectorXd Temp, int year);
 
 private:
 	VectorXd NodalGSLIBCoeffs;

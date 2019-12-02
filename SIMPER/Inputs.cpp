@@ -23,6 +23,7 @@ void UpscaleGSLIBtoSIMPER();
 void AddcoorParameterFile(int nRealization);
 void BCAddcoorParameterFile(int nRealization);
 void VerticalIntegrationInfo();
+void HorizontalIntegrationInfo();
 
 int nRealization;
 int noel;
@@ -37,6 +38,7 @@ MatrixXd GSLIBGrid, BCGSLIBGrid;
 Properties PROPS;
 GaussPoints GP;
 GaussPoints VIntGP;
+GaussPoints HIntGP;
 
 bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 {
@@ -46,6 +48,7 @@ bool Inputs(string propsInputFile, string meshInputFile, int iPReal)
 	if (PROPS.VInteg.isIntegrate)
 	{
 		VerticalIntegrationInfo();
+		HorizontalIntegrationInfo();
 	}
 
 	nRealization = PROPS.GSLIB.NumberOfRealizations;
@@ -229,6 +232,9 @@ Properties InputProperties(string filePath)
 			>> props.VInteg.isIntegrate
 			>> props.VInteg.xResolution
 			>> props.VInteg.nGP;
+		props.HInteg.isIntegrate = props.VInteg.isIntegrate;
+		props.HInteg.xResolution = props.VInteg.xResolution;
+		props.HInteg.nGP = props.VInteg.nGP;
 	}
 
 	return props;
@@ -1013,11 +1019,11 @@ void VerticalIntegrationInfo()
 	double domainDepth = abs(MESH.MaxY - MESH.MinY);
 	double deltaX = domainWidth / (double)PROPS.VInteg.xResolution;
 	PROPS.VInteg.DomainDepth = domainDepth;
-	
+	PROPS.VInteg.DomainWidth = domainWidth;
 	for (int i = 0; i <= PROPS.VInteg.xResolution; i++)
 	{
-		VIntGlobalInfo GI;
-		VIntLocalInfo LI;
+		IntGlobalInfo GI;
+		IntLocalInfo LI;
 		VectorXd SF;
 		VectorXd xyGlob;
 		double xGlob = MESH.MinX + (double)(i) * deltaX;
@@ -1065,6 +1071,70 @@ void VerticalIntegrationInfo()
 		}
 
 		PROPS.VInteg.GlobalInfo.push_back(GI);
+	}
+}
+
+void HorizontalIntegrationInfo()
+{
+	FEMFunctions femFunctions;
+	VectorXd xNodes;
+	VectorXd yNodes;
+	double domainWidth = abs(MESH.MaxX - MESH.MinX);
+	double domainDepth = abs(MESH.MaxY - MESH.MinY);
+	double deltaY = domainDepth / (double)PROPS.HInteg.xResolution;
+	PROPS.HInteg.DomainDepth = domainDepth;
+	PROPS.HInteg.DomainWidth = domainWidth;
+	for (int i = 0; i <= PROPS.VInteg.xResolution; i++)
+	{
+		IntGlobalInfo GI;
+		IntLocalInfo LI;
+		VectorXd SF;
+		VectorXd xyGlob;
+		double yGlob = MESH.MinY + (double)(i)*deltaY;
+		GI.yGlob = yGlob;
+		GI.IntSwat = 0.0;
+		GI.IntSice = 0.0;
+		HIntGP.GP(PROPS.HInteg.nGP);
+		GP.GP(nGP);
+		for (int iGP = 0; iGP < PROPS.HInteg.nGP; iGP++)
+		{
+			LI.GPWeight = HIntGP.Weights[iGP];
+			double GPi = HIntGP.Points[iGP];
+			double xGlob = 0.5 * domainWidth + 0.5 * domainWidth * GPi;
+			double distance = 9999.0;
+			int iNodeNearest = 1;
+			for (int e = 0; e < noel; e++)
+			{
+				xNodes = MESH.GetNodesXCoordinates(e, ndoe);
+				yNodes = MESH.GetNodesYCoordinates(e, ndoe);
+				for (int i = 0; i < nGP; i++)
+				{
+					for (int j = 0; j < nGP; j++)
+					{
+						double GPiloc = GP.Points[i];
+						double GPjloc = GP.Points[j];
+						femFunctions.Calculate(xNodes, yNodes, GPiloc, GPjloc);
+						SF = femFunctions.SF;
+						xyGlob = femFunctions.CalculateGlobalCoordinates(SF, xNodes, yNodes);
+
+						double distance2 = sqrt((xGlob - xyGlob(0)) * (xGlob - xyGlob(0)) +
+							(yGlob - xyGlob(1)) * (yGlob - xyGlob(1)));
+
+						if (distance2 < distance)
+						{
+							distance = distance2;
+							LI.iElement = e;
+							LI.iGP = GPiloc;
+							LI.jGP = GPjloc;
+						}
+					}
+				}
+			}
+
+			GI.LocalInfo.push_back(LI);
+		}
+
+		PROPS.HInteg.GlobalInfo.push_back(GI);
 	}
 }
 
