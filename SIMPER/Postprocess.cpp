@@ -117,7 +117,7 @@ void Postprocess::GetHorizontalIntergal(VectorXd Temp, int year)
 	fflush(Files.SiceHorizontalInt);
 }
 
-void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
+void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp, int time, int iRealization)
 {
 	SwLiq = PROPS.Nonisothermal.LiquidSatIndex;
 	talikArea = 0.0;
@@ -154,24 +154,24 @@ void Postprocess::GetTalikArea(VectorXd Temp, VectorXd minTemp, VectorXd maxTemp
 		talikArea += iThawed * AreaElement / ndoe;
 	}
 
-	fprintf(Files.AnnualMinTemperatures, "%i,%i,", iRealization, year);
-	fprintf(Files.AnnualMaxTemperatures, "%i,%i,", iRealization, year);
-	for (int n = 0; n < nond; n++)
-	{
-		fprintf(Files.AnnualMinTemperatures, "%e,", minTemp(n));
-		fprintf(Files.AnnualMaxTemperatures, "%e,", maxTemp(n));
-	}
+	//fprintf(Files.AnnualMinTemperatures, "%i,%i,", iRealization, time);
+	//fprintf(Files.AnnualMaxTemperatures, "%i,%i,", iRealization, time);
+	//for (int n = 0; n < nond; n++)
+	//{
+	//	fprintf(Files.AnnualMinTemperatures, "%e,", minTemp(n));
+	//	fprintf(Files.AnnualMaxTemperatures, "%e,", maxTemp(n));
+	//}
 
-	fprintf(Files.AnnualMinTemperatures, "\n");
-	fprintf(Files.AnnualMaxTemperatures, "\n");
+	//fprintf(Files.AnnualMinTemperatures, "\n");
+	//fprintf(Files.AnnualMaxTemperatures, "\n");
 
-	fprintf(Files.TalikAreaFile, "%i,%i,%e\n", iRealization, year, talikArea);
+	fprintf(Files.TalikAreaFile, "%i,%i,%e\n", iRealization, time, talikArea);
 	fflush(Files.TalikAreaFile);
-	fflush(Files.AnnualMinTemperatures);
-	fflush(Files.AnnualMaxTemperatures);
+	//fflush(Files.AnnualMinTemperatures);
+	//fflush(Files.AnnualMaxTemperatures);
 }
 
-void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year, int iRealization)
+void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int time, int iRealization)
 {
 	
 	SwSol = PROPS.Nonisothermal.SolidSatIndex;
@@ -213,21 +213,21 @@ void Postprocess::GetPermafrostArea(VectorXd minTemp, VectorXd maxTemp, int year
 
 		permafrostArea += iFrozen * AreaElement / ndoe;
 	}
-	fprintf(Files.BiannualMinTemperatures, "%i,%i,", iRealization, year);
-	fprintf(Files.BiannualMaxTemperatures, "%i,%i,", iRealization, year);
-	for (int n = 0; n < nond; n++)
-	{
-		fprintf(Files.BiannualMinTemperatures, "%e,", minTemp(n));
-		fprintf(Files.BiannualMaxTemperatures, "%e,", maxTemp(n));
-	}
+	//fprintf(Files.BiannualMinTemperatures, "%i,%i,", iRealization, time);
+	//fprintf(Files.BiannualMaxTemperatures, "%i,%i,", iRealization, time);
+	//for (int n = 0; n < nond; n++)
+	//{
+	//	fprintf(Files.BiannualMinTemperatures, "%e,", minTemp(n));
+	//	fprintf(Files.BiannualMaxTemperatures, "%e,", maxTemp(n));
+	//}
 
-	fprintf(Files.BiannualMinTemperatures, "\n");
-	fprintf(Files.BiannualMaxTemperatures, "\n");
+	//fprintf(Files.BiannualMinTemperatures, "\n");
+	//fprintf(Files.BiannualMaxTemperatures, "\n");
 
-	fprintf(Files.PermafrostAreaFile, "%i,%i,%e\n", iRealization, year, permafrostArea);
+	fprintf(Files.PermafrostAreaFile, "%i,%i,%e\n", iRealization, time, permafrostArea);
 	fflush(Files.PermafrostAreaFile);
-	fflush(Files.BiannualMinTemperatures);
-	fflush(Files.BiannualMaxTemperatures);
+	//fflush(Files.BiannualMinTemperatures);
+	//fflush(Files.BiannualMaxTemperatures);
 }
 
 void Postprocess::AreaAnalysis(VectorXd Temp, double solutionTime, int iRealization)

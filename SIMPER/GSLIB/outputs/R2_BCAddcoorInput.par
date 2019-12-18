@@ -1,0 +1,9 @@
+Parameters for SGSIM
+
+START OF PARAMETERS
+GSLIB/outputs/R2_BCSGSIM_output.out
+GSLIB/outputs/R2_BCADDCOOR_output.out
+1                                   -realization number to add coordinate
+2001 0 2.500000e-02                  -nx, xmin, xsize
+1 0 1.000000e+00                  -ny, ymin, ysize
+1 0 1                               -nz, zmin, zsize

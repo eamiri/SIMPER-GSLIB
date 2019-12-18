@@ -112,12 +112,12 @@ int main(int argc, char* argv[])
 	OutputFiles.SiceHorizontalInt = fopen(GetOutputFilePath("SiceHorizontalIntegral.plt", iParallelRlzn).c_str(), "w");
 
 	fprintf(OutputFiles.AreaAnalysisFile, "Realization,SolutionTime,FrozenArea,ThawedArea,SlushyArea\n");
-	fprintf(OutputFiles.TalikAreaFile, "Realization,Year,TalikArea\n");
-	fprintf(OutputFiles.PermafrostAreaFile, "Realization,Year,PermafrostArea\n");
-	fprintf(OutputFiles.AnnualMinTemperatures, "Annual minimum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
-	fprintf(OutputFiles.AnnualMaxTemperatures, "Annual maximum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
-	fprintf(OutputFiles.BiannualMinTemperatures, "Biannual minimum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
-	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Year, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.TalikAreaFile, "Realization,Day,TalikArea\n");
+	fprintf(OutputFiles.PermafrostAreaFile, "Realization,Day,PermafrostArea\n");
+	fprintf(OutputFiles.AnnualMinTemperatures, "Annual minimum nodal temperatures:\n Realization no., Day, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.AnnualMaxTemperatures, "Annual maximum nodal temperatures:\n Realization no., Day, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.BiannualMinTemperatures, "Biannual minimum nodal temperatures:\n Realization no., Day, <Nodal Temperatures>\n\n");
+	fprintf(OutputFiles.BiannualMaxTemperatures, "Biannual maximum nodal temperatures:\n Realization no., Day, <Nodal Temperatures>\n\n");
 
 	//SOLUTION
 	Simulate(iParallelRlzn);
@@ -135,4 +135,3 @@ int main(int argc, char* argv[])
 	
 	return 0;
 }
-

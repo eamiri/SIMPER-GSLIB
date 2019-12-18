@@ -19,7 +19,7 @@ nGAUSS
 2							
 Solution variables 
 MaxTimeStep		deltaTime		tolp			maxi (max iterations)	Gamma (Newmark Coeff.)		PLTS	MESH (0: GID, 1: GMSH)
-262801			3600			1E-3			20						0.6							876		1					
+10000				3600			1E-3			2						0.6							1		1					
 GSLIB input data
 Correlation Length (Hor  Ver)		Number of Cells X		Grid Size X	 	 Number of Cells Y		Grid Size Y		   Number of Realizations	GSLIB SEED (0: Random)
 12.0		2.0						200						0.25			 20					 	0.25		   	   1						443561				  
@@ -31,4 +31,4 @@ Correlation Length(m)		Number of points		DeltaX
 3							2000					0.025
 Integrate Saturation in depth
 isIntegrate			X resolution		nGP
-1					100					20
+0					100					20

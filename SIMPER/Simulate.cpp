@@ -11,9 +11,12 @@ int iTimestep, iIteration, iPlot;
 int *maxTimestep = &PROPS.Solution.MaxTimestep;
 int *maxIterations = &PROPS.Solution.MaxIterations;
 int *plotInterval = &PROPS.Solution.PlotInterval;
-int iTalikYear = 0;
-int iPermafrostYear = 0;
+int iTalikDay = 0;
+int iPermafrostDay = 0;
+int iTalikYear = 2;
+int iPermYear = 2;
 int iVerticalInt = 0;
+int TwoYear, Year, Month, Week, Day, MonthOfYear, WeekOfYear, DayOfYear, DayOfTwoYear;
 
 double *TolResidual = &PROPS.Solution.TolPsi;
 
@@ -31,7 +34,7 @@ VectorXd TempNode, TempNodeDot, TempNodeHat, TempNode_0, GSLIBCoeffsNode;
 VectorXd GradTemp;
 VectorXi elementDofs;
 VectorXd bcResidual;
-VectorXd minTempTalikAna, maxTempTalikAna, minTempPermAna, maxTempPermAna;
+MatrixXd minTempTalikAna, maxTempTalikAna, minTempPermAna, maxTempPermAna;
 
 SparseMatrix<double> StiffSparse;
 
@@ -77,10 +80,10 @@ void InitializeSolution()
 	TempStar = Temp;
 	TempHat = Temp_0 + (1.0 - *gammaNewmark) * (*deltaTime) * TempDot_0;
 	iIteration = 0;
-	minTempPermAna = Temp;
-	minTempTalikAna = Temp;
-	maxTempPermAna = Temp;
-	maxTempTalikAna = Temp;
+	//minTempPermAna.col(DayOfYear) = Temp;
+	//minTempTalikAna.col(DayOfYear) = Temp;
+	//maxTempPermAna.col(DayOfYear) = Temp;
+	//maxTempTalikAna.col(DayOfYear) = Temp;
 }
  
 void ComputePotentialStar(int iRealization)
@@ -227,15 +230,29 @@ void Simulate(int iRealization)
 	Dice = PROPS.Fluid.SDensity;
 	Lhea = PROPS.Fluid.LatentHeat;
 
+	minTempTalikAna.resize(nond, 365);
+	maxTempTalikAna.resize(nond, 365);
+	minTempPermAna.resize(nond, 730);
+	maxTempPermAna.resize(nond, 730);
+	minTempTalikAna.setConstant(PROPS.BCs.UniformIC);
+	maxTempTalikAna.setConstant(PROPS.BCs.UniformIC);
+	minTempPermAna.setConstant(PROPS.BCs.UniformIC);
+	maxTempPermAna.setConstant(PROPS.BCs.UniformIC);
 
 	for (iTimestep = 0; iTimestep < *maxTimestep; iTimestep++)
 	{
 		//Second to Year, Month, Day Conversion
 		solutionTime = (iTimestep + 1) * *deltaTime;
-		int Year = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 365.0)));
-		int Month = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 31.0)));
-		int Week = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 7)));
-		int Day = static_cast<int>(floor(solutionTime / (3600.0 * 24.0)));
+		TwoYear = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 730.0)));
+		Year = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 365.0)));
+		Month = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 31.0)));
+		Week = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 7)));
+		Day = static_cast<int>(floor(solutionTime / (3600.0 * 24.0)));
+
+		MonthOfYear = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 31.0))) - Year * 12;
+		WeekOfYear = static_cast<int>(floor(solutionTime / (3600.0 * 24.0 * 7))) - Year * 52;
+		DayOfYear = static_cast<int>(floor(solutionTime / (3600.0 * 24.0))) - Year * 365;
+		DayOfTwoYear = static_cast<int>(floor(solutionTime / (3600.0 * 24.0))) - TwoYear * 730;
 		//
 		printf("======================================================================================================================================================================");
 		// update boundary conditions
@@ -521,22 +538,24 @@ void Simulate(int iRealization)
 
 		 // Analyzing permafrost degradation and talik formations based on min and max temperatures (Permafrost: every two years
 		 // and talik: every year - based on the official definition)
-		if (Year == iTalikYear)
+		if (Day == iTalikDay)
 		{
-			iTalikYear += 2;
-			POSTPROCESS.GetTalikArea(Temp, minTempTalikAna, maxTempTalikAna, Year, iRealization);
+			iTalikDay += 1;
+			POSTPROCESS.GetTalikArea(Temp, minTempTalikAna.col(DayOfYear), maxTempTalikAna.col(DayOfYear), Day, iRealization);
 			// Reseting the min and max temperatures for the next year round
-			minTempTalikAna = Temp;
-			maxTempTalikAna = Temp;
+			iTalikYear += 2;
+			minTempTalikAna.col(DayOfYear) = Temp;
+			maxTempTalikAna.col(DayOfYear) = Temp;
 		}
 
-		if(Year == iPermafrostYear)
+		if(Day == iPermafrostDay)
 		{
-			iPermafrostYear += 2;
-			POSTPROCESS.GetPermafrostArea(minTempPermAna, maxTempPermAna, Year, iRealization);
+			iPermafrostDay += 1;
+			POSTPROCESS.GetPermafrostArea(minTempPermAna.col(DayOfTwoYear), maxTempPermAna.col(DayOfTwoYear), Day, iRealization);
 			// Reseting the min and max temperatures for the next 2 years round
-			minTempPermAna = Temp;
-			maxTempPermAna = Temp;
+			iPermYear += 2;
+			minTempPermAna.col(DayOfTwoYear) = Temp;
+			maxTempPermAna.col(DayOfTwoYear) = Temp;
 		}
 
 		if (Year == iVerticalInt && PROPS.VInteg.isIntegrate)
@@ -549,24 +568,42 @@ void Simulate(int iRealization)
 		// Updating min and max temperatures
 		for (int n = 0; n < nond; n++)
 		{
-			if (Temp(n) < minTempTalikAna(n))
+			for (int iDay = 0; iDay < 730; iDay++)
 			{
-				minTempTalikAna(n) = Temp(n);
-			}
+				if (iDay < 365)
+				{
+					if (Temp(n) < minTempTalikAna(n, iDay))
+					{
+						minTempTalikAna(n, iDay) = Temp(n);
+					}
 
-			if (Temp(n) > maxTempTalikAna(n))
-			{
-				maxTempTalikAna(n) = Temp(n);
-			}
+					if (Temp(n) > maxTempTalikAna(n, iDay))
+					{
+						maxTempTalikAna(n, iDay) = Temp(n);
+					}
 
-			if (Temp(n) < minTempPermAna(n))
-			{
-				minTempPermAna(n) = Temp(n);
-			}
+					if (Temp(n) < minTempPermAna(n, iDay))
+					{
+						minTempPermAna(n, iDay) = Temp(n);
+					}
 
-			if (Temp(n) > maxTempPermAna(n))
-			{
-				maxTempPermAna(n) = Temp(n);
+					if (Temp(n) > maxTempPermAna(n, iDay))
+					{
+						maxTempPermAna(n, iDay) = Temp(n);
+					}
+				}
+				else
+				{
+					if (Temp(n) < minTempPermAna(n, iDay))
+					{
+						minTempPermAna(n, iDay) = Temp(n);
+					}
+
+					if (Temp(n) > maxTempPermAna(n, iDay))
+					{
+						maxTempPermAna(n, iDay) = Temp(n);
+					}
+				}
 			}
 		}
 		// Plots
