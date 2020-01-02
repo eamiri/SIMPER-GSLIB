@@ -43,7 +43,7 @@ double SoilEmpiricalRelations::ShiftBCgslib(double bc, double Tf, double Tl, dou
 		enthalpy = density * heatCapacity * bc + density * latentHeat * bc / abs(Tl - Tf);
 	}
 
-	enthalpy += density * heatCapacity * 3.0 * stanDev * gslibCoeff; // themultiplier 3.0 comes from 3Sigma in normal distribution
+	enthalpy += density * heatCapacity * stanDev * gslibCoeff;
 	if (enthalpy > (density * heatCapacity * Tl + density * latentHeat * Tl / abs(Tl - Tf)))
 	{
 		shiftedTemp = (enthalpy - density * latentHeat * Tl / abs(Tl - Tf)) / (density * heatCapacity);

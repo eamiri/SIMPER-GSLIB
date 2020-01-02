@@ -394,7 +394,7 @@ void BCGSLIBRunSGSIM()
 			index++;
 		}
 
-		double maxGslibCoeff = BCGSLIBCoeffs.col(iRealization).maxCoeff();
+		/*double maxGslibCoeff = BCGSLIBCoeffs.col(iRealization).maxCoeff();
 		double minGslibCoeff = BCGSLIBCoeffs.col(iRealization).minCoeff();
 		double rangeGslibCoeff = maxGslibCoeff - minGslibCoeff;
 		for (int i = 0; i < BCGSLIBCoeffs.size(); i++)
@@ -402,7 +402,7 @@ void BCGSLIBRunSGSIM()
 			BCGSLIBCoeffs(i, iRealization) -= minGslibCoeff;
 			BCGSLIBCoeffs(i, iRealization) = BCGSLIBCoeffs(i, iRealization) / rangeGslibCoeff;
 			BCGSLIBCoeffs(i, iRealization) = -1.0 + 2 * BCGSLIBCoeffs(i, iRealization);
-		}
+		}*/
 
 		IBConditions BC(&MESH, &PROPS);
 		fprintf(inputFileGSLIB, "TITLE = 'Normalized Nodal Spatial Variability GSLIB Output' \n");
